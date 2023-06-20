@@ -1,5 +1,5 @@
-import re
 import os
+import re
 import shutil
 import zipfile
 import requests
@@ -36,9 +36,9 @@ def extract_dependencies(dep: Dependency):
             for input_string in matchLines:
                 match = re.search(pattern, input_string)
                 if match:
-                    package_name = match.group(1)
+                    package_names = match.group(1).split(',')
                     package_version = match.group(2)
-                    deps_of_files.add(Dependency(package_name, package_version))
+                    deps_of_files.update([Dependency(name, package_version, dep.path) for name in package_names])
 
     
     # Sort out deps whose files were included in the download of current dep
@@ -55,7 +55,7 @@ def download_file(dep: Dependency):
     # Check if version on CTAN fits
     pkgInfo = requests.get("http://www.ctan.org/json/2.0/pkg/" + dep.name).json()
     if "version" not in pkgInfo:
-        raise ValueError(f"Error: {dep.name} has no version on CTAN") #TODO: Remove
+        raise ValueError(f"Error: {dep.name} has no version on CTAN") #TODO: What to do if CTAN has no version? Just proceed with download, Download from TL, ...?
     
     ctan_version = pkgInfo["version"]
     if(not dep.version or ctan_version['date'] == dep.version or ctan_version['number'] == dep.version):
@@ -85,23 +85,25 @@ def download_from_ctan(pkgInfo):
     raise Exception(f"{pkgInfo.name} cannot be downloaded from CTAN")
 
 def download_and_extract_zip(url):
+    PACKAGE_DIR = "packages"
     # Extract the filename from the URL
-    file_name = url.split('/')[-1]
+    zip_file_name = os.path.join(PACKAGE_DIR, url.split('/')[-1]) 
     
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
-    with open(file_name, 'wb') as file:
+    with open(zip_file_name, 'wb') as file:
         file.write(response.content)
     
     # Extract the files into a folder
-    folder_name = os.path.join("/packages", file_name.split('.')[0])  # Use the filename without the extension as the folder name
+    folder_name = zip_file_name.split('.')[0]  # Use the filename without the extension as the folder name
     os.makedirs(folder_name, exist_ok=True)
-    with zipfile.ZipFile(file_name, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(folder_name)
     
     # Return the path to the folder
     folder_path = os.path.abspath(folder_name)
 
+    os.remove(zip_file_name)
     organize_files(folder_path)
     return folder_path
 
@@ -113,15 +115,23 @@ def organize_files(folder_path: str):
         for file_name in os.listdir(sub_path):
             source = os.path.join(sub_path, file_name)
             destination = os.path.join(os.path.dirname(sub_path), file_name)
-            shutil.move(source, destination)
+            shutil.move(source, destination) #FIXME: Seems inefficient to move every file individually
 
         # Remove the now empty subfolder
         os.rmdir(sub_path)
 
 
     if('tex' in os.listdir(folder_path)):
-        # TODO: Get files at end of tex folder structure to top-level, delete other stuff
-        pass
+        # get path for each relevant file
+        relevant_files = []
+        for root, dirs, files in os.walk(folder_path):
+            relevant_files.extend([os.path.join(root, file) for file in files if file.endswith(('.ins', '.sty', '.tex'))]) #TODO: Is .tex relevant?
+        # Move relevant files to cwd
+        for file in relevant_files:
+            destination = os.path.join(folder_path, os.path.basename(file))
+            shutil.move(file, destination) 
+        # Remove the folders
+
 
 def download_from_TL(pkgInfo):
     raise NotImplementedError("Downloads from TL not supported yet")
