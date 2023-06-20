@@ -13,7 +13,7 @@ for key in tmp_deps:
     stack.append(Dependency(key, tmp_deps[key]))
 
 dependencies: list[Dependency] = []
-failed_deps: list[Dependency] = []
+failed_deps: list[dict[Dependency: str]] = []
 
 while len(stack) != 0:
     dep = stack.pop()
@@ -28,6 +28,9 @@ while len(stack) != 0:
         #TODO: Check if this makes sense
         stack.extend([dep for dep in unsatisfied_deps if dep not in dependencies])
         # dependencies.extend(satisfied_deps)
-    except ValueError as e:
+    except (ValueError, NotImplementedError) as e :
         print(e)
-        failed_deps.append(dep)
+        failed_deps.append({dep: str(e)})
+
+for fail in failed_deps:
+    print(fail)
