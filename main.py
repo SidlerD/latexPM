@@ -6,7 +6,7 @@ from helpers import download_file, extract_dependencies
 with open("requirements.json", 'r') as file:
     requirements = json.load(file)
 
-# Build dependency graph
+# Push dependencies from file to stack
 stack: list[Dependency] = []
 tmp_deps = requirements["dependencies"]
 for key in tmp_deps:

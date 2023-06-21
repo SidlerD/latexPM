@@ -9,7 +9,7 @@ from Dependency import Dependency
 #TODO: Packages can also be imported using \usepackage, account for that
 #TODO: Seems like multiple packages can be imported using one RequirePackage, e.g.\RequirePackage{tikz,xcolor,fontspec} from hmtrump.sty
 def extract_dependencies(dep: Dependency):
-    print("Extracting dependencies of " + dep.name)
+    # print("Extracting dependencies of " + dep.name)
 
     deps_of_files = set()
     deps_of_dep = set() # Files that were included in the download of dep
@@ -46,16 +46,16 @@ def extract_dependencies(dep: Dependency):
     # Could check for assumption, but it seems versions in \RequirePackage are sometimes outdated and not up-to-date
     cleaned_deps_of_files = [d for d in deps_of_files if all([d.name != o.name for o in deps_of_dep])]
 
-    print(f"Dependency {dep.name} included {len(deps_of_dep)} deps {deps_of_dep} as files and has {len(cleaned_deps_of_files)} {cleaned_deps_of_files} as dependencies")
+    # print(f"Dependency {dep.name} included {len(deps_of_dep)} deps {deps_of_dep} as files and has {len(cleaned_deps_of_files)} {cleaned_deps_of_files} as dependencies")
     return list(deps_of_dep), cleaned_deps_of_files
 
 def download_file(dep: Dependency): 
     """Returns path to folder where dep's files were downloaded"""
-    print(f"Download {dep.name} {dep.version}")
+    # print(f"Download {dep.name} {dep.version}")
     # Check if version on CTAN fits
     pkgInfo = requests.get("http://www.ctan.org/json/2.0/pkg/" + dep.name).json()
     if "version" not in pkgInfo:
-        raise ValueError(f"Error: {dep.name} has no version on CTAN") #TODO: What to do if CTAN has no version? Just proceed with download, Download from TL, ...?
+        raise ValueError(f"{dep.name} has no version on CTAN") #TODO: What to do if CTAN has no version? Just proceed with download, Download from TL, ...?
     
     ctan_version = pkgInfo["version"]
     if(not dep.version or ctan_version['date'] == dep.version or ctan_version['number'] == dep.version):
@@ -109,28 +109,31 @@ def download_and_extract_zip(url):
 
 
 def organize_files(folder_path: str):
-    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted"""
-    if(len(os.listdir(folder_path)) == 1): # Only one subfolder, move everything in it up
-        sub_path = os.path.join(folder_path, os.listdir(folder_path)[0])
-        for file_name in os.listdir(sub_path):
-            source = os.path.join(sub_path, file_name)
-            destination = os.path.join(os.path.dirname(sub_path), file_name)
-            shutil.move(source, destination) #FIXME: Seems inefficient to move every file individually
+    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins to .sty"""
+    # #TODO: Make recursive for nested single folder
+    # if(len(os.listdir(folder_path)) == 1): # Only one subfolder, move everything in it up
+    #     sub_path = os.path.join(folder_path, os.listdir(folder_path)[0])
+    #     for file_name in os.listdir(sub_path):
+    #         source = os.path.join(sub_path, file_name)
+    #         destination = os.path.join(os.path.dirname(sub_path), file_name)
+    #         shutil.move(source, destination) #FIXME: Seems inefficient to move every file individually
 
-        # Remove the now empty subfolder
-        os.rmdir(sub_path)
+    #     # Remove the now empty subfolder
+    #     os.rmdir(sub_path)
 
-
-    if('tex' in os.listdir(folder_path)):
-        # get path for each relevant file
-        relevant_files = []
-        for root, dirs, files in os.walk(folder_path):
-            relevant_files.extend([os.path.join(root, file) for file in files if file.endswith(('.ins', '.sty', '.tex'))]) #TODO: Is .tex relevant?
-        # Move relevant files to cwd
-        for file in relevant_files:
-            destination = os.path.join(folder_path, os.path.basename(file))
-            shutil.move(file, destination) 
-        # Remove the folders
+    # Get path for each relevant file
+    relevant_files = []
+    for root, dirs, files in os.walk(folder_path):
+        relevant_files.extend([os.path.join(root, file) for file in files if file.endswith(('.ins', '.sty', '.tex'))]) #TODO: Is .tex relevant?
+    # Move relevant files to cwd
+    for file in relevant_files:
+        destination = os.path.join(folder_path, os.path.basename(file))
+        shutil.move(file, destination) 
+    # Remove the folders
+    # TODO: Remove folders in cwd recursively, leave files at cwd
+    folders = [f for f in os.listdir(folder_path) if os.path.isdir(f)] #Does not work yet
+    for folder in folders:
+        shutil.rmtree(folder)
 
 
 def download_from_TL(pkgInfo):
