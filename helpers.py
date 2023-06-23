@@ -25,7 +25,7 @@ def extract_dependencies(dep: Dependency):
             if match:
                 package_name = match.group(1)
                 package_version = match.group(2)
-                deps_of_dep.add(Dependency(CTAN.get_id_from_name(package_name), package_name, package_version, dep.path))
+                deps_of_dep.add(Dependency(CTAN.get_id_from_name(package_name), package_name, None, dep.path)) #TODO: Assumption that I dont document dependencies on included files, else I need to pass the version (not just none)
 
             # Extract dependencies of sty-file
             sty.seek(0) # Reset file position due to previous read
