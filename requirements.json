@@ -1,7 +1,6 @@
 {
     "name": "latex thesis",
     "dependencies": {
-        "amsmath": "2023-05-13",
-        "acro": "2022-04-01"
+        "one2many": "0.3"
     }
 }
