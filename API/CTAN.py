@@ -1,5 +1,7 @@
 import requests
 
+from helpers import download_and_extract_zip
+
 _ctan_url = "https://www.ctan.org/"
     
 def get_id_from_name(name: str) -> str:
@@ -21,3 +23,19 @@ def get_package_info(id: str):
     if "id" not in pkgInfo or "name" not in pkgInfo:
         raise RuntimeError("CTAN has no information about package with id " + id)
     return pkgInfo
+
+def download_pkg(pkgInfo, pkg_dir):
+    # Extract download path
+    if "install" in pkgInfo:
+        path = pkgInfo['install']
+        url = "https://mirror.ctan.org/install" + path # Should end in .zip or similar
+    
+    elif "ctan" in pkgInfo:
+        path = pkgInfo['ctan']['path']
+        url = f"https://mirror.ctan.org/tex-archive/{path}.zip"
+    else:
+        raise Exception(f"{pkgInfo['id']} cannot be downloaded from CTAN")
+
+    folder_path = download_and_extract_zip(url, pkg_dir)
+
+    return folder_path

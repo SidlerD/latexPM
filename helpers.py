@@ -52,6 +52,8 @@ def extract_dependencies(dep: Dependency):
 def download_file(dep: Dependency): 
     """Returns path to folder where dep's files were downloaded"""
     print(f"Downloading {dep.id} {dep.version}")
+    PACKAGE_DIR = "packages"
+
     # Check if version on CTAN fits
     pkgInfo = API.CTAN.get_package_info(dep.id)
     if "version" not in pkgInfo and dep.version != None:
@@ -59,35 +61,17 @@ def download_file(dep: Dependency):
     
     ctan_version = pkgInfo["version"]
     if(not dep.version or ctan_version['date'] == dep.version or ctan_version['number'] == dep.version):
-        folder_path = download_from_ctan(pkgInfo)
+        folder_path = API.CTAN.download_pkg(pkgInfo, PACKAGE_DIR)
     else: # CTAN version outdated, need to download from TL-arch instead
         folder_path = download_from_TL(pkgInfo)
 
+    organize_files(folder_path)
     return folder_path
-
-
-def download_from_ctan(pkgInfo):
-    # Extract download path
-    if "install" in pkgInfo:
-        path = pkgInfo['install']
-        url = "https://mirror.ctan.org/install" + path # Should end in .zip or similar
-        folder_path = download_and_extract_zip(url)
-
-        return folder_path 
     
-    if "ctan" in pkgInfo:
-        path = pkgInfo['ctan']['path']
-        url = f"https://mirror.ctan.org/tex-archive/{path}.zip"
-        folder_path = download_and_extract_zip(url)
 
-        return folder_path
-    
-    raise Exception(f"{pkgInfo.id} cannot be downloaded from CTAN")
-
-def download_and_extract_zip(url):
-    PACKAGE_DIR = "packages"
+def download_and_extract_zip(url, pkg_dir):
     # Extract the filename from the URL
-    zip_file_name = os.path.join(PACKAGE_DIR, url.split('/')[-1]) 
+    zip_file_name = os.path.join(pkg_dir, url.split('/')[-1]) 
     
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
@@ -104,7 +88,7 @@ def download_and_extract_zip(url):
     folder_path = os.path.abspath(folder_name)
 
     os.remove(zip_file_name)
-    organize_files(folder_path)
+
     return folder_path
 
 
