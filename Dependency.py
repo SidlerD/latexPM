@@ -1,10 +1,12 @@
 from anytree import NodeMixin
 
+from Version import Version
+
 class Dependency:
-    def __init__(self, id, name, version = "", path = ""):
+    def __init__(self, id, name, version, path = ""):
         self.id = id
         self.name = name
-        self.version = version
+        self.version: Version = Version(version)
         self.path = path
 
     def __eq__(self, other):

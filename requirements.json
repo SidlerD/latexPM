@@ -1,6 +1,9 @@
 {
     "name": "latex thesis",
     "dependencies": {
-        "one2many": "0.3"
+        "one2many": {
+            "date": "",
+            "number": "0.3"
+        }
     }
 }

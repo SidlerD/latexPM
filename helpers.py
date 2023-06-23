@@ -3,8 +3,9 @@ import re
 import shutil
 import zipfile
 import requests
-import API.CTAN
+from API import CTAN, TexLive
 from Dependency import Dependency
+from Version import Version
 
 
 #TODO: Packages can also be imported using \usepackage, account for that
@@ -24,7 +25,7 @@ def extract_dependencies(dep: Dependency):
             if match:
                 package_name = match.group(1)
                 package_version = match.group(2)
-                deps_of_dep.add(Dependency(API.CTAN.get_id_from_name(package_name), package_name, package_version, dep.path))
+                deps_of_dep.add(Dependency(CTAN.get_id_from_name(package_name), package_name, package_version, dep.path))
 
             # Extract dependencies of sty-file
             sty.seek(0) # Reset file position due to previous read
@@ -38,7 +39,7 @@ def extract_dependencies(dep: Dependency):
                 if match:
                     package_names = match.group(1).split(',')
                     package_version = match.group(2)
-                    deps_of_files.update([Dependency(API.CTAN.get_id_from_name(name), name, package_version, dep.path) for name in package_names])
+                    deps_of_files.update([Dependency(CTAN.get_id_from_name(name), name, package_version, dep.path) for name in package_names])
 
     
     # Sort out deps whose files were included in the download of current dep
@@ -55,15 +56,16 @@ def download_file(dep: Dependency):
     PACKAGE_DIR = "packages"
 
     # Check if version on CTAN fits
-    pkgInfo = API.CTAN.get_package_info(dep.id)
+    pkgInfo = CTAN.get_package_info(dep.id)
     if "version" not in pkgInfo and dep.version != None:
         raise ValueError(f"{dep.id} has no version on CTAN") #TODO: What to do if CTAN has no version? Just proceed with download, Download from TL, ...?
     
-    ctan_version = pkgInfo["version"]
-    if(not dep.version or ctan_version['date'] == dep.version or ctan_version['number'] == dep.version):
-        folder_path = API.CTAN.download_pkg(pkgInfo, PACKAGE_DIR)
+    ctan_version = Version(pkgInfo["version"])
+    
+    if(dep.version == None or ctan_version == dep.version):
+        folder_path = CTAN.download_pkg(pkgInfo, PACKAGE_DIR)
     else: # CTAN version outdated, need to download from TL-arch instead
-        folder_path = download_from_TL(pkgInfo)
+        folder_path = TexLive.download_pkg(dep, PACKAGE_DIR)
 
     organize_files(folder_path)
     return folder_path
