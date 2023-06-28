@@ -1,0 +1,18 @@
+{
+  "name": "root",
+  "children": [
+    {
+      "id": "amsmath",
+      "dep": {
+        "id": "amsmath",
+        "name": "amsmath",
+        "version": {
+          "date": null,
+          "number": null
+        },
+        "path": null
+      },
+      "already_satisfied": ""
+    }
+  ]
+}

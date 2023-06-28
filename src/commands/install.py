@@ -5,7 +5,6 @@ from src.core.PackageInstaller import PackageInstaller
 from src.models.Dependency import Dependency, DependencyNode
 from anytree import Node, RenderTree, findall, AsciiStyle
 
-from helpers import download_file, extract_dependencies
 
 
 

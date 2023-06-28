@@ -8,4 +8,6 @@ if os.path.exists(packages_folder):
     shutil.rmtree(packages_folder)
 
 
-lpm.install(os.path.join(os.getcwd(), "requirements-lock.json"))
+# lpm.install(os.path.join(os.getcwd(), "requirements-lock.json"))
+
+lpm.install_pkg("acro")

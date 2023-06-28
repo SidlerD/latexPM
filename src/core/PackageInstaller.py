@@ -2,6 +2,7 @@ from src.models.Dependency import Dependency
 
 from src.API import CTAN, TexLive
 from src.models.Version import Version
+from src.exceptions.download.DownloadError import DownloadError
 
 class PackageInstaller:
     @staticmethod
@@ -9,11 +10,18 @@ class PackageInstaller:
         pkgInfo = CTAN.get_package_info(pkg.id)
         
         if(pkg.version == None):
-            CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+            try:
+                folder_path = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+            except DownloadError as e:
+                print(f"{type(e).__name__}: {str(e)}")
+                folder_path = TexLive.download_pkg(pkg, pkgInfo=pkgInfo)
         
         elif "version" in pkgInfo and Version(pkgInfo['version']) == pkg.version:
              # Version to be installed matches version on CTAN
-            CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+            folder_path = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
         else: # Need specific older version => Download from TL
-            TexLive.download_pkg(pkg, pkgInfo=pkgInfo)
+            folder_path = TexLive.download_pkg(pkg, pkgInfo=pkgInfo)
+
+        pkg.path = folder_path
+        return folder_path

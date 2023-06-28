@@ -33,3 +33,9 @@ class DependencyNode(Dependency, NodeMixin):
         if self.already_satisfied:
             return f" ( {self.dep} ): {self.already_satisfied}"
         return str(self.dep)
+    
+
+def serialize_dependency(dep: Dependency):
+    if not isinstance(dep, Dependency):
+        raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable")
+    return {'id': dep.id, 'name': dep.name, 'version': {'date': dep.version.date, 'number': dep.version.number}, 'path': dep.path}
