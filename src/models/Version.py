@@ -13,7 +13,8 @@ class Version:
 
 
     def __eq__(self, other) -> bool:
-        # TODO: Definitely need to test this     
+        # TODO: Definitely need to test this   
+        # TODO: What about case where both have one field the same, and for the other field one has None while the other has something?  
         if other == None and self.date == None and self.number == None:
             return True
         if(type(other) != Version):
@@ -31,13 +32,15 @@ class Version:
         return f"v({self.date}, {self.number})"
     
 def parse_version(version) -> tuple[str, str]:
-    if type(version) == dict and 'date' in version and 'number' in version:
+    if type(version) == dict and 'date' in version and 'number' in version: # CTAN version field
         date = parse(version['date']) if version["date"] else None
         number = version['number'] if version['number'] else None
         return date, number
     if version == "" or version == None:
-        return Version()
+        return None, None
     
+    # string like '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
+    # TODO: Use regex to extract date, number or both out of a string
     raise NotImplementedError("Cant convert string to Version yet")
 
     return date, number

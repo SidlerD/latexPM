@@ -1,0 +1,13 @@
+{
+    "name": "latex thesis",
+    "dependencies": {
+        "one2many": {
+            "date": "",
+            "number": "0.3"
+        },
+        "amsmath": {
+            "date": "",
+            "number": "2.17o"
+        }
+    }
+}

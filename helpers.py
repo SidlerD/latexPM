@@ -3,9 +3,9 @@ import re
 import shutil
 import zipfile
 import requests
-from API import CTAN, TexLive
-from Dependency import Dependency
-from Version import Version
+from src.API import CTAN, TexLive
+from src.models.Dependency import Dependency
+from src.models.Version import Version
 
 
 #TODO: Packages can also be imported using \usepackage, account for that
@@ -75,6 +75,10 @@ def download_and_extract_zip(url, pkg_dir):
     # Extract the filename from the URL
     zip_file_name = os.path.join(pkg_dir, url.split('/')[-1]) 
     
+    # Ensure that package folder exists
+    if not os.path.exists(pkg_dir):
+        os.makedirs(pkg_dir)
+
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     with open(zip_file_name, 'wb') as file:

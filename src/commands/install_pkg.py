@@ -1,12 +1,12 @@
 import json
 import logging
-import API.CTAN
-from Dependency import Dependency, DependencyNode
-from anytree import Node, RenderTree, findall_by_attr, findall, AsciiStyle
+import os
+from src.models.Dependency import Dependency, DependencyNode
+from anytree import Node, RenderTree, findall, AsciiStyle
 
 from helpers import download_file, extract_dependencies
 
-def handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
     filter = lambda node: (
         type(node) == DependencyNode 
@@ -33,7 +33,7 @@ def handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         _, unsatisfied_deps = extract_dependencies(dep)
         for child_dep in unsatisfied_deps:
             try:
-                handle_dep(child_dep, node, root)
+                _handle_dep(child_dep, node, root)
             except (ValueError, NotImplementedError) as e :
                 print(e)
     
@@ -41,26 +41,15 @@ def handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         print(f"Problem while installing {dep.id} {dep.version if dep.version else 'None'}: {str(e)}")
 
 
-def main():
-    rootNode = Node("root")
+def install_pkg(pkg_id: str):
+    """Installs one specific package and all its dependencies\n
+    Returns json to add to requirements-file, describing installed package and dependencies"""
+    #TODO: Figure out how to pass existing dependency tree here, otherwise packages might be installed twice
+    rootNode = get_dependency_tree()
+    
     try:
-        with open("requirements.json", 'r') as file:
-            requirements = json.load(file)
-
-        # Push dependencies from file to stack
-        stack: list[Dependency] = []
-        tmp_deps = requirements["dependencies"]
-        for key in tmp_deps:
-            stack.append(Dependency(key, API.CTAN.get_name_from_id(key), tmp_deps[key]))
-
-
-        for dep in stack:
-            handle_dep(dep, rootNode, rootNode)
-
+        dep = Dependency(pkg_id, API.CTAN.get_name_from_id(pkg_id), version="")
+        _handle_dep(dep, rootNode) 
+        #TODO: Return json to add to requirements-file, describing installed package and dependencies
     except Exception as e:
         logging.exception(e)
-
-    print(RenderTree(rootNode, style=AsciiStyle()))
-    
-if __name__ == "__main__":
-    main()

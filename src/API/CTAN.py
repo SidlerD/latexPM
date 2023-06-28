@@ -1,6 +1,8 @@
+import os
 import requests
 
 from helpers import download_and_extract_zip
+from src.models.Dependency import Dependency
 
 _ctan_url = "https://www.ctan.org/"
     
@@ -24,7 +26,10 @@ def get_package_info(id: str):
         raise RuntimeError("CTAN has no information about package with id " + id)
     return pkgInfo
 
-def download_pkg(pkgInfo, pkg_dir):
+def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages"):
+    if not pkgInfo:
+        pkgInfo = get_package_info(dep.id)
+        
     # Extract download path
     if "install" in pkgInfo:
         path = pkgInfo['install']
@@ -34,8 +39,10 @@ def download_pkg(pkgInfo, pkg_dir):
         path = pkgInfo['ctan']['path']
         url = f"https://mirror.ctan.org/tex-archive/{path}.zip"
     else:
-        raise Exception(f"{pkgInfo['id']} cannot be downloaded from CTAN")
-
+        if "id" in pkgInfo:
+            raise Exception(f"{pkgInfo['id']} cannot be downloaded from CTAN")
+        raise Exception("Error while downloading a package")
+    print(f"CTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, pkg_dir)
 
     return folder_path

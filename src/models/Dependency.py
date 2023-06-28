@@ -1,9 +1,9 @@
 from anytree import NodeMixin
 
-from Version import Version
+from src.models.Version import Version
 
 class Dependency:
-    def __init__(self, id, name, version, path = ""):
+    def __init__(self, id: str, name: str, version: str | dict | None, path = ""):
         self.id = id
         self.name = name
         self.version: Version = Version(version)

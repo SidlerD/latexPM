@@ -1,0 +1,2 @@
+class LpmException(Exception):
+    pass

@@ -1,4 +1,11 @@
-from helpers import organize_files
+from src.core.lpm import lpm
+import os
+import shutil
+
+# Clean previous run
+packages_folder = r"C:\Users\Domin\Documents\UZH_Docs\BA\code\Prototype\packages"
+if os.path.exists(packages_folder):
+    shutil.rmtree(packages_folder)
 
 
-organize_files(r"C:\Users\Domin\Documents\UZH_Docs\BA\code\Prototype\packages\acro")
+lpm.install(os.path.join(os.getcwd(), "requirements-lock.json"))
