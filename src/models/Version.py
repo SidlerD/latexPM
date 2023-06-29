@@ -1,3 +1,4 @@
+import re
 from dateutil.parser import parse
 
 class Version:
@@ -13,7 +14,6 @@ class Version:
 
 
     def __eq__(self, other) -> bool:
-        # TODO: Definitely need to test this   
         # TODO: What about case where both have one field the same, and for the other field one has None while the other has something?  
         if other == None and self.date == None and self.number == None:
             return True
@@ -41,6 +41,20 @@ def parse_version(version) -> tuple[str, str]:
     
     # string like '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
     # TODO: Use regex to extract date, number or both out of a string
-    raise NotImplementedError("Cant convert string to Version yet")
+    # raise NotImplementedError("Cant convert string to Version yet")
+    if(type(version) == str):
+        # Try to extract date from string
+        # TODO: Check if dates are sometimes present with dot-notation. If so, figure out way to catch them without catching version like v12.10.21
+        date_pattern = r"\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}"
+        date_match = re.search(date_pattern, version)
+        date = date_match.group() if date_match else None
 
-    return date, number
+        #FIXME: Doesn't capture version like 1 or 5. How to do that without capturing the numbers of date?
+        # Assumes version number is followed by a space
+        number_pattern = r"\d*\.\d*(\.\d+)?-?([a-z]+(?=\s))?"
+        number_match = re.search(number_pattern, version)
+        number = number_match.group() if number_match else None
+
+        return parse(date), number
+    
+    raise TypeError(f"Cannot parse {type(version)} {version}")

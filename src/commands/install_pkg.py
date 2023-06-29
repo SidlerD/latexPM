@@ -51,7 +51,6 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
 def install_pkg(pkg_id: str):
     """Installs one specific package and all its dependencies\n
     Returns json to add to requirements-file, describing installed package and dependencies"""
-    #TODO: Figure out how to pass existing dependency tree here, otherwise packages might be installed twice
     
     try:
         rootNode = LockFile.read_file_as_tree()
