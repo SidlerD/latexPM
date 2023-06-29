@@ -1,5 +1,5 @@
 import unittest
-from src.models.Version import parse_version
+from src.models.Version import parse_version, Version
 from dateutil.parser import parse
 
 
@@ -53,3 +53,51 @@ class Test_Version(unittest.TestCase):
     # TODO: Add more tests for exctracting Version from str
 
     # TODO: Add tests for __eq__ 
+
+    # FIXME: How do i test this better?
+    def test_Version_equality(self):
+        num_11 = num_12 = "2.32a"
+        num_2 = "2.3"
+        num_n = None
+        num_n2 = ""
+
+        date_11 = date_12 = "2012-09-30"
+        date_2 = "2013-09-30"
+        date_n = None
+        date_n2 = ""
+
+        v1_1 = Version(build_dict(date_11, num_11))
+        v1_2 = Version(build_dict(date_12, num_12))
+
+        v2 = Version(build_dict(date_2, num_2))
+        v2_n = Version(build_dict(date_2, num_n))
+        vn_2 = Version(build_dict(date_n, num_2))
+        
+        vn = Version(build_dict(date_n, num_n))
+        vn2 = Version(build_dict(date_n2, num_n2))
+
+        self.assertEqual(v1_1, v1_2)
+        self.assertEqual(v1_2, v1_1)
+        self.assertEqual(v1_1, v1_1)
+        self.assertEqual(v1_2, v1_2)
+
+        self.assertEqual(v2, v2_n)
+        self.assertEqual(v2_n, v2)
+        self.assertEqual(v2, vn_2)
+        self.assertEqual(vn_2, v2)
+
+        # TODO: What about this case: (some_date, None) == (None, some_number)?
+        self.assertEqual(v2_n, vn_2)
+        self.assertEqual(vn_2 ,v2_n)
+
+        # TODO: What about (somedate, some_number) == (None, None) or (somedate, None) == (None, None)
+        self.assertNotEqual(v1_1, vn)
+        self.assertNotEqual(v2_n, vn)
+        self.assertNotEqual(vn_2, vn)
+
+        self.assertEqual(vn, vn2)
+        self.assertEqual(vn2, vn)
+
+
+def build_dict(date: str, number: str):
+    return {'date': date, 'number': number}
