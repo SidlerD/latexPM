@@ -3,7 +3,8 @@ import os
 import shutil
 
 # Clean previous run
-packages_folder = r"C:\Users\Domin\Documents\UZH_Docs\BA\code\Prototype\packages"
+packages_folder = os.path.join(os.getcwd(), "/packages")
+
 if os.path.exists(packages_folder):
     shutil.rmtree(packages_folder)
 
