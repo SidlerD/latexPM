@@ -6,7 +6,7 @@ from src.API import CTAN
 from src.models.Version import Version
 
 from anytree.exporter import JsonExporter
-from anytree import Node
+from anytree import Node, findall
 
 class LockFile:
     @staticmethod
@@ -54,6 +54,20 @@ class LockFile:
     @staticmethod
     def add_root_pkg(installed: dict):
         pass
+
+    @staticmethod
+    def is_in_tree(dep: Dependency, root: DependencyNode):
+        # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
+        filter = lambda node: (
+            type(node) == DependencyNode 
+            and (
+                node.dep == dep or # Is  the same dependency
+                (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
+            )
+        )
+        prev_occurences = findall(root, filter_= filter)
+        
+        return True if prev_occurences else False
 
 
 def construct_tree(data, parent=None):

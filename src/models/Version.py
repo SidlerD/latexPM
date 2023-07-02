@@ -40,10 +40,7 @@ def parse_version(version) -> tuple[datetime, str]:
     if version == "" or version == None:
         return None, None
     
-    # string like '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
-    # TODO: Use regex to extract date, number or both out of a string
-    # raise NotImplementedError("Cant convert string to Version yet")
-    if(type(version) == str):
+    if(type(version) == str): # e.g. '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
         # Try to extract date from string
         # TODO: Check if dates are sometimes present with dot-notation. If so, figure out way to catch them without catching version like v12.10.21
         date_pattern = r"\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}"

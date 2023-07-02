@@ -47,9 +47,4 @@ def extract_dependencies(dep: Dependency):
     # Could check for assumption, but it seems versions in \RequirePackage are sometimes outdated and not up-to-date
     cleaned_deps_of_files = [d for d in deps_of_files if all([d.id != o.id for o in deps_of_dep])]
 
-    # print(f"Dependency {dep.id} included {len(deps_of_dep)} deps {deps_of_dep} as files and has {len(cleaned_deps_of_files)} {cleaned_deps_of_files} as dependencies")
     return list(deps_of_dep), cleaned_deps_of_files
-
-
-def download_from_TL(pkgInfo):
-    raise NotImplementedError("Downloads from TL not supported yet")

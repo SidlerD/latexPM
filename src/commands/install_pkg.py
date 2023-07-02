@@ -6,28 +6,13 @@ from src.core.PackageInstaller import PackageInstaller
 from src.models.Dependency import Dependency, DependencyNode
 from src.API import CTAN
 from src.core.LockFile import LockFile
-from helpers import extract_dependencies
+from src.helpers.DependenciesHelpers import extract_dependencies
 
 from anytree import Node, RenderTree, findall, AsciiStyle
 
 
 def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
-    # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
-    filter = lambda node: (
-        type(node) == DependencyNode 
-        and (
-            node.dep == dep or # Is  the same dependency
-            (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
-        )
-    )
-    prev_occurences = findall(root, filter_= filter)
-    if prev_occurences:
-        # TODO: If the current dep needs version None, and package is already installed in some version, it shouldn't be installed again
-        # Dependency already satisfied, don't go further down
-        # if(len(prev_occurences) != 1):
-        #     raise RuntimeWarning(f"There are {len(prev_occurences)} versions of {dep.id} installed!!")
-        prev_version = prev_occurences[0].dep.version
-        # node = DependencyNode(dep, parent=parent, already_satisfied=str(prev_version))
+    if LockFile.is_in_tree(dep, root):
         return
     
     try:
@@ -60,6 +45,8 @@ def install_pkg(pkg_id: str):
 
         LockFile.write_tree_to_file(rootNode)
     except Exception as e:
+        # FIXME: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all
         logging.exception(e)
+        print(f"Installing package {pkg_id} failed at dependency {dep}")
         print(RenderTree(rootNode, style=AsciiStyle()))
         
