@@ -11,4 +11,5 @@ if os.path.exists(packages_folder):
 
 # lpm.install(os.path.join(os.getcwd(), "requirements-lock.json"))
 
-lpm.install_pkg("amsmath")
+lpm_inst = lpm()
+lpm_inst.install_pkg("amsmath")

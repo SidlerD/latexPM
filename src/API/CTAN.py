@@ -1,10 +1,13 @@
 import os
 import requests
+import logging
 
 from src.models.Dependency import Dependency
 from src.helpers.DownloadHelpers import download_and_extract_zip
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+
 _ctan_url = "https://www.ctan.org/"
+logger = logging.getLogger("default") # FIXME: Is this good??
     
 def get_id_from_name(name: str) -> str:
     res = requests.get(f"{_ctan_url}search/json?phrase={name}").json()
@@ -27,6 +30,7 @@ def get_package_info(id: str):
     return pkgInfo
 
 def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> str:
+    logger.info(f"Downloading {dep.id} from CTAN")
     if not pkgInfo:
         pkgInfo = get_package_info(dep.id)
         
@@ -42,7 +46,8 @@ def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> str:
         if "id" in pkgInfo:
             raise CtanPackageNotFoundError(f"{pkgInfo['id']} cannot be downloaded from CTAN")
         raise CtanPackageNotFoundError(f"Couldn't find package {dep.id} on CTAN")
-    print(f"CTAN: Installing {dep} from {url}")
+    
+    logger.info(f"CTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, pkg_dir)
 
     return folder_path

@@ -3,6 +3,9 @@ from src.models.Dependency import Dependency
 from src.API import CTAN, TexLive
 from src.models.Version import Version
 from src.exceptions.download.DownloadError import DownloadError
+import logging
+
+logger = logging.getLogger("default")
 
 class PackageInstaller:
     @staticmethod
@@ -13,7 +16,7 @@ class PackageInstaller:
             try:
                 folder_path = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
             except DownloadError as e:
-                print(f"{type(e).__name__}: {str(e)}")
+                logger.info(f"{pkg.id} is not available on CTAN")
                 folder_path = TexLive.download_pkg(pkg, pkgInfo=pkgInfo)
         
         elif "version" in pkgInfo and Version(pkgInfo['version']) == pkg.version:

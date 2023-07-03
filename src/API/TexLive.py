@@ -3,15 +3,18 @@ from src.models.Dependency import Dependency
 from src.models.Version import Version
 from src.helpers.DownloadHelpers import download_and_extract_zip
 from src.exceptions.download.DownloadError import DownloadError
+import logging
 
 _base_url = "https://texlive.info/tlnet-archive/"
+logger = logging.getLogger("default") # FIXME: Is this good??
 
 def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir="packages") -> str:
+    logger.info(f"Downloading {dep.id} from CTAN")
     version = dep.version
     
     url = _get_url_for_version(version)
 
-    print(f"TL: Installing {dep} from {url}")
+    logger.info(f"TL: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, pkg_dir)
     
     return folder_path 

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import logging
 from src.core.PackageInstaller import PackageInstaller
 
 from src.models.Dependency import Dependency, DependencyNode
@@ -10,6 +11,7 @@ from src.helpers.DependenciesHelpers import extract_dependencies
 
 from anytree import Node, RenderTree, findall, AsciiStyle
 
+logger = logging.getLogger("default")
 
 def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     if LockFile.is_in_tree(dep, root):
@@ -22,7 +24,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         node = DependencyNode(dep, parent=parent)
 
         # Extract dependencies of package, download those recursively
-        _, unsatisfied_deps = extract_dependencies(dep) 
+        unsatisfied_deps = extract_dependencies(dep) 
         for child_dep in unsatisfied_deps:
             try:
                 _handle_dep(child_dep, node, root)
@@ -30,7 +32,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
                 print(e)
     
     except (ValueError, NotImplementedError) as e :
-        print(f"Problem while installing {dep.id} {dep.version if dep.version else 'None'}: {str(e)}")
+        logging.error(f"Problem while installing {dep.id} {dep.version if dep.version else 'None'}: {str(e)}")
         print(RenderTree(root, style=AsciiStyle()))
 
 def install_pkg(pkg_id: str):
@@ -46,7 +48,6 @@ def install_pkg(pkg_id: str):
         LockFile.write_tree_to_file(rootNode)
     except Exception as e:
         # TODO: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all
-        logging.exception(e)
-        print(f"Installing package {pkg_id} failed at dependency {dep}")
+        logger.error(f"Couldn't install package {pkg_id}")
         print(RenderTree(rootNode, style=AsciiStyle()))
         
