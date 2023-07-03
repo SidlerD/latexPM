@@ -22,7 +22,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         node = DependencyNode(dep, parent=parent)
 
         # Extract dependencies of package, download those recursively
-        _, unsatisfied_deps = extract_dependencies(dep) #TODO: Move to separate class
+        _, unsatisfied_deps = extract_dependencies(dep) 
         for child_dep in unsatisfied_deps:
             try:
                 _handle_dep(child_dep, node, root)
@@ -45,7 +45,7 @@ def install_pkg(pkg_id: str):
 
         LockFile.write_tree_to_file(rootNode)
     except Exception as e:
-        # FIXME: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all
+        # TODO: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all
         logging.exception(e)
         print(f"Installing package {pkg_id} failed at dependency {dep}")
         print(RenderTree(rootNode, style=AsciiStyle()))

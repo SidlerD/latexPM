@@ -20,6 +20,9 @@ def install(file_path: str):
         for pkg in to_install:
             PackageInstaller.install_specific_package(pkg)
 
+        # TODO: Do I write to LockFile here? I think yes because installed packages have changed
+
     except Exception as e:
         logging.exception(e)
+        # TODO: Do I remove all the installed packages here?
 

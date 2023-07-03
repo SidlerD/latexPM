@@ -2,10 +2,10 @@
   "name": "root",
   "children": [
     {
-      "id": "amsmath",
+      "id": "acro",
       "dep": {
-        "id": "amsmath",
-        "name": "amsmath",
+        "id": "acro",
+        "name": "acro",
         "version": {
           "date": null,
           "number": null
