@@ -9,6 +9,8 @@ from src.models.Version import Version
 from anytree.exporter import JsonExporter
 from anytree import Node, findall
 
+logger = logging.getLogger("default")
+
 class LockFile:
     @staticmethod
     def get_packages_from_file(file_path: str) -> list[Dependency]:
@@ -61,7 +63,7 @@ class LockFile:
         pass
 
     @staticmethod
-    def is_in_tree(dep: Dependency, root: DependencyNode):
+    def is_in_tree(dep: Dependency, root: DependencyNode) -> Node:
         # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
         filter = lambda node: (
             type(node) == DependencyNode 
@@ -71,8 +73,10 @@ class LockFile:
             )
         )
         prev_occurences = findall(root, filter_= filter)
-        
-        return True if prev_occurences else False
+        if(len(prev_occurences) > 1):
+            logger.warning(f"{dep} is in tree {len(prev_occurences)} times")
+
+        return prev_occurences[0] if prev_occurences else None
 
 
 def construct_tree(data, parent=None):

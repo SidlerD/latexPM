@@ -20,22 +20,26 @@ class Dependency:
     
 
 class DependencyNode(Dependency, NodeMixin):
-    def __init__(self, dep: Dependency, parent=None, children=None, already_satisfied=""):
+    def __init__(self, dep: Dependency, parent=None, children=None, dependents: list[Dependency] = []):
         super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep
         self.parent = parent
         if children:
             self.children = children
-        self.already_satisfied = already_satisfied
+        self.dependents = dependents
 
     def __repr__(self):
-        if self.already_satisfied:
-            return f" ( {self.dep} ): {self.already_satisfied}"
+        if self.dependents:
+            return f" ( {self.dep} ): {self.dependents}"
         return str(self.dep)
     
 
 def serialize_dependency(dep: Dependency):
     if not isinstance(dep, Dependency):
         raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable")
-    return {'id': dep.id, 'name': dep.name, 'version': {'date': dep.version.date, 'number': dep.version.number}, 'path': dep.path}
+    return {
+        'id': dep.id,
+        'name': dep.name, 
+        'version': {'date': dep.version.date, 'number': dep.version.number},
+        'path': dep.path}

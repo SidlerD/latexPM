@@ -14,7 +14,10 @@ from anytree import Node, RenderTree, findall, AsciiStyle
 logger = logging.getLogger("default")
 
 def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
-    if LockFile.is_in_tree(dep, root):
+    existing_node = LockFile.is_in_tree(dep, root)
+    if existing_node:
+        logger.info(f"{dep} depends on {existing_node.dep}, which is already installed by {existing_node.parent.dep if hasattr(existing_node.parent, 'dep') else existing_node.parent.id}. Skipping install.")
+        existing_node.dependents.append(parent.dep) # Not sure if adding parent or parent.dep is smarter here
         return
     
     try:
@@ -41,6 +44,9 @@ def install_pkg(pkg_id: str):
     
     try:
         rootNode = LockFile.read_file_as_tree()
+        exists = LockFile.is_in_tree(Dependency(pkg_id, CTAN.get_name_from_id(pkg_id)), rootNode)
+        if exists:
+            logger.warning(f"{pkg_id} is already installed installed at {exists.path}. Skipping install")
 
         dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id), version="")
         _handle_dep(dep, rootNode, rootNode) 
