@@ -1,13 +1,33 @@
 {
-    "name": "latex thesis",
-    "dependencies": {
-        "one2many": {
-            "date": "",
-            "number": "0.3"
+  "name": "root",
+  "children": [
+    {
+      "id": "amsmath",
+      "dep": {
+        "id": "amsmath",
+        "name": "amsmath",
+        "version": {
+          "date": null,
+          "number": null
         },
-        "amsmath": {
-            "date": "",
-            "number": "2.17o"
+        "path": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\packages\\latex-amsmath"
+      },
+      "dependents": [],
+      "children": [
+        {
+          "id": "bibleref",
+          "dep": {
+            "id": "bibleref",
+            "name": "amsgen",
+            "version": {
+              "date": null,
+              "number": null
+            },
+            "path": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\packages\\bibleref"
+          },
+          "dependents": []
         }
+      ]
     }
+  ]
 }

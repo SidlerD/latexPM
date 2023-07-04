@@ -10,11 +10,11 @@ from anytree.exporter import JsonExporter
 from anytree import Node, findall
 
 logger = logging.getLogger("default")
+lock_file_name = "requirements-lock.json"
 
 class LockFile:
     @staticmethod
     def get_packages_from_file(file_path: str) -> list[Dependency]:
-        logger = logging.getLogger("default")
         logger.info(f"Reading dependencies from {os.path.basename(file_path)}")
 
         with open(file_path, "r") as f:
@@ -33,7 +33,7 @@ class LockFile:
         logger = logging.getLogger("default")
         logger.info("Writing dependency tree to lock-file")
 
-        file_path = "test-lock.json"
+        file_path = lock_file_name
         exporter = JsonExporter(indent=2, default=serialize_dependency)
         data = exporter.export(root_node)
         with open(file_path, "w") as f:
@@ -42,26 +42,30 @@ class LockFile:
 
     @staticmethod
     def read_file_as_tree() -> Node:
-        logger = logging.getLogger("default")
         logger.info("Reading dependency tree from lock-file")
         
-        file_path = "test-lock.json"
+        file_path = lock_file_name
         # Cannot use anytree.Importer here because I need the tree-nodes to be my custom NodeMixin type
+        
+        # IF file is empty, create new tree
+        if os.path.exists(file_path) and os.stat(file_path).st_size == 0:
+            logger.debug(f"Created new tree because {file_path} is empty")
+            return Node('root')
         
         # Read the JSON file
         with open(file_path, "r") as file:
             json_data = json.load(file)
+        logger.debug(f"{file_path} read successfully")
 
         # Construct the tree
         root = Node('root')
-        for child_data in json_data["children"]:
-            construct_tree(child_data, parent=root)
+        if 'children' in json_data:
+            for child_data in json_data["children"]:
+                construct_tree(child_data, parent=root)
+
+        logger.debug(f"Tree constructed successfully")
         return root
-
-    @staticmethod
-    def add_root_pkg(installed: dict):
-        pass
-
+    
     @staticmethod
     def is_in_tree(dep: Dependency, root: DependencyNode) -> Node:
         # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep

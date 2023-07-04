@@ -15,7 +15,6 @@ class lpm:
         """Install a specific package without a version"""
         self._logger.info(f"Installing package {pkg_id}")
         install_pkg(pkg_id)
-        self._logger.info(f"Installed {pkg_id} and its dependencies")
 
     def install(self, file_path: str):
         """Install all packages as specified in lock-file"""

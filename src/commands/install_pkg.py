@@ -42,18 +42,24 @@ def install_pkg(pkg_id: str):
     """Installs one specific package and all its dependencies\n
     Returns json to add to requirements-file, describing installed package and dependencies"""
     
+    rootNode = None
     try:
+        dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id), version="")
         rootNode = LockFile.read_file_as_tree()
-        exists = LockFile.is_in_tree(Dependency(pkg_id, CTAN.get_name_from_id(pkg_id)), rootNode)
+    
+        exists = LockFile.is_in_tree(dep, rootNode)
         if exists:
             logger.warning(f"{pkg_id} is already installed installed at {exists.path}. Skipping install")
 
-        dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id), version="")
         _handle_dep(dep, rootNode, rootNode) 
 
         LockFile.write_tree_to_file(rootNode)
+        logger.info(f"Installed {pkg_id} and its dependencies")
+
     except Exception as e:
         # TODO: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all
-        logger.error(f"Couldn't install package {pkg_id}")
-        print(RenderTree(rootNode, style=AsciiStyle()))
+        logger.error(f"Couldn't install package {pkg_id}: {str(e)}")
+        logging.exception(e)
+        if(rootNode):
+            print(RenderTree(rootNode, style=AsciiStyle()))
         
