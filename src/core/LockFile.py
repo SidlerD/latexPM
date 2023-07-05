@@ -12,7 +12,12 @@ from anytree import Node, findall
 logger = logging.getLogger("default")
 lock_file_name = "requirements-lock.json"
 
+# TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
+# TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
 class LockFile:
+    @staticmethod
+    def get_name(): 
+        return lock_file_name
     @staticmethod
     def get_packages_from_file(file_path: str) -> list[Dependency]:
         logger.info(f"Reading dependencies from {os.path.basename(file_path)}")

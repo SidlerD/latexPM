@@ -2,9 +2,10 @@ import os
 import requests
 import logging
 
-from src.models.Dependency import Dependency
+from src.models.Dependency import Dependency, DownloadedDependency
 from src.helpers.DownloadHelpers import download_and_extract_zip
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.models.Version import Version
 
 _ctan_url = "https://www.ctan.org/"
 logger = logging.getLogger("default") # FIXME: Is this good??
@@ -29,7 +30,13 @@ def get_package_info(id: str):
         raise RuntimeError("CTAN has no information about package with id " + id)
     return pkgInfo
 
-def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> str:
+def get_version(id: str) -> Version:
+    pkgInfo = get_package_info(id)
+    if 'version' in pkgInfo:
+        return Version(pkgInfo['version'])
+    raise CtanPackageNotFoundError(f"{id} has no version on CTAN")
+
+def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from CTAN")
     if not pkgInfo:
         pkgInfo = get_package_info(dep.id)
@@ -50,5 +57,4 @@ def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> str:
     logger.info(f"CTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, pkg_dir)
 
-    # TODO: Critical: Return DOwnloadedDependency
-    return folder_path
+    return DownloadedDependency(dep, folder_path, url)

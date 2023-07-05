@@ -1,4 +1,4 @@
-from src.models.Dependency import Dependency
+from src.models.Dependency import Dependency, DownloadedDependency
 
 from src.models.Version import Version
 from src.helpers.DownloadHelpers import download_and_extract_zip
@@ -8,7 +8,7 @@ import logging
 _base_url = "https://texlive.info/tlnet-archive/"
 logger = logging.getLogger("default") # FIXME: Is this good??
 
-def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir="packages") -> str:
+def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir="packages") -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from CTAN")
     version = dep.version
     
@@ -18,7 +18,7 @@ def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir="packages") -> str:
     folder_path = download_and_extract_zip(url, pkg_dir)
     
     # TODO: Critical: Return DOwnloadedDependency
-    return folder_path 
+    return DownloadedDependency(dep, folder_path, url) 
 
 
 
