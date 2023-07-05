@@ -17,6 +17,7 @@ def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir="packages") -> str:
     logger.info(f"TL: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, pkg_dir)
     
+    # TODO: Critical: Return DOwnloadedDependency
     return folder_path 
 
 

@@ -55,4 +55,5 @@ def extract_dependencies(dep: Dependency):
                         logger.debug(f"Adding {name} as dependency of {dep.id}")
                         deps_of_files.add(Dependency(CTAN.get_id_from_name(name), name, package_version, dep.path))
 
+    logger.debug(f"{dep} has {len(deps_of_files)} dependencies")
     return list(deps_of_files)

@@ -22,12 +22,11 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     
     try:
         # Download package
-        folder_path = PackageInstaller.install_specific_package(dep)
-        dep.path = folder_path # Points to the folder of all files of the package
-        node = DependencyNode(dep, parent=parent)
+        downloaded_dep = PackageInstaller.install_specific_package(dep)
+        node = DependencyNode(downloaded_dep, parent=parent)
 
         # Extract dependencies of package, download those recursively
-        unsatisfied_deps = extract_dependencies(dep) 
+        unsatisfied_deps = extract_dependencies(downloaded_dep) 
         for child_dep in unsatisfied_deps:
             try:
                 _handle_dep(child_dep, node, root)

@@ -3,11 +3,10 @@ from anytree import NodeMixin
 from src.models.Version import Version
 
 class Dependency:
-    def __init__(self, id: str, name: str, version: str | dict | None, path = ""):
+    def __init__(self, id: str, name: str, version: str | dict | None):
         self.id = id
         self.name = name
         self.version: Version = Version(version)
-        self.path = path
 
     def __eq__(self, other):
         return self.id == other.id and self.version == other.version
@@ -18,6 +17,11 @@ class Dependency:
     def __repr__(self):
         return f"{self.name}: {self.version}"
     
+class DownloadedDependency(Dependency):
+    def __init__(self, dep: Dependency, folder_path: str, download_url: str) -> None:
+        super().__init__(dep.id, dep.name, dep.version)
+        self.path = folder_path
+        self.url = download_url
 
 class DependencyNode(Dependency, NodeMixin):
     def __init__(self, dep: Dependency, parent=None, children=None, dependents: list[Dependency] = []):
@@ -35,11 +39,20 @@ class DependencyNode(Dependency, NodeMixin):
         return str(self.dep)
     
 
-def serialize_dependency(dep: Dependency):
+def serialize_dependency(dep: Dependency | DownloadedDependency):
     if not isinstance(dep, Dependency):
         raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable")
-    return {
-        'id': dep.id,
-        'name': dep.name, 
-        'version': {'date': dep.version.date, 'number': dep.version.number},
-        'path': dep.path}
+    if type(dep) is DownloadedDependency:
+        return {
+            'id': dep.id,
+            'name': dep.name, 
+            'version': {'date': dep.version.date, 'number': dep.version.number},
+            'path': dep.path,
+            'url': dep.url
+        }
+    if type(dep) is Dependency:
+        return {
+            'id': dep.id,
+            'name': dep.name, 
+            'version': {'date': dep.version.date, 'number': dep.version.number},
+        }
