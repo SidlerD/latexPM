@@ -85,7 +85,7 @@ class LockFile:
 
 def construct_tree(data, parent=None):
     dep_info = data['dep']
-    dep = Dependency(dep_info["id"], dep_info["name"], Version(dep_info["version"]), dep_info["path"])
+    dep = Dependency(dep_info["id"], dep_info["name"], Version(dep_info["version"]))
     node = DependencyNode(dep, parent=parent)
     if "children" in data:
         for child_data in data["children"]:

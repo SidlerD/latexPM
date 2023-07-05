@@ -1,17 +1,14 @@
 import unittest
 from unittest.mock import patch
-# from src.models.Dependency import Dependency
-from src.models.Dependency import Dependency
+from src.models.Dependency import Dependency, DownloadedDependency
 from src.core.lpm import lpm
-print(Dependency)
-
 
 
 class InstallPkgTest(unittest.TestCase):
 
-    @patch("src.commands.install_pkg.extract_dependencies")
-    @patch("src.commands.install_pkg.PackageInstaller.install_specific_package")
     @patch("src.commands.install_pkg.CTAN.get_name_from_id")
+    @patch("src.commands.install_pkg.PackageInstaller.install_specific_package")
+    @patch("src.commands.install_pkg.extract_dependencies")
     def test_circular_dependencies_warns(self, extract_dependencies_mock, install_spec_pkg_mock, CTAN_mock):
         def side_effect_extract_dependencies(dep: Dependency):
             print(dep)
@@ -19,9 +16,9 @@ class InstallPkgTest(unittest.TestCase):
                 return [Dependency('B', "")]
             if(dep.id == 'B'):
                 return [Dependency('A', "")]
-
+            
         extract_dependencies_mock.side_effect = side_effect_extract_dependencies
-        install_spec_pkg_mock.return_value = ""
+        install_spec_pkg_mock.side_effect = lambda dep: DownloadedDependency(dep, "path", "https://download")
         CTAN_mock.return_value = ""
 
         with self.assertLogs('default', level='WARNING') as cm:

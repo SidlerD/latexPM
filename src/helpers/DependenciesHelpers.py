@@ -53,7 +53,7 @@ def extract_dependencies(dep: Dependency):
                             logger.debug(f"{dep.id} depends on {name}, which was included in its download")
                             continue
                         logger.debug(f"Adding {name} as dependency of {dep.id}")
-                        deps_of_files.add(Dependency(CTAN.get_id_from_name(name), name, package_version, dep.path))
+                        deps_of_files.add(Dependency(CTAN.get_id_from_name(name), name, package_version))
 
     logger.debug(f"{dep} has {len(deps_of_files)} dependencies")
     return list(deps_of_files)
