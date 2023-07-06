@@ -5,12 +5,20 @@ import zipfile
 import requests
 import logging
 from src.API import CTAN, TexLive
-from src.models.Dependency import Dependency
+from src.models.Dependency import Dependency, DownloadedDependency
 from src.models.Version import Version
 
+prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
+"""Captures both ProvidesPackage and ProvidesFile. group1 = Pkg_name, group2 = version\n
+    https://regex101.com/r/2iSv1O/1
+"""
 
-#TODO: Packages can also be imported using \usepackage, account for that
-def extract_dependencies(dep: Dependency):
+req_pkg_pattern = r'\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?'
+"""Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
+    https://regex101.com/r/DZFYZH/1
+"""
+
+def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     logger = logging.getLogger("default")
     logger.info("Extracting dependencies of " + dep.id)
 
@@ -23,25 +31,24 @@ def extract_dependencies(dep: Dependency):
     for sty_path in sty_files:
         with open(sty_path, "r") as sty:
             # Dependencies that are already included when downloading package
-            # TODO: Try to also extract names from file name, for sty-files which don't have \ProvidePackage in file
-            # TODO: Also check for ProvidesFile
-            pattern = r'\\ProvidesPackage\{(.*?)\}\[(.*?)\]'
-            match = re.search(pattern, sty.read())
+            match = re.search(prov_pkg_pattern, sty.read())
             if match:
                 package_name = match.group(1)
                 package_version = match.group(2)
                 included_deps.append(package_name) #TODO: Assumption that I dont document dependencies on included files, else I need to pass the version (not just none)
-
+            else:
+                logger.warning(f"""File {os.path.basename(sty_path)} doesn't have a ProvidesPackage or ProvidesFile. 
+                               This means that if any of {dep.id}'s files depend on it, 
+                               it will be downloaded separately, which could lead to Errors.""")
+                # TODO: Could get name from file name
     # Get dependencies of files
     for sty_path in sty_files:
         with open(sty_path, "r") as sty:
             cont = sty.readlines()
             matchLines = [line for line in cont if "RequirePackage" in line]
 
-            pattern = r'\\RequirePackage\{(.*?)\}(?:\[(.*?)\])?'
-
             for input_string in matchLines:
-                match = re.search(pattern, input_string)
+                match = re.search(req_pkg_pattern, input_string)
                 if match:
                     package_names = match.group(1).split(',')
                     package_version = match.group(2)
