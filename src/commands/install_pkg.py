@@ -45,14 +45,14 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         logging.error(f"Problem while installing {dep.id} {dep.version if dep.version else 'None'}: {str(e)}")
         print(RenderTree(root, style=AsciiStyle()))
 
-def install_pkg(pkg_id: str):
+def install_pkg(pkg_id: str, lock_file: LockFile):
     """Installs one specific package and all its dependencies\n
     Returns json to add to requirements-file, describing installed package and dependencies"""
     
     rootNode = None
     try:
         dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id))
-        rootNode = LockFile.read_file_as_tree()
+        rootNode = lock_file.read_file_as_tree()
     
         exists = LockFile.is_in_tree(dep, rootNode)
         if exists:
@@ -61,7 +61,7 @@ def install_pkg(pkg_id: str):
         
         _handle_dep(dep, rootNode, rootNode) 
 
-        LockFile.write_tree_to_file(rootNode)
+        lock_file.write_tree_to_file(rootNode)
         logger.info(f"Installed {pkg_id} and its dependencies")
 
     except Exception as e:
