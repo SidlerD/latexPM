@@ -3,10 +3,10 @@ from anytree import NodeMixin
 from src.models.Version import Version
 
 class Dependency:
-    def __init__(self, id: str, name: str, version: str | dict | None = None):
+    def __init__(self, id: str, name: str, version: str | dict | Version | None = None):
         self.id = id
         self.name = name
-        self.version = Version(version)
+        self.version = version if isinstance(version, Version) else Version(version)
 
     def __eq__(self, other):
         return self.id == other.id and self.version == other.version

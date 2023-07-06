@@ -10,17 +10,23 @@ from anytree.exporter import JsonExporter
 from anytree import Node, findall
 
 logger = logging.getLogger("default")
-lock_file_name = "requirements-lock.json"
+
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
 # TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
 class LockFile:
-    @staticmethod
-    def get_name(): 
-        return lock_file_name
-    @staticmethod
-    def get_packages_from_file(file_path: str) -> list[Dependency]:
+    def __init__(self, lock_file_name) -> None:
+        self.name = lock_file_name
+
+    def get_name(self): 
+        return self.name
+    
+    def get_packages_from_file(self, file_path: str) -> list[Dependency]:
         logger.info(f"Reading dependencies from {os.path.basename(file_path)}")
+
+        if file_is_empty(self.name):
+            logger.info(f"No Dependencies found in {self.name}")
+            return []
 
         with open(file_path, "r") as f:
             dependency_dict = json.load(f)
@@ -31,36 +37,31 @@ class LockFile:
         for key in deps:
             res.append(Dependency(key, CTAN.get_name_from_id(key), deps[key]))
 
+        logger.info(f"Read {len(res)} dependencies from {self.name}")
         return res
     
-    @staticmethod
-    def write_tree_to_file(root_node: Node):
+    def write_tree_to_file(self, root_node: Node):
         logger = logging.getLogger("default")
         logger.info("Writing dependency tree to lock-file")
 
-        file_path = lock_file_name
         exporter = JsonExporter(indent=2, default=serialize_dependency)
         data = exporter.export(root_node)
-        with open(file_path, "w") as f:
+        with open(self.name, "w") as f:
             f.write(data)
 
 
-    @staticmethod
-    def read_file_as_tree() -> Node:
+    def read_file_as_tree(self) -> Node:
         logger.info("Reading dependency tree from lock-file")
         
-        file_path = lock_file_name
-        # Cannot use anytree.Importer here because I need the tree-nodes to be my custom NodeMixin type
-        
         # IF file is empty, create new tree
-        if os.path.exists(file_path) and os.stat(file_path).st_size == 0:
-            logger.debug(f"Created new tree because {file_path} is empty")
+        if file_is_empty(self.name):
+            logger.debug(f"Created new tree because {self.name} is empty")
             return Node('root')
         
         # Read the JSON file
-        with open(file_path, "r") as file:
+        with open(self.name, "r") as file:
             json_data = json.load(file)
-        logger.debug(f"{file_path} read successfully")
+        logger.debug(f"{self.name} read successfully")
 
         # Construct the tree
         root = Node('root')
@@ -96,3 +97,6 @@ def construct_tree(data, parent=None):
         for child_data in data["children"]:
             construct_tree(child_data, parent=node)
     return node
+
+def file_is_empty(path: str):
+    return os.path.exists(path) and os.stat(path).st_size == 0

@@ -1,3 +1,4 @@
+from src.commands.upgrade_pkg import upgrade_pkg
 from src.helpers.Logger import make_logger
 from src.commands.install import install
 from src.commands.install_pkg import install_pkg
@@ -10,18 +11,18 @@ class lpm:
 
     def __init__(self):
         self._logger = make_logger("default")
+        self._lock_file = LockFile("requirements-lock.json")
         
     def install_pkg(self, pkg_id: str):
         """Install a specific package without a version"""
         self._logger.info(f"Installing package {pkg_id}")
-        install_pkg(pkg_id)
+        install_pkg(pkg_id, self._lock_file)
 
     def install(self, file_path: str):
         """Install all packages as specified in lock-file"""
         # TODO: Do I need to remove all installed packages before installing from LockFile?
         self._logger.info(f"Installing dependencies from lockfile {os.path.basename(file_path)}")
-        install(file_path)
-        self._logger.info(f"Installed all dependencies in lockfile")
+        install(file_path, self._lock_file)
 
     def remove(pkg_id: str):
         """Remove one specific package"""
@@ -35,9 +36,10 @@ class lpm:
                 Move pkg to child position of pkg.dependents[0]"""
         pass
 
-    def upgrade_pkg(pkg_id: str):
+    def upgrade_pkg(self, pkg_id: str):
         """Upgrade one specific package"""
-        pass
+        self._logger.info(f"Updating {pkg_id}")
+        upgrade_pkg(pkg_id, self._lock_file)
 
     def upgrade():
         """Upgrade all packages"""

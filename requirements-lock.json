@@ -10,24 +10,10 @@
           "date": null,
           "number": null
         },
-        "path": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\packages\\latex-amsmath"
+        "path": "c:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\packages\\latex-amsmath",
+        "url": "https://mirror.ctan.org/install/macros/latex/required/latex-amsmath.tds.zip"
       },
-      "dependents": [],
-      "children": [
-        {
-          "id": "bibleref",
-          "dep": {
-            "id": "bibleref",
-            "name": "amsgen",
-            "version": {
-              "date": null,
-              "number": null
-            },
-            "path": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\packages\\bibleref"
-          },
-          "dependents": []
-        }
-      ]
+      "dependents": []
     }
   ]
 }
