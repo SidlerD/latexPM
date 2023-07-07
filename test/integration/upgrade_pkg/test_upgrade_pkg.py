@@ -32,8 +32,6 @@ class UpgradePkgTest(unittest.TestCase):
     @patch("src.commands.upgrade_pkg.LockFile.read_file_as_tree")
     @patch("src.commands.upgrade_pkg.CTAN.get_name_from_id")
     def test_upgrade_warns_if_not_installed(self, get_name_mock, read_as_tree_mock):
-        # dep = Dependency('A', '', "v1.2a")
-
         get_name_mock.return_value = ""
         read_as_tree_mock.return_value = Node('root')
 

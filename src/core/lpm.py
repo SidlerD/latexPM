@@ -13,10 +13,10 @@ class lpm:
         self._logger = make_logger("default")
         self._lock_file = LockFile("requirements-lock.json")
         
-    def install_pkg(self, pkg_id: str):
-        """Install a specific package without a version"""
-        self._logger.info(f"Installing package {pkg_id}")
-        install_pkg(pkg_id, self._lock_file)
+    def install_pkg(self, pkg_id: str, version: str = ""):
+        """Install a specific package"""
+        self._logger.info(f"Installing package {pkg_id} {version}")
+        install_pkg(pkg_id, self._lock_file, version=version)
 
     def install(self, file_path: str):
         """Install all packages as specified in lock-file"""
@@ -41,10 +41,14 @@ class lpm:
         self._logger.info(f"Updating {pkg_id}")
         upgrade_pkg(pkg_id, self._lock_file)
 
-    def upgrade():
+    def upgrade(self):
         """Upgrade all packages"""
         pass
 
-    def freeze():
+    def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""
+        pass
+
+    def init(self):
+        """Create a new project: Creates new Docker in which packages will live"""
         pass

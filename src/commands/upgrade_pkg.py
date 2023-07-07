@@ -22,7 +22,7 @@ def _handle_dep(dep: Dependency, root: Node):
     # Get Dependencies of old version from LockFile (i.e direct children of its node)
     dep_old = LockFile.is_in_tree(dep, root)
     if not dep_old: # TODO: Try to find manually by searching packages folder here
-        raise Exception(f"Cannot update {dep}: Is not in Lock-File")
+        raise Exception(f"Cannot upgrade {dep}: Is not in Lock-File")
     deps_of_old = [node.dep for node in dep_old.children if hasattr(node, "dep")]
     
     # Get Dependencies of new version of package

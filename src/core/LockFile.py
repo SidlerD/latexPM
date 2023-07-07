@@ -15,7 +15,7 @@ logger = logging.getLogger("default")
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
 # TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
 class LockFile:
-    def __init__(self, lock_file_name) -> None:
+    def __init__(self, lock_file_name = 'requirements-lock.json') -> None:
         self.name = lock_file_name
 
     def get_name(self): 
