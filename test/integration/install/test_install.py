@@ -31,9 +31,9 @@ class InstallAllTest(unittest.TestCase):
         install_spec_pkg_mock.assert_has_calls([call(dep_ams)])
 
 
-    @patch("src.commands.install.LockFile.get_packages_from_file") 
-    @patch("src.commands.install.LockFile.write_tree_to_file") 
-    @patch("src.helpers.DownloadHelpers.config.get_package_dir") 
+    @patch("src.commands.install.LockFile.get_packages_from_file")
+    @patch("src.commands.install.LockFile.write_tree_to_file")
+    @patch("src.helpers.DownloadHelpers.config.get_package_dir")
     def test_install_creates_folder_and_downloads_files(self, get_pkg_dir, LF_write, LF_get_packages):
         dep_ams = Dependency("amsmath", "amsmath")
 
@@ -44,7 +44,7 @@ class InstallAllTest(unittest.TestCase):
             get_pkg_dir.return_value = tempdir
 
             self.assertEqual(0, len(os.listdir(tempdir))) # Dir empty at beginning
-            
+
             lpm_inst = lpm()
             lpm_inst.install()
 
