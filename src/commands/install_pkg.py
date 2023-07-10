@@ -18,10 +18,10 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
 
     if existing_node:
         existing_par = existing_node.parent
-        if type(existing_par) is DependencyNode:
+        if type(existing_par) == DependencyNode:
             logger.info(f"""{parent} depends on {dep}, which is already installed by {existing_par.dep}. Skipping install.""")
             existing_node.dependents.append(parent.dep) # Not sure if adding parent or parent.dep is smarter here
-        elif type(existing_par) is Node and existing_par.name == "root":
+        elif type(existing_par) == Node and existing_par.name == "root":
             logger.info(f"""{parent} depends on {dep}, which is already installed as requested by the user. Skipping install.""")
             #TODO: When existing_par is removed, parent needs to install dep
 

@@ -35,7 +35,7 @@ def get_version(id: str) -> Version:
         return Version(pkgInfo['version'])
     raise CtanPackageNotFoundError(f"{id} has no version on CTAN")
 
-def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from CTAN")
     if not pkgInfo:
         pkgInfo = get_package_info(dep.id)
@@ -54,6 +54,6 @@ def download_pkg(dep: Dependency, pkgInfo=None, pkg_dir = "packages") -> Downloa
         raise CtanPackageNotFoundError(f"Couldn't find package {dep.id} on CTAN")
     
     logger.info(f"CTAN: Installing {dep} from {url}")
-    folder_path = download_and_extract_zip(url, pkg_dir)
+    folder_path = download_and_extract_zip(url)
 
     return DownloadedDependency(dep, folder_path, url)

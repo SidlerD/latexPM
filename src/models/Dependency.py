@@ -42,7 +42,7 @@ class DependencyNode(Dependency, NodeMixin):
 def serialize_dependency(dep: Dependency | DownloadedDependency):
     if not isinstance(dep, Dependency):
         raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable")
-    if type(dep) is DownloadedDependency:
+    if type(dep) == DownloadedDependency:
         return {
             'id': dep.id,
             'name': dep.name, 
@@ -50,7 +50,7 @@ def serialize_dependency(dep: Dependency | DownloadedDependency):
             'path': dep.path,
             'url': dep.url
         }
-    if type(dep) is Dependency:
+    if type(dep) == Dependency:
         return {
             'id': dep.id,
             'name': dep.name, 

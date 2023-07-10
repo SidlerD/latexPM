@@ -4,7 +4,6 @@ from src.commands.install import install
 from src.commands.install_pkg import install_pkg
 from src.core.LockFile import LockFile
 
-import os
 
 class lpm:
     """Provides all the commands for the package manager, allows for 1:1 mapping from cmd input to functions"""
