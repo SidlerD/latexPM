@@ -11,18 +11,17 @@ class lpm:
 
     def __init__(self):
         self._logger = make_logger("default")
-        self._lock_file = LockFile("requirements-lock.json")
         
     def install_pkg(self, pkg_id: str, version: str = ""):
         """Install a specific package"""
         self._logger.info(f"Installing package {pkg_id} {version}")
-        install_pkg(pkg_id, self._lock_file, version=version)
+        install_pkg(pkg_id, version=version)
 
-    def install(self, file_path: str):
+    def install(self):
         """Install all packages as specified in lock-file"""
         # TODO: Do I need to remove all installed packages before installing from LockFile?
-        self._logger.info(f"Installing dependencies from lockfile {os.path.basename(file_path)}")
-        install(file_path, self._lock_file)
+        self._logger.info(f"Installing dependencies from {LockFile.get_name}")
+        install()
 
     def remove(pkg_id: str):
         """Remove one specific package"""
@@ -39,7 +38,7 @@ class lpm:
     def upgrade_pkg(self, pkg_id: str):
         """Upgrade one specific package"""
         self._logger.info(f"Updating {pkg_id}")
-        upgrade_pkg(pkg_id, self._lock_file)
+        upgrade_pkg(pkg_id)
 
     def upgrade(self):
         """Upgrade all packages"""

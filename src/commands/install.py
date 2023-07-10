@@ -8,15 +8,16 @@ from anytree import Node, RenderTree, findall, AsciiStyle
 
 
 
-def install(file_path: str, lock_file: LockFile):
+def install():
     """
     Install packages as specified in lock-file\n
     - Doesn't look into dependencies of those packages
     - Installs the exact version specified in lock-file
     """
+    # TODO: Should probably clear packages-folder + warn user that package-folder will be cleared
     logger = logging.getLogger("default")
     try:
-        to_install = lock_file.get_packages_from_file(file_path) # returns list of packages with version
+        to_install = LockFile.get_packages_from_file() # returns list of packages with version
 
         for pkg in to_install:
             PackageInstaller.install_specific_package(pkg)

@@ -53,15 +53,15 @@ def _handle_dep(dep: Dependency, root: Node):
 
     pass
 
-def upgrade_pkg(pkg_id: str, lock_file: LockFile):
+def upgrade_pkg(pkg_id: str, ):
     rootNode = None
     try:
         dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id))
-        rootNode = lock_file.read_file_as_tree()
+        rootNode = LockFile.read_file_as_tree()
     
         exists = LockFile.is_in_tree(dep, rootNode)
         if not exists:
-            logger.warning(f"Upgrading {pkg_id} not possible: {pkg_id} not found in {lock_file.get_name()}")
+            logger.warning(f"Upgrading {pkg_id} not possible: {pkg_id} not found in {LockFile.get_name()}")
             return
         
         old_version = exists.dep.version if hasattr(exists, 'dep') else Version() #FIXME: What is else case here?
@@ -74,7 +74,7 @@ def upgrade_pkg(pkg_id: str, lock_file: LockFile):
         logger.info(f"Upgrading {pkg_id} from {old_version} to {new_version}")
         _handle_dep(dep, rootNode) 
 
-        lock_file.write_tree_to_file(rootNode)
+        LockFile.write_tree_to_file(rootNode)
 
     except Exception as e:
         

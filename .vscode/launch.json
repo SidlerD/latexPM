@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "fileArguments",
+            "description": "The arguments to send to the debugger",
+            "type": "promptString",
+            "default": "",
+        }
+    ],
+    "configurations": [
+        {
+            "name": "Upgrade all packages",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["upgrade", "--all"]
+        },
+        {
+            "name": "Install amsmath",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "install",
+                "amsmath"
+            ]
+        },
+        {
+            "name": "Install from lockfile",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "install",
+                "--lockfile"
+            ]
+        },
+        {
+            "name": "lpm custom args",
+            "type": "python",
+            "console": "integratedTerminal",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "args": "${input:fileArguments}",
+            "justMyCode": true
+        }
+    ]
+}

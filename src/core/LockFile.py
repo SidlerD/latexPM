@@ -7,61 +7,57 @@ from src.API import CTAN
 from src.models.Version import Version
 
 from anytree.exporter import JsonExporter
-from anytree import Node, findall
+from anytree import Node, findall, LevelOrderIter
 
 logger = logging.getLogger("default")
-
+lock_file_name = 'requirements-lock.json'
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
 # TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
 class LockFile:
-    def __init__(self, lock_file_name = 'requirements-lock.json') -> None:
-        self.name = lock_file_name
 
-    def get_name(self): 
-        return self.name
+    @staticmethod
+    def get_name(): 
+        return lock_file_name
     
-    def get_packages_from_file(self, file_path: str) -> list[Dependency]:
-        logger.info(f"Reading dependencies from {os.path.basename(file_path)}")
+    @staticmethod
+    def get_packages_from_file() -> list[Dependency]:
+        logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
 
-        if file_is_empty(self.name):
-            logger.info(f"No Dependencies found in {self.name}")
+        if file_is_empty(lock_file_name):
+            logger.info(f"No Dependencies found in {lock_file_name}")
             return []
 
-        with open(file_path, "r") as f:
-            dependency_dict = json.load(f)
-
-        deps = dependency_dict["dependencies"]
-        res: list[Dependency] = []
-
-        for key in deps:
-            res.append(Dependency(key, CTAN.get_name_from_id(key), deps[key]))
-
-        logger.info(f"Read {len(res)} dependencies from {self.name}")
-        return res
+        # with open(lock_file_name, "r") as f:
+        #     tree = json.load(f)
+        tree = LockFile.read_file_as_tree()
+        
+        return get_packages_from_tree(tree)
     
-    def write_tree_to_file(self, root_node: Node):
+    @staticmethod
+    def write_tree_to_file( root_node: Node):
         logger = logging.getLogger("default")
-        logger.info("Writing dependency tree to lock-file")
+        logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
 
         exporter = JsonExporter(indent=2, default=serialize_dependency)
         data = exporter.export(root_node)
-        with open(self.name, "w") as f:
+        with open(lock_file_name, "w") as f:
             f.write(data)
 
 
-    def read_file_as_tree(self) -> Node:
+    @staticmethod
+    def read_file_as_tree() -> Node:
         logger.info("Reading dependency tree from lock-file")
         
         # IF file is empty, create new tree
-        if file_is_empty(self.name):
-            logger.debug(f"Created new tree because {self.name} is empty")
+        if file_is_empty(lock_file_name):
+            logger.debug(f"Created new tree because {lock_file_name} is empty")
             return Node('root')
         
         # Read the JSON file
-        with open(self.name, "r") as file:
+        with open(lock_file_name, "r") as file:
             json_data = json.load(file)
-        logger.debug(f"{self.name} read successfully")
+        logger.debug(f"{lock_file_name} read successfully")
 
         # Construct the tree
         root = Node('root')
@@ -97,6 +93,9 @@ def construct_tree(data, parent=None):
         for child_data in data["children"]:
             construct_tree(child_data, parent=node)
     return node
+
+def get_packages_from_tree(tree: Node):
+    return [node.dep for node in LevelOrderIter(tree) if hasattr(node, "dep")]
 
 def file_is_empty(path: str):
     return os.path.exists(path) and os.stat(path).st_size == 0
