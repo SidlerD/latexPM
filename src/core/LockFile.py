@@ -28,11 +28,10 @@ class LockFile:
             logger.info(f"No Dependencies found in {lock_file_name}")
             return []
 
-        # with open(lock_file_name, "r") as f:
-        #     tree = json.load(f)
+
         tree = LockFile.read_file_as_tree()
         
-        return get_packages_from_tree(tree)
+        return _get_packages_from_tree(tree)
     
     @staticmethod
     def write_tree_to_file( root_node: Node):
@@ -47,7 +46,7 @@ class LockFile:
 
     @staticmethod
     def read_file_as_tree() -> Node:
-        logger.info("Reading dependency tree from lock-file")
+        logger.debug("Reading dependency tree from lock-file")
         
         # IF file is empty, create new tree
         if file_is_empty(lock_file_name):
@@ -94,7 +93,7 @@ def construct_tree(data, parent=None):
             construct_tree(child_data, parent=node)
     return node
 
-def get_packages_from_tree(tree: Node):
+def _get_packages_from_tree(tree: Node):
     return [node.dep for node in LevelOrderIter(tree) if hasattr(node, "dep")]
 
 def file_is_empty(path: str):

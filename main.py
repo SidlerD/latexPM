@@ -23,6 +23,14 @@ def add_upgrade_parser(subparsers):
     mutual_excl_args.add_argument('-a', '--all',action='store_true', help='upgrade all packages')
     
 
+def add_init_parser(subparsers):
+    subparsers.add_parser('init', help='Initialize a new project')
+    
+def add_remove_parser(subparsers):
+    remove_parser = subparsers.add_parser('remove', help='Uninstall a package from project')
+    remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="")
+
+
 def handle_input(args):
     lpm_inst = lpm()
 
@@ -41,7 +49,15 @@ def handle_input(args):
             lpm_inst.upgrade_pkg(args.package)
         else:
             lpm_inst.upgrade()
-
+    elif args.command == 'remove':
+        if args.package:
+            lpm_inst.remove(args.package)
+        else:
+            print("Package-id needed to remove")
+    elif args.command == 'init':
+        lpm_inst.init()
+    else:
+        print("Command not recognized. Please use -h for to see the available commands")
 def main():
     parser = ArgumentParser(prog='lpm')
     
@@ -49,7 +65,8 @@ def main():
     subparsers = parser.add_subparsers(dest='command')
     add_install_parser(subparsers)
     add_upgrade_parser(subparsers)
-    
+    add_init_parser(subparsers)
+    add_remove_parser(subparsers)
 
     # Set the function to be called when the command is run
     parser.set_defaults(func=handle_input)

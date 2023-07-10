@@ -1,3 +1,4 @@
+from src.commands.upgrade import upgrade
 from src.commands.upgrade_pkg import upgrade_pkg
 from src.helpers.Logger import make_logger
 from src.commands.install import install
@@ -41,7 +42,8 @@ class lpm:
 
     def upgrade(self):
         """Upgrade all packages"""
-        pass
+        self._logger.info(f"Updating all packages")
+        upgrade()
 
     def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""
