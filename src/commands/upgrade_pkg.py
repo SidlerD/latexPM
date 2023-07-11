@@ -68,7 +68,7 @@ def upgrade_pkg(pkg_id: str):
         new_version = CTAN.get_version(pkg_id)
         
         if(old_version == new_version):
-            logger.info(f"{dep} is already in newest version, upgrading not possible")
+            logger.warning(f"{dep} is already in newest version, upgrading not possible")
             return
         
         logger.info(f"Upgrading {pkg_id} from {old_version} to {new_version}")
