@@ -1,3 +1,4 @@
+from src.commands.remove import remove
 from src.commands.upgrade import upgrade
 from src.commands.upgrade_pkg import upgrade_pkg
 from src.helpers.Logger import make_logger
@@ -23,16 +24,10 @@ class lpm:
         self._logger.info(f"Installing dependencies from {LockFile.get_name}")
         install()
 
-    def remove(pkg_id: str):
+    def remove(self, pkg_id: str):
         """Remove one specific package"""
-
-        """
-        For each pkg in package's dependencies:
-            if pkg.dependents is empty:
-                delete pkg
-            else:
-                dont delete pkg
-                Move pkg to child position of pkg.dependents[0]"""
+        self._logger.info(f"Removing {pkg_id}")
+        remove(pkg_id)
         pass
 
     def upgrade_pkg(self, pkg_id: str):
@@ -47,8 +42,8 @@ class lpm:
 
     def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""
-        pass
+        raise NotImplementedError
 
     def init(self):
         """Create a new project: Creates new Docker in which packages will live"""
-        pass
+        raise NotImplementedError
