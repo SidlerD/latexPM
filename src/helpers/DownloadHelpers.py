@@ -1,4 +1,5 @@
 import os
+from os.path import join, isdir
 import shutil
 import zipfile
 import requests
@@ -23,7 +24,8 @@ def download_and_extract_zip(url):
         file.write(response.content)
     
     # Extract the files into a folder
-    folder_name = zip_file_name.split('.')[0]  # Use the filename without the extension as the folder name
+    # folder_name = zip_file_name.split('.')[0]  # Use the filename without the extension as the folder name
+    folder_name = pkg_folder
     os.makedirs(folder_name, exist_ok=True)
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(folder_name)
@@ -53,6 +55,11 @@ def organize_files(folder_path: str):
         shutil.move(file, destination) 
     # Remove the folders
     #TODO: Does not work yet: Remove folders in cwd recursively, leave files at cwd
-    folders = [f for f in os.listdir(folder_path) if os.path.isdir(f)] 
+    folders = []
+    for f in os.listdir(folder_path):
+        path = join(folder_path, f)
+        if isdir(path):
+            folders.append(path)
+
     for folder in folders:
         shutil.rmtree(folder)
