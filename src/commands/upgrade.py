@@ -4,7 +4,7 @@
 
 
 import logging
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.commands.upgrade_pkg import upgrade_pkg
 
 logger = logging.getLogger("default")

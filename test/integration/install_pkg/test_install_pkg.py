@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch, call
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.models.Dependency import Dependency, DownloadedDependency
 from src.core.lpm import lpm
 from anytree import Node
@@ -17,7 +17,7 @@ class InstallPkgTest(unittest.TestCase):
             Assert that installing pkgA only installs pkgA and pkgB once, and logs an info msg"""
         depA, depB = Dependency('A', 'A'), Dependency('B', 'B')
 
-        extract_dependencies_mock.side_effect = lambda dep: [depB] if dep.id is 'A' else [depA]
+        extract_dependencies_mock.side_effect = lambda dep: [depB] if dep.id == 'A' else [depA]
         install_spec_pkg_mock.side_effect = lambda dep: DownloadedDependency(dep, "path", "https://download")
         CTAN_mock.return_value = ""
         LockFile_read.return_value = Node('root')

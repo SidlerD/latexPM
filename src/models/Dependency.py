@@ -18,13 +18,14 @@ class Dependency:
         return f"{self.name}: {self.version}"
     
 class DownloadedDependency(Dependency):
-    def __init__(self, dep: Dependency, folder_path: str, download_url: str) -> None:
+    def __init__(self, dep: Dependency, folder_path: str, download_url: str, files: list[str] = []) -> None:
         super().__init__(dep.id, dep.name, dep.version)
         self.path = folder_path
         self.url = download_url
+        self.files = files
 
 class DependencyNode(Dependency, NodeMixin):
-    def __init__(self, dep: Dependency, parent=None, children=None, dependents: list[Dependency] = []):
+    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = []):
         super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep
@@ -48,7 +49,8 @@ def serialize_dependency(dep: Dependency | DownloadedDependency):
             'name': dep.name, 
             'version': {'date': dep.version.date, 'number': dep.version.number},
             'path': dep.path,
-            'url': dep.url
+            'url': dep.url,
+            'files': dep.files
         }
     if type(dep) == Dependency:
         return {

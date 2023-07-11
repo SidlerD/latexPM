@@ -2,16 +2,20 @@ import os
 import shutil
 import zipfile
 import requests
+import logging
 from src.core import config
 
+logger = logging.getLogger("default")
 
 def download_and_extract_zip(url):
     # Extract the filename from the URL
-    zip_file_name = os.path.join(config.get_package_dir(), url.split('/')[-1]) 
+    pkg_folder = os.path.abspath(config.get_package_dir())
+    logger.debug(f"Downloading files into {pkg_folder}")
+    zip_file_name = os.path.join(pkg_folder, url.split('/')[-1]) 
     
     # Ensure that package folder exists
-    if not os.path.exists(config.get_package_dir()):
-        os.makedirs(config.get_package_dir())
+    if not os.path.exists(pkg_folder):
+        os.mkdir(pkg_folder)
 
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)

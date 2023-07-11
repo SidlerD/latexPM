@@ -15,8 +15,9 @@ class InstallAllTest(unittest.TestCase):
     def test_install_all_gets_right_files(self, install_spec_pkg_mock, LF_write, LF_read):
         """Install deps from Lockfile, then check that correct folders would have been created"""
         dep_ams = Dependency("amsmath", "amsmath", "v1.2a")
+        down_dep = DownloadedDependency(dep_ams, "path", "https://download/amsmath")
         rootNode = Node('root')
-        DependencyNode(dep_ams, rootNode)
+        DependencyNode(down_dep, rootNode)
 
         install_spec_pkg_mock.side_effect = lambda dep: DownloadedDependency(dep, "path", "https://download/amsmath")
         LF_read.return_value = rootNode

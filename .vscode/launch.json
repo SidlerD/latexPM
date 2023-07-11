@@ -19,6 +19,15 @@
             "args": ["upgrade", "--all"]
         },
         {
+            "name": "Remove amsmath",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["remove", "amsmath"]
+        },
+        {
             "name": "Install amsmath",
             "type": "python",
             "request": "launch",

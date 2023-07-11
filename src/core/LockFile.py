@@ -2,99 +2,122 @@ import json
 import os
 import logging
 
-from src.models.Dependency import Dependency, DependencyNode, serialize_dependency
+from src.models.Dependency import Dependency, DependencyNode, DownloadedDependency, serialize_dependency
 from src.API import CTAN
 from src.models.Version import Version
 
 from anytree.exporter import JsonExporter
+from anytree.importer import DictImporter
 from anytree import Node, findall, LevelOrderIter
 
 logger = logging.getLogger("default")
 lock_file_name = 'requirements-lock.json'
+_root = None
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
 # TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
-class LockFile:
+def get_name(): 
+    return lock_file_name
 
-    @staticmethod
-    def get_name(): 
-        return lock_file_name
+def get_packages_from_file() -> list[Dependency]:
+    logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
+
+    if _file_is_empty(lock_file_name):
+        logger.info(f"No Dependencies found in {lock_file_name}")
+        return []
+
+
+    tree = read_file_as_tree()
     
-    @staticmethod
-    def get_packages_from_file() -> list[Dependency]:
-        logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
+    return _get_packages_from_tree(tree)
 
-        if file_is_empty(lock_file_name):
-            logger.info(f"No Dependencies found in {lock_file_name}")
-            return []
+def write_tree_to_file():
+    logger = logging.getLogger("default")
+    logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
 
+    # exporter = JsonExporter(indent=2)
+    exporter = JsonExporter(indent=2, default=serialize_dependency)
+    data = exporter.export(_root)
+    with open(lock_file_name, "w") as f:
+        f.write(data)
 
-        tree = LockFile.read_file_as_tree()
-        
-        return _get_packages_from_tree(tree)
+def read_file_as_tree() -> Node:
+    global _root
+    if _root: 
+        return _root
+
+    importer = DictImporter()
+    logger.debug("Reading dependency tree from lock-file")
     
-    @staticmethod
-    def write_tree_to_file( root_node: Node):
-        logger = logging.getLogger("default")
-        logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
+    # IF file is empty, create new tree
+    if _file_is_empty(lock_file_name):
+        logger.debug(f"Created new tree because {lock_file_name} is empty")
+        _root = Node('root')
+        return _root
+    
+    # Read the JSON file
+    with open(lock_file_name, "r") as file:
+        json_data = json.load(file)
+    logger.debug(f"{lock_file_name} read successfully")
 
-        exporter = JsonExporter(indent=2, default=serialize_dependency)
-        data = exporter.export(root_node)
-        with open(lock_file_name, "w") as f:
-            f.write(data)
+    # _root = importer.import_(json_data)
+    # for node in LevelOrderIter(_root):
+    #     print(node)
+    #     node.dep = 
 
+    # return _root
 
-    @staticmethod
-    def read_file_as_tree() -> Node:
-        logger.debug("Reading dependency tree from lock-file")
-        
-        # IF file is empty, create new tree
-        if file_is_empty(lock_file_name):
-            logger.debug(f"Created new tree because {lock_file_name} is empty")
-            return Node('root')
-        
-        # Read the JSON file
-        with open(lock_file_name, "r") as file:
-            json_data = json.load(file)
-        logger.debug(f"{lock_file_name} read successfully")
-
-        # Construct the tree
-        root = Node('root')
-        if 'children' in json_data:
-            for child_data in json_data["children"]:
-                construct_tree(child_data, parent=root)
+    # Construct the tree
+    _root = Node('root')
+    if 'children' in json_data:
+        for child_data in json_data["children"]:
+            _construct_tree(child_data, parent=_root)
 
         logger.debug(f"Tree constructed successfully")
-        return root
-    
-    @staticmethod
-    def is_in_tree(dep: Dependency, root: DependencyNode) -> Node:
-        # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
-        filter = lambda node: (
-            type(node) == DependencyNode 
-            and (
-                node.dep == dep or # Is  the same dependency
-                (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
-            )
+    return _root
+
+def is_in_tree(dep: Dependency) -> DependencyNode:
+    global _root
+    _root = read_file_as_tree()
+
+    # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
+    filter = lambda node: (
+        hasattr(node, 'dep')
+        and (
+            node.dep == dep or # Is  the same dependency
+            (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
         )
-        prev_occurences = findall(root, filter_= filter)
-        if(len(prev_occurences) > 1):
-            logger.warning(f"{dep} is in tree {len(prev_occurences)} times")
+    )
+    prev_occurences = findall(_root, filter_= filter)
+    if(len(prev_occurences) > 1):
+        logger.warning(f"{dep} is in tree {len(prev_occurences)} times")
 
-        return prev_occurences[0] if prev_occurences else None
+    return prev_occurences[0] if prev_occurences else None
 
+def find_by_id(pkg_id: str) -> DependencyNode:
+    global _root
+    _root = read_file_as_tree()
+    occurences = findall(_root, filter_= lambda node: hasattr(node, 'id') and node.id == pkg_id)
 
-def construct_tree(data, parent=None):
+    if(len(occurences) > 1):
+        logger.warning(f"{pkg_id} is in tree {len(occurences)} times")
+    elif len(occurences) == 0:
+        raise RuntimeWarning(f"{pkg_id} is not in tree")
+    
+    return occurences[0] if occurences else None
+
+def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], Version(dep_info["version"]))
-    node = DependencyNode(dep, parent=parent)
+    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], files=dep_info['files'])
+    node = DependencyNode(downloaded_dep, parent=parent)
     if "children" in data:
         for child_data in data["children"]:
-            construct_tree(child_data, parent=node)
+            _construct_tree(child_data, parent=node)
     return node
 
 def _get_packages_from_tree(tree: Node):
     return [node.dep for node in LevelOrderIter(tree) if hasattr(node, "dep")]
 
-def file_is_empty(path: str):
+def _file_is_empty(path: str):
     return os.path.exists(path) and os.stat(path).st_size == 0

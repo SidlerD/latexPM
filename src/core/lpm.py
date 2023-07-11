@@ -4,7 +4,7 @@ from src.commands.upgrade_pkg import upgrade_pkg
 from src.helpers.Logger import make_logger
 from src.commands.install import install
 from src.commands.install_pkg import install_pkg
-from src.core.LockFile import LockFile
+from src.core import LockFile
 
 
 class lpm:
@@ -28,7 +28,6 @@ class lpm:
         """Remove one specific package"""
         self._logger.info(f"Removing {pkg_id}")
         remove(pkg_id)
-        pass
 
     def upgrade_pkg(self, pkg_id: str):
         """Upgrade one specific package"""

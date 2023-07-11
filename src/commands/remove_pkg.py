@@ -1,4 +1,4 @@
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.models.Dependency import Dependency
 import logging
 logger = logging.getLogger("default")

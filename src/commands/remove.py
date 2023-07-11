@@ -1,45 +1,58 @@
 import logging
+import os
 from anytree import Node, RenderTree, AsciiStyle, LevelOrderGroupIter
 
-
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.models.Dependency import Dependency, DependencyNode
 
 logger = logging.getLogger("default")
 
-def remove(pkg_id: str):
-    """
-    For each pkg in package's dependencies:
-        if pkg.dependents is empty:
-            delete pkg
-        else:
-            dont delete pkg
-            Move pkg to child position of pkg.dependents[0]
-    """
-    dep_node: DependencyNode = LockFile.find_by_id(pkg_id)
+def _handle_dep(pkg: DependencyNode):
+        
+    # Remove its children
+    for child in pkg.children:
+        _handle_dep(child.dep)
+        
+    # Remove pkg
+    if not hasattr(pkg, "dependents"):
+        logger.error(f"Found a node in dependency tree without dependents attribute: {pkg}")
+        return
+    if len(pkg.dependents) == 0:
+        delete_pkg_files(pkg.dep)
+        remove_from_tree(pkg)
+    elif len(pkg.dependents) > 1:
+        # Move pkg in tree from dep_to_remove to first package which depends on it
+        dest = pkg.depends[0]
+        move_in_tree(dest=dest, node=pkg)
 
-    for child in dep_node.children:
-        if not hasattr(child, "dependents"):
-            logger.error(f"Found a node in dependency tree without dependents attribute: {child}")
-            continue
-        if len(child.dependents) == 0:
-            delete_pkg_files(child.dep)
-            remove_from_tree(child)
-        elif len(child.dependents) > 1:
-            # Move child in tree from dep_to_remove to first package which depends on it
-            dest = child.depends[0]
-            move_in_tree(src=dep_node, dest=dest, node=child)
-    
+
+def remove(pkg_id: str):
+    dep = LockFile.find_by_id(pkg_id)
+    logger.info(f"Removing {pkg_id} and its dependencies")
+    _handle_dep(dep)
+    logger.info(f"Removed {pkg_id} and its dependencies")
+    LockFile.write_tree_to_file()
+
 
 def delete_pkg_files(dep: Dependency):
     # TODO: Need mapping from package id to files that package includes for this
     # This would mean that when downloading, I need to add a list of files to the lockfile
     # Could also put them in folders named after pkg_id, but that means importing package in tex is weird (e.g. \usepackage(amsmath/amsmath))
-    raise NotImplementedError("Not able to delete package files yet")
+    dep_node = LockFile.is_in_tree(dep)
+
+    if not hasattr(dep_node, 'dep') and not hasattr(dep_node.dep, 'files'):
+        raise RuntimeError(f"Couldn't find files to delete for {dep}.")
+
+    files = dep_node.dep.files
+    for file in files:
+            path = os.path.join(dep_node.dep.path, file)
+            logger.debug(f"Removing {path}")    
+            os.remove(path)
 
 
-def move_in_tree(src: DependencyNode|Node, dest: DependencyNode|Node, node: DependencyNode|Node):
-    # if node in src.children:
+    logger.info(f"Removed {len(files)} files for {dep}")    
+
+def move_in_tree(dest: DependencyNode|Node, node: DependencyNode|Node):
     before = str(node)
     node.parent = dest
     logger.info(f"Moved {node.id} from {before} to {node}")

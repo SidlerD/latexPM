@@ -7,7 +7,7 @@ import logging
 from src.API import CTAN
 from src.commands.install_pkg import install_pkg
 from src.commands.remove_pkg import remove_pkg
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.models.Dependency import Dependency, DependencyNode
 from src.models.Version import Version
 from src.helpers.DependenciesHelpers import extract_dependencies
@@ -20,7 +20,7 @@ def _handle_dep(dep: Dependency, root: Node):
     dep_new = CTAN.download_pkg(dep)
 
     # Get Dependencies of old version from LockFile (i.e direct children of its node)
-    dep_old = LockFile.is_in_tree(dep, root)
+    dep_old = LockFile.is_in_tree(dep)
     if not dep_old: # TODO: Try to find manually by searching packages folder here
         raise Exception(f"Cannot upgrade {dep}: Is not in Lock-File")
     deps_of_old = [node.dep for node in dep_old.children if hasattr(node, "dep")]
@@ -59,7 +59,7 @@ def upgrade_pkg(pkg_id: str):
         dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id))
         rootNode = LockFile.read_file_as_tree()
     
-        exists = LockFile.is_in_tree(dep, rootNode)
+        exists = LockFile.is_in_tree(dep)
         if not exists:
             logger.warning(f"Upgrading {pkg_id} not possible: {pkg_id} not found in {LockFile.get_name()}")
             return
@@ -74,7 +74,7 @@ def upgrade_pkg(pkg_id: str):
         logger.info(f"Upgrading {pkg_id} from {old_version} to {new_version}")
         _handle_dep(dep, rootNode) 
 
-        LockFile.write_tree_to_file(rootNode)
+        LockFile.write_tree_to_file()
 
     except Exception as e:
         

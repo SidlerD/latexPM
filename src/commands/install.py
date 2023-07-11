@@ -1,6 +1,6 @@
 import logging
 import os
-from src.core.LockFile import LockFile
+from src.core import LockFile
 from src.core.PackageInstaller import PackageInstaller
 from src.models.Dependency import Dependency, DependencyNode
 from anytree import Node, RenderTree, findall, AsciiStyle
