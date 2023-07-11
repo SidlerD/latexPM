@@ -8,11 +8,11 @@ from src.models.Dependency import Dependency, DependencyNode
 logger = logging.getLogger("default")
 
 def _handle_dep(pkg: DependencyNode):
-        
     # Remove its children
-    for child in pkg.children:
-        _handle_dep(child.dep)
-        
+    if hasattr(pkg, 'children'):
+        for child in pkg.children:
+            _handle_dep(child)
+
     # Remove pkg
     if not hasattr(pkg, "dependents"):
         logger.error(f"Found a node in dependency tree without dependents attribute: {pkg}")
