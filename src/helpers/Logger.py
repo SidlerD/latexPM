@@ -3,7 +3,7 @@ import sys
 
 def make_logger(name: str = "default"):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)  # Set the desired log level
+    logger.setLevel(logging.INFO)  # Set the desired log level
 
     # Create a StreamHandler to write logs to stdout
     stream_handler = logging.StreamHandler(sys.stdout)

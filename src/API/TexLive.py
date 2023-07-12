@@ -15,7 +15,7 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     url = _get_url_for_version(version)
 
     logger.info(f"TL: Installing {dep} from {url}")
-    folder_path = download_and_extract_zip(url)
+    folder_path = download_and_extract_zip(url, dep)
     
     # TODO: Critical: Return DOwnloadedDependency
     return DownloadedDependency(dep, folder_path, url) 
@@ -23,7 +23,7 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
 
 
 def _get_url_for_version(version: Version):
-    raise DownloadError("Download from TL not implemented yet")
+    raise NotImplementedError("Download from TL not implemented yet")
     #TODO: Implement
     if(not version.date and not version.number):
         pass # return path to latest version on TL

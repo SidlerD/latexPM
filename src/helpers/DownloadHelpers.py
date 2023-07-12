@@ -5,38 +5,34 @@ import zipfile
 import requests
 import logging
 from src.core import config
+from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
 
-def download_and_extract_zip(url):
+def download_and_extract_zip(url: str, dep: Dependency):
     # Extract the filename from the URL
     pkg_folder = os.path.abspath(config.get_package_dir())
-    logger.debug(f"Downloading files into {pkg_folder}")
-    zip_file_name = os.path.join(pkg_folder, url.split('/')[-1]) 
-    
-    # Ensure that package folder exists
-    if not os.path.exists(pkg_folder):
-        os.mkdir(pkg_folder)
+    download_folder = join(pkg_folder, dep.name if dep.name else zip_file_name.split('.')[0])
+    zip_file_name = os.path.join(download_folder, url.split('/')[-1]) 
 
+    logger.debug(f"Downloading files into {download_folder}")
+
+    os.makedirs(download_folder, exist_ok=True)
+    
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     with open(zip_file_name, 'wb') as file:
         file.write(response.content)
     
     # Extract the files into a folder
-    # folder_name = zip_file_name.split('.')[0]  # Use the filename without the extension as the folder name
-    folder_name = pkg_folder
-    os.makedirs(folder_name, exist_ok=True)
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
-        zip_ref.extractall(folder_name)
+        zip_ref.extractall(download_folder)
     
     # Return the path to the folder
-    folder_path = os.path.abspath(folder_name)
-
     os.remove(zip_file_name)
-    organize_files(folder_path)
+    organize_files(download_folder)
 
-    return folder_path
+    return download_folder
 
 
 def organize_files(folder_path: str):
@@ -49,7 +45,7 @@ def organize_files(folder_path: str):
     relevant_files = []
     for root, dirs, files in os.walk(folder_path):
         relevant_files.extend([os.path.join(root, file) for file in files if file.endswith(('.ins', '.sty', '.tex'))]) #TODO: Is .tex relevant?
-    # Move relevant files to cwd
+    # Move relevant files to top of folder
     for file in relevant_files:
         destination = os.path.join(folder_path, os.path.basename(file))
         shutil.move(file, destination) 

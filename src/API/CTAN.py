@@ -15,12 +15,12 @@ def get_id_from_name(name: str) -> str:
     for pkg in all:
         if pkg['name'] == name:
             return pkg['key']
-    raise RuntimeError(f"CTAN has no information about package {name}")
+    raise CtanPackageNotFoundError(f"CTAN has no information about package with name {name}")
 
 def get_name_from_id(id: str) -> str:
     res = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
     if "id" not in res:
-        raise RuntimeError("CTAN has no information about package with id " + id)
+        raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
     return res['name']
 
 def get_package_info(id: str):
@@ -54,6 +54,6 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
         raise CtanPackageNotFoundError(f"Couldn't find package {dep.id} on CTAN")
     
     logger.info(f"CTAN: Installing {dep} from {url}")
-    folder_path = download_and_extract_zip(url)
+    folder_path = download_and_extract_zip(url, dep)
 
     return DownloadedDependency(dep, folder_path, url)
