@@ -9,6 +9,8 @@ class Dependency:
         self.version = version if isinstance(version, Version) else Version(version)
 
     def __eq__(self, other):
+        if type(other != Dependency):
+            return False
         return self.id == other.id and self.version == other.version
     
     def __hash__(self):

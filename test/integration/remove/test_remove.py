@@ -25,5 +25,5 @@ class RemoveTest(unittest.TestCase):
         lpm_inst = lpm()
         lpm_inst.remove('A')
         self.assertEqual(delete_pkg_files_mock.call_count, 2)
-        delete_pkg_files_mock.assert_has_calls([call(depA), call(depB)], any_order=True)
+        delete_pkg_files_mock.assert_has_calls([call(depNodeA), call(depNodeB)], any_order=True)
         

@@ -28,7 +28,6 @@ class PackageInstaller:
 
         else: # Need specific older version => Download from TL
             downloaded_dep = TexLive.download_pkg(pkg, pkgInfo=pkgInfo)
-
         downloaded_dep.files = [elem for elem in os.listdir(downloaded_dep.path) if isfile(join(downloaded_dep.path, elem))]
         logger.debug(f"{pkg.id} included {len(downloaded_dep.files)} files in its download")
 
