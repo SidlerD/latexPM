@@ -6,7 +6,7 @@ from src.exceptions.download.DownloadError import DownloadError
 import logging
 
 _base_url = "https://texlive.info/tlnet-archive/"
-logger = logging.getLogger("default") # FIXME: Is this good??
+logger = logging.getLogger("default")
 
 def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from CTAN")
@@ -17,7 +17,6 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"TL: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
     
-    # TODO: Critical: Return DOwnloadedDependency
     return DownloadedDependency(dep, folder_path, url) 
 
 

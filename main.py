@@ -34,9 +34,6 @@ def add_remove_parser(subparsers):
 def handle_input(args):
     lpm_inst = lpm()
 
-    print(os.getcwd())
-    # TODO: This could be used to get path to pass to lpm, which needs it to read lockfile and install packages
-
     if args.command == 'install':
         if args.package:
             lpm_inst.install_pkg(args.package, args.version)
