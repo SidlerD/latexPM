@@ -26,6 +26,11 @@ class DownloadedDependency(Dependency):
         self.url = download_url
         self.files = files
 
+    def __repr__(self):
+        return f"DownloadedDep {self.name}: {self.version}"
+    def __str__(self) -> str:
+        return f"{self.name}: {self.version}"
+    
 class DependencyNode(Dependency, NodeMixin):
     def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = []):
         super(Dependency, self).__init__()

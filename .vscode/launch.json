@@ -40,6 +40,18 @@
             ]
         },
         {
+            "name": "List installed packages",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "install",
+                "--list"
+            ]
+        },
+        {
             "name": "Install from lockfile",
             "type": "python",
             "request": "launch",

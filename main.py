@@ -13,6 +13,7 @@ def add_install_parser(subparsers):
     mutual_excl_args = install_parser.add_mutually_exclusive_group(required=True)
     mutual_excl_args.add_argument('package', default=None, nargs='?', help='Package id to install')
     mutual_excl_args.add_argument('--lockfile', action='store_true', help='Install packages from lockfile')
+    mutual_excl_args.add_argument('--list', action='store_true', help='List all installed packages')
 
 def add_upgrade_parser(subparsers):
     # Create sub-parser for the upgrade command
@@ -41,6 +42,10 @@ def handle_input(args):
             if args.version:
                 print(f"WARN: Version will be ignored since --lockfile was given")
             lpm_inst.install()
+        elif args.list:
+            if args.version:
+                print(f"WARN: Version will be ignored since --list was given")
+            lpm_inst.list_packages()
     elif args.command == 'upgrade':
         if args.package:
             lpm_inst.upgrade_pkg(args.package)

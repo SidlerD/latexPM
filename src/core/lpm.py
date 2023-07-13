@@ -1,3 +1,4 @@
+from src.commands.list_packages import list_packages
 from src.commands.remove import remove
 from src.commands.upgrade import upgrade
 from src.commands.upgrade_pkg import upgrade_pkg
@@ -38,6 +39,9 @@ class lpm:
         """Upgrade all packages"""
         self._logger.info(f"Updating all packages")
         upgrade()
+
+    def list_packages(self):
+        list_packages()
 
     def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""

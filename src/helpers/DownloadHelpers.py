@@ -12,7 +12,7 @@ logger = logging.getLogger("default")
 def download_and_extract_zip(url: str, dep: Dependency):
     # Extract the filename from the URL
     pkg_folder = os.path.abspath(config.get_package_dir())
-    download_folder = join(pkg_folder, dep.name if dep.name else zip_file_name.split('.')[0])
+    download_folder = join(pkg_folder, dep.name)
     zip_file_name = os.path.join(download_folder, url.split('/')[-1]) 
 
     logger.debug(f"Downloading files into {download_folder}")

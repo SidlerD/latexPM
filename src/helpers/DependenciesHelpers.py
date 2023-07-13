@@ -15,7 +15,7 @@ prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
 # SImple solution: Read lines from sty individually, remove those that start with %. But this could still be wrong when comment starts after some command, like "\begin{documents} % \Requirespackage[][]"
 req_pkg_pattern = r'\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/DZFYZH/1
+    https://regex101.com/r/WIGHVr/1
 """
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
