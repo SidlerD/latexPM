@@ -71,6 +71,14 @@
             "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
             "args": "${input:fileArguments}",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "Currently active file",
+            "type": "python",
+            "console": "integratedTerminal",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": true
+        },
     ]
 }

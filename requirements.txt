@@ -1,1 +1,4 @@
 anytree
+python-dateutil
+requests
+argparse

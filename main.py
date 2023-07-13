@@ -61,6 +61,7 @@ def handle_input(args):
     else:
         print("Command not recognized. Please use -h for to see the available commands")
 def main():
+    print(f" -- lpm called from {os.getcwd()} -- \n")
     parser = ArgumentParser(prog='lpm')
     
     # Create all subparsers
