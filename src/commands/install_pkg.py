@@ -21,7 +21,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         if type(existing_par) == DependencyNode:
             logger.info(f"""{parent} depends on {dep}, which is already installed by {existing_par.dep}. Skipping install.""")
             existing_node.dependents.append(parent.dep) # Not sure if adding parent or parent.dep is smarter here
-        elif type(existing_par) == Node and existing_par.name == "root":
+        elif type(existing_par) == Node and existing_par.name == LockFile.read_file_as_tree().name:
             logger.info(f"""{parent} depends on {dep}, which is already installed as requested by the user. Skipping install.""")
             #TODO: When existing_par is removed, parent needs to install dep
 

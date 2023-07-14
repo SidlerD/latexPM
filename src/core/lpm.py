@@ -7,7 +7,7 @@ from src.commands.install import install
 from src.commands.install_pkg import install_pkg
 from src.core import LockFile
 
-
+# TODO: Should probably add some "guard" that checks if Lockfile matches with packages folder. If not, this could lead to weird behaviours if user has changed anything manually
 class lpm:
     """Provides all the commands for the package manager, allows for 1:1 mapping from cmd input to functions"""
 

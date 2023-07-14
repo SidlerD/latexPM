@@ -3,7 +3,9 @@ from os.path import isdir, join, abspath
 
 from src.core import LockFile, config
 from src.models.Dependency import Dependency
+import logging
 
+logger = logging.getLogger("default")
 
 def list_packages() -> list[Dependency]:
     pkgs_dir = abspath(config.get_package_dir())
@@ -15,6 +17,7 @@ def list_packages() -> list[Dependency]:
     pkgs_in_folder.sort()
     pkgs_from_lockfile_names.sort()
     if(pkgs_in_folder != pkgs_from_lockfile_names):
+        logger.error(f"{LockFile.get_name()} and {config.get_package_dir()} are out of Sync! \nPackages in Lockfile: {pkgs_from_lockfile_names}\n Packages in {config.get_package_dir()} folder: {pkgs_in_folder}")
         raise RuntimeError(f"FATAL: Packages in LockFile differ from those in /{config.get_package_dir()}. ")
         #TODO: Should try to recover here or give instructions how to recover, e.g. install from LockFile   
     

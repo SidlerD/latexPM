@@ -42,6 +42,7 @@ def write_tree_to_file():
         f.write(data)
 
 def read_file_as_tree() -> Node:
+    """returns root-node of tree"""
     global _root
     if _root: 
         return _root
@@ -80,7 +81,7 @@ def is_in_tree(dep: Dependency) -> DependencyNode:
     global _root
     _root = read_file_as_tree()
 
-    # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
+    # DECIDE: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
     filter = lambda node: (
         hasattr(node, 'dep')
         and (
