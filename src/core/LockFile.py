@@ -15,7 +15,7 @@ lock_file_name = 'requirements-lock.json'
 _root = None
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
-# TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
+# URGENT: Create a class for the normal requirements.json file, since that needs to be updated too. 
 def get_name(): 
     return lock_file_name
 

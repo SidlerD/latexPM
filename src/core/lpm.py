@@ -21,7 +21,6 @@ class lpm:
 
     def install(self):
         """Install all packages as specified in lock-file"""
-        # TODO: Do I need to remove all installed packages before installing from LockFile?
         self._logger.info(f"Installing dependencies from {LockFile.get_name}")
         install()
 

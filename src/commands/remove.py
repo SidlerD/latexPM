@@ -36,9 +36,6 @@ def remove(pkg_id: str):
 
 
 def delete_pkg_files(dep_node: DependencyNode):
-    # TODO: Need mapping from package id to files that package includes for this
-    # This would mean that when downloading, I need to add a list of files to the lockfile
-    # Could also put them in folders named after pkg_id, but that means importing package in tex is weird (e.g. \usepackage(amsmath/amsmath))
     if not hasattr(dep_node, 'dep_node') and not hasattr(dep_node.dep, 'files'):
         raise RuntimeError(f"Couldn't find files to delete for {dep_node.dep}.")
 

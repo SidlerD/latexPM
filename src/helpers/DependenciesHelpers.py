@@ -35,7 +35,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
             if match: # Get name from command in sty-file
                 package_name = match.group(1)
                 package_version = match.group(2)
-                included_deps.append(package_name) #TODO: Assumption that I dont document dependencies on included files, else I need to pass the version (not just none)
+                included_deps.append(package_name) # Assumption that I dont document dependencies on included files, else I need to pass the version (not just none)
             else: # Take file-name as package-name
                 package_name = os.path.basename(sty_path).split('.')[0]
                 if(package_name):

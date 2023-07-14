@@ -9,6 +9,7 @@ from src.helpers import FileHelper
 def install():
     """
     Install packages as specified in lock-file\n
+    - Clears package folder first
     - Doesn't look into dependencies of those packages
     - Installs the exact version specified in lock-file
     """
