@@ -47,12 +47,17 @@ def parse_version(version) -> tuple[datetime, str]:
         date_match = re.search(date_pattern, version)
         date = date_match.group() if date_match else None
 
-        #FIXME: Doesn't capture version like 1 or 5. How to do that without capturing the numbers of date?
         # Assumes version number is followed by a space
         number_pattern = r"\d*\.\d*(\.\d+)?-?([a-z]+(?=\s))?"
-        number_match = re.search(number_pattern, version)
-        number = number_match.group() if number_match else None
+        single_number_pattern = r"(?<=v)\d" # FIXME: Problem: Trying to capture single-digit versions without leading v would capture numbers in date
 
+        number_match = re.search(number_pattern, version)
+        if number_match:
+            number = number_match.group()
+        else:
+            single_number_match = re.search(single_number_pattern, version)
+            number = single_number_match.group() if single_number_match else None
+            
         return parse(date) if date else None, number
     
     raise TypeError(f"Cannot parse {type(version)} {version}")
