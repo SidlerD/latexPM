@@ -27,7 +27,7 @@ class DownloadedDependency(Dependency):
         self.files = files
 
     def __repr__(self):
-        return f"DownloadedDep {self.name}: {self.version}"
+        return f"_{self.name}: {self.version}"
     def __str__(self) -> str:
         return f"{self.name}: {self.version}"
     
@@ -43,7 +43,7 @@ class DependencyNode(Dependency, NodeMixin):
 
     def __repr__(self):
         if self.dependents:
-            return f" ( {self.dep} ): {self.dependents}"
+            return f" ({self.dep})"
         return str(self.dep)
     
 

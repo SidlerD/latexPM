@@ -42,16 +42,14 @@ def organize_files(folder_path: str):
     if not exists(folder_path):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")
     
-    # Get path for each relevant file
+    # Get path for all files in subdirs
     relevant_files = []
     for root, dirs, files in os.walk(folder_path):
-        relevant_files.extend([join(root, file) for file in files if file.endswith(('.ins', '.sty', '.tex', '.dtx'))]) #DECIDE: Is .tex relevant?
-    
-    # Move relevant files to top of folder
-    for file in relevant_files:
-        destination = os.path.join(folder_path, os.path.basename(file))
-        shutil.move(file, destination) 
-    
+        relevant_files.extend([join(root, file) for file in files])
+    # Move files to top of folder
+    for ins_file in relevant_files:
+        destination = os.path.join(folder_path, os.path.basename(ins_file))
+        shutil.move(ins_file, destination) 
     # Remove the folders
     folders = []
     for f in os.listdir(folder_path):
@@ -61,29 +59,34 @@ def organize_files(folder_path: str):
     for folder in folders:
         shutil.rmtree(folder)
 
-    # Convert .ins to .sty
+    # Convert .ins and .dtx to .sty
     old_cwd = os.getcwd()
     os.chdir(folder_path)
 
-    for file in os.listdir():
-        if isfile(abspath(file)) and file.endswith(('.ins', '.dtx')):
-            name = file.split('.')[0]
-            logger.debug(f"Creating {name}.sty file")
-            # Check that .ins and .tex files exist (Needed to generate .sty)
-            if exists(name + '.ins') and exists(name + '.dtx'):
-                try:
-                    if not exists(abspath(name + '.sty')): # If sty doesn't exist, create it
-                        subprocess.run(['latex', f"{name}.ins"], stdout=subprocess.DEVNULL)
-                    os.remove(f"{name}.ins")
-                    os.remove(f"{name}.dtx")
-                    if exists(f"{name}.log"):
-                        os.remove(f"{name}.log")
-                    if exists(f"{name}.aux"):
-                        os.remove(f"{name}.aux")
-                except Exception as e:
-                    logger.warning(f"Problem while trying to generate {name}.sty: {e}")
-            else:
-                logger.info(f"Tried creating {name}.sty, but not all needed files present: Need {name}.ins and {name}.dtx")
-            
+    ins_files = [abspath(file) for file in os.listdir() if isfile(abspath(file)) and file.endswith('.ins')]
+    dtx_files = [abspath(file) for file in os.listdir() if isfile(abspath(file)) and file.endswith('.dtx')]
+
+    if len(ins_files) > 0:
+        for ins_file in ins_files: # Should normally only be 1 ins-file i think
+            name = (basename(ins_file)).split('.')[0]
+            logger.debug(f"Creating sty-files from {ins_file}")
+
+            # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
+            try:
+                # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
+                subprocess.run(['latex', ins_file], stdout=subprocess.DEVNULL, timeout=3)
+            except Exception as e:
+                # Possible reasons for timeout: File should not be executed, .sty file already exists and user gets prompted wheter or not to overwrite
+                logger.warning(f"Problem while installing {name}.ins: {e}")
+    else:     
+        for dtx_file in dtx_files:
+            name = (basename(dtx_file)).split('.')[0]
+            try:
+                logger.debug(f"Trying to create sty file from {name}.dtx because no .ins found")
+                subprocess.run(['tex', dtx_file], stdout=subprocess.DEVNULL, timeout=2)
+            except Exception as e:
+                logger.warning(f"Problem while trying to generate sty-files from {name}.dtx: {e}")
+    
+    # TODO: Remove all files except .sty
 
     os.chdir(old_cwd)
