@@ -25,7 +25,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     to_extract, already_extracted = [f'{dep.name}.sty'], []
     final_deps: list[Dependency] = []
 
-    if not exists(abspath(to_extract[0])):
+    if not exists(join(dep.path, to_extract[0])):
         # No sty-file in package-files
         logger.info(f"{dep.id} does not include any .sty files. Dependency extraction skipped")
         return []
