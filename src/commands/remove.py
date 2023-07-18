@@ -31,6 +31,15 @@ def _handle_dep(pkg: DependencyNode):
 
 def remove(pkg_id: str):
     dep_node = LockFile.find_by_id(pkg_id)
+    if dep_node.depth > 1: 
+        decision = ""
+        path = ' --> '.join([node.id if hasattr(node, 'id') else node.name for node in dep_node.path][1:-1])
+        while decision not in ['y', 'n']:
+            decision = input(f"{path} depends on {pkg_id}. Removing {pkg_id} could lead to {dep_node.parent} not working correctly anymore. Do you want to continue? [y / n]:").lower()
+        if(decision == 'n'): 
+            logger.info(f"Removing {pkg_id} aborted due to user decision")
+            return
+
     logger.info(f"Removing {pkg_id} and its dependencies")
     _handle_dep(dep_node)
     logger.info(f"Removed {pkg_id} and its dependencies")

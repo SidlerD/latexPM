@@ -17,7 +17,7 @@ def install():
 
     decision = ""
     while decision not in ['y', 'n']:
-        decision = input("Installing from Lockfile means all packages that are currently installed will be removed. Do you want to proceed? [y / n]: ")
+        decision = input("Installing from Lockfile means all packages that are currently installed will be removed. Do you want to proceed? [y / n]: ").lower()
     
     if(decision == 'n'): 
         logger.info(f"Install aborted due to user decision")
