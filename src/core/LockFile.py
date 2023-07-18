@@ -111,7 +111,7 @@ def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], Version(dep_info["version"]))
     downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], files=dep_info['files'])
-    node = DependencyNode(downloaded_dep, parent=parent)
+    node = DependencyNode(downloaded_dep, parent=parent, dependents=[Dependency(d['id'], d['name'], d['version']) for d in data['dependents']])
     if "children" in data:
         for child_data in data["children"]:
             _construct_tree(child_data, parent=node)

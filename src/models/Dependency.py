@@ -20,30 +20,30 @@ class Dependency:
         return f"{self.name}: {self.version}"
     
 class DownloadedDependency(Dependency):
-    def __init__(self, dep: Dependency, folder_path: str, download_url: str, files: list[str] = []) -> None:
+    def __init__(self, dep: Dependency, folder_path: str, download_url: str, files: list[str] = None) -> None:
         super().__init__(dep.id, dep.name, dep.version)
         self.path = folder_path
         self.url = download_url
-        self.files = files
+        self.files = files if files else [] # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
 
     def __repr__(self):
         return f"_{self.name}: {self.version}"
     def __str__(self) -> str:
         return f"{self.name}: {self.version}"
     
-class DependencyNode(Dependency, NodeMixin):
-    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = []):
-        super(Dependency, self).__init__()
+class DependencyNode(NodeMixin):
+    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = None):
+        # super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep
         self.parent = parent
         if children:
             self.children = children
-        self.dependents = dependents
+        self.dependents = dependents if dependents else [] # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
 
     def __repr__(self):
         if self.dependents:
-            return f" ({self.dep})"
+            return f"({self.dep})"
         return str(self.dep)
     
 

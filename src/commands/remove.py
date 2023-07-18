@@ -10,9 +10,9 @@ logger = logging.getLogger("default")
 
 def _handle_dep(pkg: DependencyNode):
     # Remove its children
-    if hasattr(pkg, 'children'):
-        for child in pkg.children:
-            _handle_dep(child)
+    while pkg.children: # While instead of for because during handling children of pkg, pkg.children may change (if pkg depends on pkgB which is installed by its child pkgC, when removing pkgC pkgB becomes child of pkg)
+        _handle_dep(pkg.children[0])
+
 
     # Remove pkg
     if not hasattr(pkg, "dependents"):
@@ -21,9 +21,11 @@ def _handle_dep(pkg: DependencyNode):
     if len(pkg.dependents) == 0:
         delete_pkg_files(pkg)
         remove_from_tree(pkg)
-    elif len(pkg.dependents) > 1:
+    elif len(pkg.dependents) > 0:
         # Move pkg in tree from dep_to_remove to first package which depends on it
-        dest = pkg.depends[0]
+        dest_dep = pkg.dependents.pop(0)
+        dest = LockFile.is_in_tree(dest_dep)
+
         move_in_tree(dest=dest, node=pkg)
 
 
@@ -48,9 +50,9 @@ def delete_pkg_files(dep_node: DependencyNode):
     logger.info(f"Removed {cnt_files} files for {dep_node}")    
 
 def move_in_tree(dest: DependencyNode|Node, node: DependencyNode|Node):
-    before = str(node)
+    before = str(node.parent)
     node.parent = dest
-    logger.info(f"Moved {node.id} from {before} to {node}")
+    logger.info(f"Moved {node.id} from {before} to {node.parent}")
 
 def remove_from_tree(child):
     if len(child.children) != 0:
