@@ -69,7 +69,7 @@ def organize_files(folder_path: str):
     if len(ins_files) > 0:
         for ins_file in ins_files: # Should normally only be 1 ins-file i think
             name = (basename(ins_file)).split('.')[0]
-            logger.debug(f"Creating sty-files from {ins_file}")
+            logger.debug(f"Creating sty-files from {basename(ins_file)}")
 
             # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
             # DECIDE: Could parse sty-file names that are generated from ins-file, if exists delete it and regenerate (cant just not do latex ins-file, since that might also generate other files)

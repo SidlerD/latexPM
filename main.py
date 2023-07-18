@@ -33,7 +33,7 @@ def add_remove_parser(subparsers):
 
 
 def handle_input(args):
-    lpm_inst = lpm()
+    lpm_inst = lpm(args.debug)
 
     if args.command == 'install':
         if args.package:
@@ -60,6 +60,7 @@ def handle_input(args):
         lpm_inst.init()
     else:
         print("Command not recognized. Please use -h for to see the available commands")
+
 def main():
     print(f" -- lpm called from {os.getcwd()} -- \n")
     parser = ArgumentParser(prog='lpm')
@@ -71,6 +72,7 @@ def main():
     add_init_parser(subparsers)
     add_remove_parser(subparsers)
 
+    parser.add_argument('-debug', action='store_true', help='Set logging level to debug instead of info')
     # Set the function to be called when the command is run
     parser.set_defaults(func=handle_input)
 

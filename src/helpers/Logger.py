@@ -1,11 +1,12 @@
 import logging
 import sys
 
-def make_logger(name: str = "default"):
+def make_logger(name: str = "default", logging_level = logging.INFO):
     logger = logging.getLogger(name)
     if logger.handlers: # Logger already existed
-        return logger
-    logger.setLevel(logging.INFO)  # Set the desired log level
+        logger.handlers = None
+
+    logger.setLevel(logging_level)  # Set the desired log level
     logger.propagate = 0
 
     # Create a StreamHandler to write logs to stdout

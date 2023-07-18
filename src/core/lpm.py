@@ -1,3 +1,4 @@
+import logging
 from src.commands.list_packages import list_packages
 from src.commands.remove import remove
 from src.commands.upgrade import upgrade
@@ -11,8 +12,11 @@ from src.core import LockFile
 class lpm:
     """Provides all the commands for the package manager, allows for 1:1 mapping from cmd input to functions"""
 
-    def __init__(self):
-        self._logger = make_logger("default")
+    def __init__(self, log_debug=False):
+        if log_debug:
+            self._logger = make_logger("default", logging_level=logging.DEBUG)
+        else: 
+            self._logger = make_logger("default")
         
     def install_pkg(self, pkg_id: str, version: str = ""):
         """Install a specific package"""
@@ -26,6 +30,9 @@ class lpm:
 
     def remove(self, pkg_id: str):
         """Remove one specific package"""
+        # DECIDE: Should it be possible to remove pkg that is installed as dependency of other package or only top-level packages? 
+        # Probably the latter: if i remove dep of pkg, wont work anymore. can install dep manually and works again, but when removing pkg, dep isn't removed
+        # Could also prompt user with warning that this could lead to strange behaviour and is not suggested
         self._logger.info(f"Removing {pkg_id}")
         remove(pkg_id)
 
