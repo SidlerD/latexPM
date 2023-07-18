@@ -1,5 +1,5 @@
 import os
-from os.path import basename, join
+from os.path import basename, join, exists, abspath
 import re
 import logging
 from src.API import CTAN, TexLive
@@ -13,23 +13,34 @@ prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
 """
 
 # ASSUMPTION: usepackage{} is always first command on line, doesn't match it if there's anything else than spaces before use/requirepackage
-req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?.*'
+req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)\s*(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?.*'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/BnKbkR/1
+    https://regex101.com/r/yKfVDC/1
 """
 logger = logging.getLogger("default")
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     logger.info("Extracting dependencies of " + dep.id)
 
+    to_extract, already_extracted = [f'{dep.name}.sty'], []
+    final_deps: list[Dependency] = []
+
+    if not exists(abspath(to_extract[0])):
+        # No sty-file in package-files
+        logger.info(f"{dep.id} does not include any .sty files. Dependency extraction skipped")
+        return []
+
     sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
     file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
 
-    to_extract = [f'{dep.name}.sty']
-    final_deps: list[Dependency] = []
 
     while to_extract:
         sty_name = to_extract.pop()
+        if sty_name in already_extracted:
+            continue
+
+        already_extracted.append(sty_name)
+
         sty_path = join(dep.path, sty_name)
 
         if not os.path.exists(sty_path):
@@ -45,7 +56,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                 package_names = package_names.split(',')
                 for name in package_names:
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
-                    if name in file_names: 
+                    if name in file_names and name not in already_extracted and name not in to_extract: 
                         # dep requires on other file which was included in download. Since it is needed, we also parse its dependencies
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
                         logger.debug(f"{sty_name} depends on {name}, which was included in its download")
