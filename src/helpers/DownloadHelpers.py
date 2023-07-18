@@ -37,7 +37,7 @@ def download_and_extract_zip(url: str, dep: Dependency):
 
 
 def organize_files(folder_path: str):
-    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins to .sty"""
+    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins/.dtx to .sty"""
     
     if not exists(folder_path):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")
@@ -72,6 +72,7 @@ def organize_files(folder_path: str):
             logger.debug(f"Creating sty-files from {ins_file}")
 
             # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
+            # DECIDE: Could parse sty-file names that are generated from ins-file, if exists delete it and regenerate (cant just not do latex ins-file, since that might also generate other files)
             try:
                 # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
                 subprocess.run(['latex', ins_file], stdout=subprocess.DEVNULL, timeout=3)

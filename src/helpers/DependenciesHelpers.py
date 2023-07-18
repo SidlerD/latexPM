@@ -11,11 +11,10 @@ prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
     https://regex101.com/r/2iSv1O/1
 """
 
-# FIXME: Fix case where line like "%\string\usepackage{amstex12beta}.}" is captured. Meaning exclude all matches that have a % between start-of-line and match
-# SImple solution: Read lines from sty individually, remove those that start with %. But this could still be wrong when comment starts after some command, like "\begin{documents} % \Requirespackage[][]"
-req_pkg_pattern = r'\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?'
+# ASSUMPTION: usepackage{} is always first command on line, doesn't match it if there's anything else than spaces before use/requirepackage
+req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?.*'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/WIGHVr/1
+    https://regex101.com/r/BnKbkR/1
 """
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
