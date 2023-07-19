@@ -47,8 +47,8 @@ class lpm:
         self._logger.info(f"Updating all packages")
         upgrade()
 
-    def list_packages(self):
-        list_packages()
+    def list_packages(self, top_level_only = False, tree = False):
+        list_packages(top_level_only, tree)
 
     def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""
