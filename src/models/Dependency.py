@@ -69,4 +69,5 @@ def serialize_dependency(dep: Dependency | DownloadedDependency):
             'id': dep.id,
             'name': dep.name, 
             'version': {'date': dep.version.date, 'number': dep.version.number},
+            'alias': dep.alias
         }

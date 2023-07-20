@@ -26,6 +26,7 @@ def download_and_extract_zip(url: str, dep: Dependency):
         file.write(response.content)
     
     # Extract the files into a folder
+    # FIXME: This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(download_folder)
     

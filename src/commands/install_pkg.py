@@ -44,8 +44,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
                 print(e)
     
     except (ValueError, NotImplementedError) as e :
-        logging.error(f"Problem while installing {dep.id} {dep.version if dep.version else 'None'}: {str(e)}")
-        print(RenderTree(root, style=AsciiStyle()))
+        logging.error(f"Problem while installing {dep}: {str(e)}")
 
 def install_pkg(pkg_id: str, version: str = ""):
     """Installs one specific package and all its dependencies\n
