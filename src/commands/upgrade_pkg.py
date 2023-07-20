@@ -59,11 +59,13 @@ def upgrade_pkg(pkg_id: str):
     try:
         try:
             name = CTAN.get_name_from_id(pkg_id)
+            dep = Dependency(pkg_id, name)
         except CtanPackageNotFoundError as e:
             aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+            alias_id = pkg_id
             pkg_id, name = aliased_by['id'], aliased_by['name']
+            dep = Dependency(pkg_id, name, alias = {'id': alias_id, 'name': ''})
 
-        dep = Dependency(pkg_id, name)
         rootNode = LockFile.read_file_as_tree()
     
         exists = LockFile.is_in_tree(dep)
