@@ -2,6 +2,7 @@ import json
 from os.path import isfile, abspath
 import requests
 import logging
+from functools import cache
 
 from src.models.Dependency import Dependency, DownloadedDependency
 from src.helpers.DownloadHelpers import download_and_extract_zip
@@ -12,6 +13,7 @@ _ctan_url = "https://www.ctan.org/"
 logger = logging.getLogger("default") # DECIDE: Is this good??
 aliases_file = 'CTAN_aliases.json'
     
+@cache
 def get_id_from_name(name: str) -> str:
     all = requests.get(f"{_ctan_url}json/2.0/packages").json()
     for pkg in all:
@@ -19,13 +21,13 @@ def get_id_from_name(name: str) -> str:
             return pkg['key']
     raise CtanPackageNotFoundError(f"CTAN has no information about package with name {name}")
 
+@cache
 def get_name_from_id(id: str) -> str:
     res = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
     if "id" in res:
         return res['name']
     raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
 
-# TODO: Look into caching by using a decorator here
 def get_alias_of_package(id = '', name = '') -> dict:
     """Some packages are not available on CTAN directly, but are under another package, where they are listed as 'aliases'
     Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. Therefore, we should download pgf to get tikz"""
@@ -80,12 +82,14 @@ def update_aliases():
     with open(aliases_file, 'w') as f:
         json.dump(f, aliases, indent=2)
 
+@cache
 def get_package_info(id: str):
     pkgInfo = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
     if "id" not in pkgInfo or "name" not in pkgInfo:
         raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
     return pkgInfo
 
+@cache
 def get_version(id: str) -> Version:
     pkgInfo = get_package_info(id)
     if 'version' in pkgInfo:
