@@ -53,7 +53,13 @@ def install_pkg(pkg_id: str, version: str = ""):
     
     rootNode = None
     try:
-        dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id), version=version)
+        try:
+            name = CTAN.get_name_from_id(pkg_id)
+        except CtanPackageNotFoundError as e:
+            aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+            pkg_id, name = aliased_by['id'], aliased_by['name']
+            
+        dep = Dependency(pkg_id, name, version=version)
         rootNode = LockFile.read_file_as_tree()
     
         exists = LockFile.is_in_tree(dep)

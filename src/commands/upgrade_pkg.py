@@ -8,6 +8,7 @@ from src.API import CTAN
 from src.commands.install_pkg import install_pkg
 from src.commands.remove_pkg import remove_pkg
 from src.core import LockFile
+from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DependencyNode
 from src.models.Version import Version
 from src.helpers.DependenciesHelpers import extract_dependencies
@@ -56,7 +57,13 @@ def _handle_dep(dep: Dependency, root: Node):
 def upgrade_pkg(pkg_id: str):
     rootNode = None
     try:
-        dep = Dependency(pkg_id, CTAN.get_name_from_id(pkg_id))
+        try:
+            name = CTAN.get_name_from_id(pkg_id)
+        except CtanPackageNotFoundError as e:
+            aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+            pkg_id, name = aliased_by['id'], aliased_by['name']
+
+        dep = Dependency(pkg_id, name)
         rootNode = LockFile.read_file_as_tree()
     
         exists = LockFile.is_in_tree(dep)

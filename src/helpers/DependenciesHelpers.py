@@ -57,13 +57,18 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                 for name in package_names:
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
                     if name in file_names and name not in already_extracted and name not in to_extract: 
-                        # dep requires on other file which was included in download. Since it is needed, we also parse its dependencies
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
                         logger.debug(f"{sty_name} depends on {name}, which was included in its download")
                         to_extract.append(f'{name}.sty')
                     else:
                         try:
-                            final_deps.append(Dependency(CTAN.get_id_from_name(name), name, package_version))
+                            try:
+                                pkg_id = CTAN.get_id_from_name(name)
+                            except CtanPackageNotFoundError:
+                                aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+                                pkg_id, name = aliased_by['id'], aliased_by['name']
+                            
+                            final_deps.append(Dependency(pkg_id, name, package_version))
                             logger.debug(f"Adding {name} as dependency of {dep.id}")
                         except CtanPackageNotFoundError as e:
                             logger.warning(f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, but CTAN has no information about {name}. {name} will not be installed. If problems arise, please install {name} manually.")
