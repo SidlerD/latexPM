@@ -10,9 +10,8 @@ logger = logging.getLogger("default")
 
 def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from CTAN")
-    version = dep.version
     
-    url = _get_url_for_version(version)
+    url = _get_url_for_version(dep)
 
     logger.info(f"TL: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
@@ -21,12 +20,16 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
 
 
 
-def _get_url_for_version(version: Version):
+def _get_url_for_version(dep: Dependency):
+    v = dep.version
+    url = "http://127.0.0.1:8000/packages/" + dep.id + "?number=v1.2a"
+    return url
+
     raise NotImplementedError("Download from TL not implemented yet")
-    #URGENT: Implement
-    if(not version.date and not version.number):
+    #URGENT: Implement historical downloads
+    if(not v.date and not v.number):
         pass # return path to latest version on TL
-    if(version.date):
+    if(v.date):
         pass # Find closest entry after date, check compatibility, download
 
     

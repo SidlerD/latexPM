@@ -43,6 +43,7 @@ def parse_version(version) -> tuple[datetime, str]:
     if(type(version) == str): # e.g. '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
         # Try to extract date from string
         # TODO: Check if dates are sometimes present with dot-notation. If so, figure out way to catch them without catching version like v12.10.21
+        # NOTE: This pattern is also used in backend: Changes need to be applied in both places
         date_pattern = r"\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}"
         date_match = re.search(date_pattern, version)
         date = date_match.group() if date_match else None
