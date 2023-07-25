@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date
+import datetime
 from anytree import NodeMixin
 import logging
 from src.models.Version import Version
@@ -34,9 +35,9 @@ class DownloadedDependency(Dependency):
         self.files = files if files else [] # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
 
     def __repr__(self):
-        return f"_{self.name}: {self.version}"
+        return f"_{self.name}{self.version}"
     def __str__(self) -> str:
-        return f"{self.name}: {self.version}"
+        return f"{self.name}{self.version}"
     
 class DependencyNode(NodeMixin):
     def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = None):
@@ -53,10 +54,17 @@ class DependencyNode(NodeMixin):
             return f"({self.dep})"
         return str(self.dep)
     
+    @property
+    def ppath(self):
+        """Pretty path, use for printing path to node\n
+        Example: acro:  --> translations:  --> (pdftexcmds: )"""
+        return ' > '.join([str(node) if hasattr(node, 'id') else node.name for node in self.path][1:])
 
 def serialize_dependency(elem: any):
-    if isinstance(elem, datetime):
+    if isinstance(elem, date):
         return str(elem)
+    if isinstance(elem, datetime):
+        return str(elem.date())
     if type(elem) == DownloadedDependency:
         return {
             'id': elem.id,

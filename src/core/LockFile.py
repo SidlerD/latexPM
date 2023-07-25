@@ -78,6 +78,8 @@ def read_file_as_tree() -> Node:
     return _root
 
 def is_in_tree(dep: Dependency) -> DependencyNode:
+    """Returns DependencNode that stores dep that is passed as argument, None if not in tree.\n
+    Searching is done by id, version is ignored"""
     global _root
     _root = read_file_as_tree()
 
@@ -85,8 +87,8 @@ def is_in_tree(dep: Dependency) -> DependencyNode:
     filter = lambda node: (
         hasattr(node, 'dep')
         and (
-            node.dep == dep or # Is  the same dependency
-            (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
+            node.dep.id == dep.id # Is  the same dependency
+            # ASSUMPTION: Don't need to check version equality here since I can't install two versions of one package
         )
     )
     prev_occurences = findall(_root, filter_= filter)

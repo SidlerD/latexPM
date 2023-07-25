@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 import re
 from dateutil.parser import parse
 
@@ -33,11 +33,19 @@ class Version:
         return hash((self.date, self.number))
     
     def __repr__(self) -> str:
-        return f"v({self.date}, {self.number})"
+        if not self.date and not self.number:
+            return ""
+        if self.date and not self.number:
+            return f"({self.date})"
+        elif self.number and not self.date:
+            return f"({self.number})"
+
+        return f"({self.date}, {self.number})"
+            
     
-def parse_version(version) -> tuple[datetime, str]:
+def parse_version(version) -> tuple[date, str]:
     if type(version) == dict and 'date' in version and 'number' in version: # CTAN version field
-        date = parse(version['date']) if version["date"] else None
+        date = parse(version['date']).date() if version["date"] else None
         number = version['number'] if version['number'] else None
         return date, number
     if version == "" or version == None:
