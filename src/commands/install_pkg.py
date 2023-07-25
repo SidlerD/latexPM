@@ -72,9 +72,6 @@ def install_pkg(pkg_id: str, version: str = ""):
 
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")
-
-    except CtanPackageNotFoundError as e:
-        logger.error(e)
         
     except Exception as e:
         # TODO: If error with one package installation, do I need to undo everything or do I leave it and write to lockfile? Id say undo all

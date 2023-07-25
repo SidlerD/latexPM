@@ -1,3 +1,4 @@
+from datetime import datetime
 from anytree import NodeMixin
 import logging
 from src.models.Version import Version
@@ -53,28 +54,28 @@ class DependencyNode(NodeMixin):
         return str(self.dep)
     
 
-def serialize_dependency(dep: Dependency | DownloadedDependency):
-    if not isinstance(dep, Dependency):
-        logger.error(f"Object of type '{dep.__class__.__name__}' is not JSON serializable: {str(dep)}. Returning str({dep.__class__.__name__})")
-        try:
-            return str(dep)
-        except:
-            raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable: {str(dep)}")
-        
-    if type(dep) == DownloadedDependency:
+def serialize_dependency(elem: any):
+    if isinstance(elem, datetime):
+        return str(elem)
+    if type(elem) == DownloadedDependency:
         return {
-            'id': dep.id,
-            'name': dep.name, 
-            'version': {'date': dep.version.date, 'number': dep.version.number},
-            'alias': dep.alias,
-            'path': dep.path,
-            'url': dep.url,
-            'files': dep.files
+            'id': elem.id,
+            'name': elem.name, 
+            'version': {'date': elem.version.date, 'number': elem.version.number},
+            'alias': elem.alias,
+            'path': elem.path,
+            'url': elem.url,
+            'files': elem.files
         }
-    if type(dep) == Dependency:
+    if type(elem) == Dependency:
         return {
-            'id': dep.id,
-            'name': dep.name, 
-            'version': {'date': dep.version.date, 'number': dep.version.number},
-            'alias': dep.alias
+            'id': elem.id,
+            'name': elem.name, 
+            'version': {'date': elem.version.date, 'number': elem.version.number},
+            'alias': elem.alias
         }
+    logger.warning(f"Object of type '{elem.__class__.__name__}' is not JSON serializable: {str(elem)}. Attempting to return str({elem.__class__.__name__})")
+    try:
+        return str(elem)
+    except:
+        raise TypeError(f"Object of type '{elem.__class__.__name__}' is not JSON serializable")
