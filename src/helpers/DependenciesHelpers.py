@@ -13,6 +13,7 @@ prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
 """
 
 # ASSUMPTION: usepackage{} is always first command on line, doesn't match it if there's anything else than spaces before use/requirepackage
+# FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} (I don't know which file types are supported for importing with \input)
 req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)\s*(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?.*'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
     https://regex101.com/r/yKfVDC/1

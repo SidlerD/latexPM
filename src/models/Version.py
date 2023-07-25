@@ -24,7 +24,10 @@ class Version:
             return False
         if self.number != other.number and self.number and other.number: #Diff numbers, both not none
             return False
-        return True
+        if self.number == other.number and self.date == other.date:
+            return True
+                
+        return False
     
     def __hash__(self) -> int:
         return hash((self.date, self.number))
@@ -49,7 +52,7 @@ def parse_version(version) -> tuple[datetime, str]:
         date = date_match.group() if date_match else None
 
         # Assumes version number is followed by a space
-        number_pattern = r"\d*\.\d*(\.\d+)?-?([a-z]+(?=\s))?"
+        number_pattern = r"\d+\.\d+(?:\.\d+)?-?(?:[a-z0-9])*\b"
         single_number_pattern = r"(?<=v)\d" # FIXME: Problem: Trying to capture single-digit versions without leading v would capture numbers in date
 
         number_match = re.search(number_pattern, version)

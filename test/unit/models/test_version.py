@@ -49,7 +49,14 @@ class Test_Version(unittest.TestCase):
 
         self.assertEqual(date, parse('2020/10/05'))
         self.assertEqual(number, '2.5k')
-    
+                
+    def test_parse_version_string_number_only(self):
+        input = 'v1.2a '
+        date, number = parse_version(input)
+
+        self.assertEqual(date, None)
+        self.assertEqual(number, '1.2a')
+
     def test_parse_version_string_single_number(self):
         input = 'sometext pkgA v2 other text'
         date, number = parse_version(input)

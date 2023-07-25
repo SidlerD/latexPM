@@ -1,6 +1,8 @@
 from anytree import NodeMixin
-
+import logging
 from src.models.Version import Version
+
+logger = logging.getLogger("default")
 
 class Dependency:
     def __init__(self, id: str, name: str, version: str | dict | Version | None = None, alias: dict = None):
@@ -53,7 +55,12 @@ class DependencyNode(NodeMixin):
 
 def serialize_dependency(dep: Dependency | DownloadedDependency):
     if not isinstance(dep, Dependency):
-        raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable")
+        logger.error(f"Object of type '{dep.__class__.__name__}' is not JSON serializable: {str(dep)}. Returning str({dep.__class__.__name__})")
+        try:
+            return str(dep)
+        except:
+            raise TypeError(f"Object of type '{dep.__class__.__name__}' is not JSON serializable: {str(dep)}")
+        
     if type(dep) == DownloadedDependency:
         return {
             'id': dep.id,
