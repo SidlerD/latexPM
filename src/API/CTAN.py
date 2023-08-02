@@ -37,7 +37,7 @@ def get_alias_of_package(id = '', name = '') -> dict:
     
     def find():
         if not isfile(abspath(aliases_file)):
-            update_aliases()
+            update_aliases("Need to build a list of all aliases of packages on CTAN. This can take a very long time. Do you want to continue`[y / n]: ")
         with open(aliases_file, "r") as f:
             aliases = json.load(f)
             for alias in aliases:
@@ -45,13 +45,14 @@ def get_alias_of_package(id = '', name = '') -> dict:
                     return alias['aliased_by']
                 elif name and alias['name'] == name:
                     return alias['aliased_by']
+    
     res = find()
     if res:
         logger.debug(f"{id if id else name} is aliased by {res}")
         return res
     
     logger.debug(f"Couldn't find {id if id else name} in list of aliases")
-    update_aliases()
+    update_aliases(f"{id if id else name} is not in list of aliases: Do you want to update the list? [y / n]: ")
 
     res = find()
     if res:
@@ -60,8 +61,17 @@ def get_alias_of_package(id = '', name = '') -> dict:
             
     raise CtanPackageNotFoundError(f"{id if id else name} is not available on CTAN under any alias")
 
-def update_aliases():
-    # TODO: Should let user choose whether to do this
+def update_aliases(prompt_msg: str = ""):
+    """prompt_msg: Message that roughly asks 'Do you want to update alias', giving some additional context"""
+    # Let user choose whether to update aliases
+    decision = ""
+    while decision not in ['y', 'n']:
+        decision = input(prompt_msg if prompt_msg else f"Do you want to update the list of aliases? This can take a long time [y / n]: ").lower()
+    
+    if(decision == 'n'): 
+        logger.info(f"Not updating aliases due to user decision")
+        return
+    
     logger.info('Updating list of aliases from CTAN. Please note that this can take very long')
     all = requests.get(f"{_ctan_url}json/2.0/packages").json()
     aliases = []

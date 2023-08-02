@@ -73,8 +73,8 @@ def organize_files(folder_path: str):
             logger.debug(f"Creating sty-files from {basename(ins_file)}")
 
             # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
-            # DECIDE: Could parse sty-file names that are generated from ins-file, if exists delete it and regenerate (cant just not do latex ins-file, since that might also generate other files)
             try:
+                # DECIDE: Could parse sty-file names that are generated from ins-file and delete them, so that prompt does not occur
                 # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
                 subprocess.run(['latex', ins_file], stdout=subprocess.DEVNULL, timeout=3)
             except Exception as e:
@@ -89,6 +89,6 @@ def organize_files(folder_path: str):
             except Exception as e:
                 logger.warning(f"Problem while trying to generate sty-files from {name}.dtx: {e}")
     
-    # TODO: Remove all files except .sty
+    # TODO: Remove files I know are unnecessary (e.g. pdf, log, aux)
 
     os.chdir(old_cwd)

@@ -23,7 +23,6 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
 def _get_url_for_version(dep: Dependency) -> str:
     v = dep.version
 
-    #URGENT: Implement historical downloads
     url = f"{_base_url}/{dep.id}"
     if v.date and v.number:
         url += f'?date={v.date}&number={v.number}'

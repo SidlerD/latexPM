@@ -30,10 +30,6 @@ class lpm:
 
     def remove(self, pkg_id: str):
         """Remove one specific package"""
-        # DECIDE: Should it be possible to remove pkg that is installed as dependency of other package or only top-level packages? 
-        # Probably the latter: if i remove dep of pkg, wont work anymore. can install dep manually and works again, but when removing pkg, dep isn't removed
-        # Could also prompt user with warning that this could lead to strange behaviour and is not suggested
-        # NPM: Allows command, but doesn't uninstall it 
         self._logger.info(f"Removing {pkg_id}")
         remove(pkg_id)
 

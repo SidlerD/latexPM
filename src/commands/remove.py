@@ -14,24 +14,26 @@ def _handle_dep(pkg: DependencyNode):
         _handle_dep(pkg.children[0])
 
 
-    # Remove pkg
     if not hasattr(pkg, "dependents"):
-        logger.error(f"Found a node in dependency tree without dependents attribute: {pkg}")
-        return
-    if len(pkg.dependents) == 0:
+        logger.warn(f"Found a node in dependency tree without dependents attribute: {pkg}")
+    
+    # Remove pkg
+    if not hasattr(pkg, 'dependents') or len(pkg.dependents) == 0:
         delete_pkg_files(pkg)
         remove_from_tree(pkg)
+    # Move pkg in tree from dep_to_remove to first package which depends on it
     elif len(pkg.dependents) > 0:
-        # Move pkg in tree from dep_to_remove to first package which depends on it
         dest_dep = pkg.dependents.pop(0)
         dest = LockFile.is_in_tree(dest_dep)
 
         move_in_tree(dest=dest, node=pkg)
 
 
-def remove(pkg_id: str):
+def remove(pkg_id: str, by_user: bool = True):
+    """by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages"""
     dep_node = LockFile.find_by_id(pkg_id)
-    if dep_node.depth > 1: 
+    # If package was not installed by user directly, warn and ask if he really wants to since it will probably break package that installed it
+    if by_user and dep_node.depth > 1: 
         decision = ""
         while decision not in ['y', 'n']:
             decision = input(f"{dep_node.ppath} depends on {pkg_id}. Removing {pkg_id} could lead to {dep_node.parent} not working correctly anymore. Do you want to continue? [y / n]:").lower()
@@ -52,7 +54,6 @@ def delete_pkg_files(dep_node: DependencyNode):
     # Remove folder including its files
     folder = dep_node.dep.path
     cnt_files = len([file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
-    
     shutil.rmtree(folder)
 
     logger.info(f"Removed {cnt_files} files for {dep_node}")    
