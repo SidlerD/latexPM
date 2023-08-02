@@ -2,7 +2,7 @@ import os
 from os.path import basename, join, exists, abspath
 import re
 import logging
-from src.API import CTAN, TexLive
+from src.API import CTAN, VPTAN
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DownloadedDependency
 
