@@ -53,7 +53,7 @@ def read_file_as_tree() -> Node:
     # IF file is empty, create new tree
     if _file_is_empty(lock_file_name):
         logger.debug(f"Created new tree because {lock_file_name} is empty")
-        _root = Node('root')
+        _root = Node('root', dependents = [])
         return _root
     
     # Read the JSON file
@@ -69,7 +69,7 @@ def read_file_as_tree() -> Node:
     # return _root
 
     # Construct the tree
-    _root = Node('root')
+    _root = Node('root', dependents = [])
     if 'children' in json_data:
         for child_data in json_data["children"]:
             _construct_tree(child_data, parent=_root)

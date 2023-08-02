@@ -19,13 +19,11 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
 
     if existing_node:
         existing_par = existing_node.parent
-        if type(existing_par) == DependencyNode:
-
-            msg = f"""{parent} depends on {dep}, which is already installed by {existing_par.ppath}"""
+        if hasattr(existing_par, 'dependents'):
             existing_node.dependents.append(parent.dep) 
-        elif type(existing_par) == Node and existing_par.name == LockFile.read_file_as_tree().name:
-            msg = f"""{parent} depends on {dep}, which is already installed as requested by the user"""
-            #TODO: When existing_par is removed, parent needs to install dep
+            
+        installed_by = "as requested by the user" if type(existing_par) == Node else existing_par.ppath
+        msg = f"""{parent} depends on {dep}, which is already installed by {installed_by}"""
 
         if existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."
@@ -52,8 +50,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         logging.error(f"Problem while installing {dep}: {str(e)}")
 
 def install_pkg(pkg_id: str, version: str = ""):
-    """Installs one specific package and all its dependencies\n
-    Returns json to add to requirements-file, describing installed package and dependencies"""
+    """Installs one specific package and all its dependencies\n"""
     
     rootNode = None
     try:
