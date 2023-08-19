@@ -48,7 +48,10 @@ def _handle_dep(dep: Dependency):
 
     # For each new_dep in new_list: install_pkg(new_dep)
     for pkg in to_install:
-        install_pkg(pkg)
+        try:
+            install_pkg(pkg)
+        except:
+            logger.error(f"Couldn't download {pkg}, which is a dependency of {dep_after}. Try manually installing it when currect process is finished")
 
     # For each old_dep in old_list: remove_pkg(old_dep) # This should include checking .dependents
     for pkg in deps_of_dep_before:
@@ -57,7 +60,6 @@ def _handle_dep(dep: Dependency):
     pass
 
 def upgrade_pkg(pkg_id: str):
-    rootNode = None
     try:
         try:
             name = CTAN.get_name_from_id(pkg_id)

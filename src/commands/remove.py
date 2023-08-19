@@ -30,7 +30,9 @@ def _handle_dep(pkg: DependencyNode):
 
 
 def remove(pkg_id: str, by_user: bool = True):
-    """by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages"""
+    """Remove package and its dependencies
+        by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages
+    """
     dep_node = LockFile.find_by_id(pkg_id)
     # If package was not installed by user directly, warn and ask if he really wants to since it will probably break package that installed it
     if by_user and dep_node.depth > 1: 
@@ -68,3 +70,4 @@ def remove_from_tree(child):
         raise Exception("Attempted to remove a node from Tree which still has children")
     
     child.parent = None
+    # TODO: Remove dep from all .dependents of tree

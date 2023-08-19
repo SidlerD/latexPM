@@ -51,7 +51,7 @@ def read_file_as_tree() -> Node:
     logger.debug("Reading dependency tree from lock-file")
     
     # IF file is empty, create new tree
-    if _file_is_empty(lock_file_name):
+    if not os.path.exists(lock_file_name) or _file_is_empty(lock_file_name):
         logger.debug(f"Created new tree because {lock_file_name} is empty")
         _root = Node('root', dependents = [])
         return _root
