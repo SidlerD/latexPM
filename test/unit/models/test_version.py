@@ -19,7 +19,7 @@ class Test_Version(unittest.TestCase):
         date, number = parse_version(input)
 
         self.assertEqual(i_number, number)
-        self.assertEqual(date, parse(i_date))
+        self.assertEqual(date, parse(i_date).date())
           
     def test_parse_version_correct_dict3(self):
         i_date, i_number = "", ""

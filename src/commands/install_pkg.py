@@ -23,8 +23,8 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         if hasattr(existing_par, 'dependents'):
             existing_node.dependents.append(parent.dep) 
             
-        installed_by = "as requested by the user" if type(existing_par) == Node else existing_par.ppath
-        msg = f"""{parent} depends on {dep}, which is already installed by {installed_by}"""
+        installed_by = "as requested by the user" if type(existing_par) == Node else "by " + existing_par.ppath
+        msg = f"""{parent} depends on {dep}, which is already installed {installed_by}"""
 
         if existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."

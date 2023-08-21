@@ -1,5 +1,4 @@
-from datetime import date
-import datetime
+from datetime import date, datetime
 from anytree import NodeMixin
 import logging
 from src.models.Version import Version

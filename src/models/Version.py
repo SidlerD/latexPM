@@ -70,6 +70,6 @@ def parse_version(version) -> tuple[date, str]:
             single_number_match = re.search(single_number_pattern, version)
             number = single_number_match.group() if single_number_match else None
             
-        return parse(date) if date else None, number
+        return parse(date).date() if date else None, number
     
     raise TypeError(f"Cannot parse {type(version)} {version}")
