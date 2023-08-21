@@ -1,6 +1,9 @@
 # Custom
 packages/
 *.bat
+requirements-lock.json
+requirements.json
+t.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

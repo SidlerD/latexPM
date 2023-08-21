@@ -13,7 +13,7 @@ def add_install_parser(subparsers):
     mutual_excl_args = install_parser.add_mutually_exclusive_group(required=True)
     mutual_excl_args.add_argument('package', default=None, nargs='?', help='Package id to install')
     mutual_excl_args.add_argument('--lockfile', action='store_true', help='Install packages from lockfile')
-    mutual_excl_args.add_argument('--list', action='store_true', help='List all installed packages')
+    add_debug_option(install_parser)
 
 def add_upgrade_parser(subparsers):
     # Create sub-parser for the upgrade command
@@ -22,18 +22,31 @@ def add_upgrade_parser(subparsers):
 
     mutual_excl_args.add_argument('-p', '--package', type=str, help='upgrade specific package', metavar="")
     mutual_excl_args.add_argument('-a', '--all',action='store_true', help='upgrade all packages')
+    add_debug_option(upgrade_parser)
     
 
 def add_init_parser(subparsers):
     subparsers.add_parser('init', help='Initialize a new project')
     
+def add_list_parser(subparsers):
+    # Create sub-parser for the install command
+    list_parser = subparsers.add_parser('list', help='List installed package(s)')
+    list_parser.add_argument('-tree', '--tree', action='store_true', help='Show dependencies as tree')
+    list_parser.add_argument('-top', '--toplevel', action='store_true', help='Only show packages directly installed by user')
+    
 def add_remove_parser(subparsers):
     remove_parser = subparsers.add_parser('remove', help='Uninstall a package from project')
     remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="")
+    add_debug_option(remove_parser)
 
+def add_debug_option(parser):
+    parser.add_argument('-debug', action='store_true', help='Set logging level to debug instead of info')
 
 def handle_input(args):
-    lpm_inst = lpm()
+    try:
+        lpm_inst = lpm(args.debug)
+    except AttributeError:
+        lpm_inst = lpm()
 
     if args.command == 'install':
         if args.package:
@@ -42,14 +55,10 @@ def handle_input(args):
             if args.version:
                 print(f"WARN: Version will be ignored since --lockfile was given")
             lpm_inst.install()
-        elif args.list:
-            if args.version:
-                print(f"WARN: Version will be ignored since --list was given")
-            lpm_inst.list_packages()
     elif args.command == 'upgrade':
         if args.package:
             lpm_inst.upgrade_pkg(args.package)
-        else:
+        elif args.all:
             lpm_inst.upgrade()
     elif args.command == 'remove':
         if args.package:
@@ -58,8 +67,11 @@ def handle_input(args):
             print("Package-id needed to remove")
     elif args.command == 'init':
         lpm_inst.init()
+    elif args.command == 'list':
+        lpm_inst.list_packages(args.toplevel, args.tree)
     else:
         print("Command not recognized. Please use -h for to see the available commands")
+
 def main():
     print(f" -- lpm called from {os.getcwd()} -- \n")
     parser = ArgumentParser(prog='lpm')
@@ -70,6 +82,7 @@ def main():
     add_upgrade_parser(subparsers)
     add_init_parser(subparsers)
     add_remove_parser(subparsers)
+    add_list_parser(subparsers)
 
     # Set the function to be called when the command is run
     parser.set_defaults(func=handle_input)

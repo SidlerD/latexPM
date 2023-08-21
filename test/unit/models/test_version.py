@@ -19,7 +19,7 @@ class Test_Version(unittest.TestCase):
         date, number = parse_version(input)
 
         self.assertEqual(i_number, number)
-        self.assertEqual(date, parse(i_date))
+        self.assertEqual(date, parse(i_date).date())
           
     def test_parse_version_correct_dict3(self):
         i_date, i_number = "", ""
@@ -49,7 +49,22 @@ class Test_Version(unittest.TestCase):
 
         self.assertEqual(date, parse('2020/10/05'))
         self.assertEqual(number, '2.5k')
-    
+                
+    def test_parse_version_string_number_only(self):
+        input = 'v1.2a '
+        date, number = parse_version(input)
+
+        self.assertEqual(date, None)
+        self.assertEqual(number, '1.2a')
+
+    def test_parse_version_string_single_number(self):
+        input = 'sometext pkgA v2 other text'
+        date, number = parse_version(input)
+
+        self.assertEqual(date, None)
+        self.assertEqual(number, '2')
+
+
     # TODO: Add more tests for exctracting Version from str
 
     # FIXME: How do i test this better?

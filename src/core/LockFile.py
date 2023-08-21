@@ -15,7 +15,7 @@ lock_file_name = 'requirements-lock.json'
 _root = None
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
-# TODO: Create a class for the normal requirements.json file, since that needs to be updated too. 
+# URGENT: Create a class for the normal requirements.json file, since that needs to be updated too. 
 def get_name(): 
     return lock_file_name
 
@@ -50,6 +50,7 @@ def write_tree_to_file():
         f.write(data)
 
 def read_file_as_tree() -> Node:
+    """returns root-node of tree"""
     global _root
     if _root: 
         return _root
@@ -58,9 +59,9 @@ def read_file_as_tree() -> Node:
     logger.debug("Reading dependency tree from lock-file")
     
     # IF file is empty, create new tree
-    if _file_is_empty(lock_file_name):
+    if not os.path.exists(lock_file_name) or _file_is_empty(lock_file_name):
         logger.debug(f"Created new tree because {lock_file_name} is empty")
-        _root = Node('root')
+        _root = Node('root', dependents = [])
         return _root
     
     # Read the JSON file
@@ -76,7 +77,7 @@ def read_file_as_tree() -> Node:
     # return _root
 
     # Construct the tree
-    _root = Node('root')
+    _root = Node('root', dependents = [])
     if 'children' in json_data:
         for child_data in json_data["children"]:
             _construct_tree(child_data, parent=_root)
@@ -85,15 +86,16 @@ def read_file_as_tree() -> Node:
     return _root
 
 def is_in_tree(dep: Dependency) -> DependencyNode:
+    """Returns DependencNode that stores dep that is passed as argument, None if not in tree.\n
+    Searching is done by id, version is ignored"""
     global _root
     _root = read_file_as_tree()
 
-    # FIXME: Check Assumption: If dep.version is None and we have some version of it installed, then that satisfies dep
     filter = lambda node: (
         hasattr(node, 'dep')
         and (
-            node.dep == dep or # Is  the same dependency
-            (node.dep.id == dep.id and dep.version == None) # Need version None => Any version is fine 
+            node.dep.id == dep.id # Is  the same dependency
+            # ASSUMPTION: Don't need to check version equality here since I can't install two versions of one package
         )
     )
     prev_occurences = findall(_root, filter_= filter)
@@ -105,7 +107,7 @@ def is_in_tree(dep: Dependency) -> DependencyNode:
 def find_by_id(pkg_id: str) -> DependencyNode:
     global _root
     _root = read_file_as_tree()
-    occurences = findall(_root, filter_= lambda node: hasattr(node, 'id') and node.id == pkg_id)
+    occurences = findall(_root, filter_= lambda node: hasattr(node, 'id') and node.id == pkg_id or hasattr(node, 'dep') and 'id' in node.dep.alias and node.dep.alias['id'] == pkg_id)
 
     if(len(occurences) > 1):
         logger.warning(f"{pkg_id} is in tree {len(occurences)} times")
@@ -114,11 +116,12 @@ def find_by_id(pkg_id: str) -> DependencyNode:
     
     return occurences[0] if occurences else None
 
+# TODO: Find out how to do this using anytree-functionality and ending up with a tree of DependencyNodes that have .dep as DownloadedDependency, not dict
 def _construct_tree(data, parent=None):
     dep_info = data['dep']
-    dep = Dependency(dep_info["id"], dep_info["name"], Version(dep_info["version"]))
+    dep = Dependency(dep_info["id"], dep_info["name"], version=Version(dep_info["version"]), alias=dep_info['alias'])
     downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], files=dep_info['files'])
-    node = DependencyNode(downloaded_dep, parent=parent)
+    node = DependencyNode(downloaded_dep, parent=parent, dependents=[Dependency(d['id'], d['name'], version=d['version'], alias=d['alias']) for d in data['dependents']])
     if "children" in data:
         for child_data in data["children"]:
             _construct_tree(child_data, parent=node)

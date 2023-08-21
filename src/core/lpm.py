@@ -1,4 +1,5 @@
 from src.commands.init import init
+import logging
 from src.commands.list_packages import list_packages
 from src.commands.remove import remove
 from src.commands.upgrade import upgrade
@@ -9,12 +10,15 @@ from src.commands.install import install
 from src.commands.install_pkg import install_pkg
 from src.core import LockFile
 
-
+# TODO: Should probably add some "guard" that checks if Lockfile matches with packages folder. If not, this could lead to weird behaviours if user has changed anything manually
 class lpm:
     """Provides all the commands for the package manager, allows for 1:1 mapping from cmd input to functions"""
 
-    def __init__(self):
-        self._logger = make_logger("default")
+    def __init__(self, log_debug=False):
+        if log_debug:
+            self._logger = make_logger("default", logging_level=logging.DEBUG)
+        else: 
+            self._logger = make_logger("default")
         
     def install_pkg(self, pkg_id: str, version: str = ""):
         """Install a specific package"""
@@ -23,7 +27,6 @@ class lpm:
 
     def install(self):
         """Install all packages as specified in lock-file"""
-        # TODO: Do I need to remove all installed packages before installing from LockFile?
         self._logger.info(f"Installing dependencies from {LockFile.get_name}")
         install()
 
@@ -42,8 +45,8 @@ class lpm:
         self._logger.info(f"Updating all packages")
         upgrade()
 
-    def list_packages(self):
-        list_packages()
+    def list_packages(self, top_level_only = False, tree = False):
+        list_packages(top_level_only, tree)
 
     def freeze(self):
         """Lock dependencies and write current dependencies + versions to file"""

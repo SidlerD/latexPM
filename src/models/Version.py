@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 import re
 from dateutil.parser import parse
 
@@ -24,17 +24,28 @@ class Version:
             return False
         if self.number != other.number and self.number and other.number: #Diff numbers, both not none
             return False
-        return True
+        if self.number == other.number and self.date == other.date:
+            return True
+                
+        return False
     
     def __hash__(self) -> int:
         return hash((self.date, self.number))
     
     def __repr__(self) -> str:
-        return f"v({self.date}, {self.number})"
+        if not self.date and not self.number:
+            return ""
+        if self.date and not self.number:
+            return f"({self.date})"
+        elif self.number and not self.date:
+            return f"({self.number})"
+
+        return f"({self.date}, {self.number})"
+            
     
-def parse_version(version) -> tuple[datetime, str]:
+def parse_version(version) -> tuple[date, str]:
     if type(version) == dict and 'date' in version and 'number' in version: # CTAN version field
-        date = parse(version['date']) if version["date"] else None
+        date = parse(version['date']).date() if version["date"] else None
         number = version['number'] if version['number'] else None
         return date, number
     if version == "" or version == None:
@@ -43,16 +54,22 @@ def parse_version(version) -> tuple[datetime, str]:
     if(type(version) == str): # e.g. '2005/05/09 v0.3 1, 2, many: numbersets  (ums)'
         # Try to extract date from string
         # TODO: Check if dates are sometimes present with dot-notation. If so, figure out way to catch them without catching version like v12.10.21
+        # NOTE: This pattern is also used in backend: Changes need to be applied in both places
         date_pattern = r"\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2}"
         date_match = re.search(date_pattern, version)
         date = date_match.group() if date_match else None
 
-        #FIXME: Doesn't capture version like 1 or 5. How to do that without capturing the numbers of date?
         # Assumes version number is followed by a space
-        number_pattern = r"\d*\.\d*(\.\d+)?-?([a-z]+(?=\s))?"
-        number_match = re.search(number_pattern, version)
-        number = number_match.group() if number_match else None
+        number_pattern = r"\d+\.\d+(?:\.\d+)?-?(?:[a-z0-9])*\b"
+        single_number_pattern = r"(?<=v)\d" # FIXME: Problem: Trying to capture single-digit versions without leading v would capture numbers in date
 
-        return parse(date) if date else None, number
+        number_match = re.search(number_pattern, version)
+        if number_match:
+            number = number_match.group()
+        else:
+            single_number_match = re.search(single_number_pattern, version)
+            number = single_number_match.group() if single_number_match else None
+            
+        return parse(date).date() if date else None, number
     
     raise TypeError(f"Cannot parse {type(version)} {version}")

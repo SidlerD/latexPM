@@ -1,64 +1,78 @@
 import os
+from os.path import basename, join, exists, abspath
 import re
 import logging
-from src.API import CTAN, TexLive
+from src.API import CTAN, VPTAN
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DownloadedDependency
 
 
-prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
+# prov_pkg_pattern = r'\\Provides(?:Package|File)\{(.*?)(?:\..*)?\}\[(.*?)\]'
 """Captures both ProvidesPackage and ProvidesFile. group1 = Pkg_name, group2 = version\n
     https://regex101.com/r/2iSv1O/1
 """
 
-# FIXME: Fix case where line like "%\string\usepackage{amstex12beta}.}" is captured. Meaning exclude all matches that have a % between start-of-line and match
-# SImple solution: Read lines from sty individually, remove those that start with %. But this could still be wrong when comment starts after some command, like "\begin{documents} % \Requirespackage[][]"
-req_pkg_pattern = r'\\(?:RequirePackage|usepackage)(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?'
+# FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} (I don't know which file types are supported for importing with \input)
+req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)\s*(?:\[(?:.*?)\])?\s*\{(.*?)\}\s*(?:\[(.*?)\])?.*'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/WIGHVr/1
+    https://regex101.com/r/yKfVDC/1
 """
+logger = logging.getLogger("default")
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
-    logger = logging.getLogger("default")
     logger.info("Extracting dependencies of " + dep.id)
 
-    deps_of_files = set()
-    included_deps = [] # Files that were included in the download of dep
+    to_extract, already_extracted = [f'{dep.name}.sty'], []
+    final_deps: list[Dependency] = []
 
-    sty_files = [os.path.join(dep.path, file_name) for file_name in dep.files if file_name.endswith('.sty')] #TODO: .ins and .tex files
-    
-    # Get names of "packages" included in download
-    for sty_path in sty_files:
+    if not exists(join(dep.path, to_extract[0])):
+        # No sty-file in package-files
+        logger.info(f"{dep.id} does not include any .sty files. Dependency extraction skipped")
+        return []
+
+    sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
+    file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
+
+
+    while to_extract:
+        sty_name = to_extract.pop()
+        if sty_name in already_extracted:
+            continue
+
+        already_extracted.append(sty_name)
+
+        sty_path = join(dep.path, sty_name)
+
+        if not os.path.exists(sty_path):
+            if os.path.exists(os.path.abspath(sty_name)):
+                sty_path = os.path.abspath(sty_name)
+            else:
+                raise RuntimeError(f"Cannot extract dependencies for {dep.id}: {sty_path} does not exist")
+        
         with open(sty_path, "r") as sty:
-            # Dependencies that are already included when downloading package
-            match = re.search(prov_pkg_pattern, sty.read())
-            if match: # Get name from command in sty-file
-                package_name = match.group(1)
-                package_version = match.group(2)
-                included_deps.append(package_name) #TODO: Assumption that I dont document dependencies on included files, else I need to pass the version (not just none)
-            else: # Take file-name as package-name
-                package_name = os.path.basename(sty_path).split('.')[0]
-                if(package_name):
-                    included_deps.append(package_name)
-                    logger.debug(f"""File {os.path.basename(sty_path)} doesn't have a ProvidesPackage or ProvidesFile. Had to fallback and use its filename. This could lead to problems""") #TODO: Make this warning, not debug
-    # Get dependencies of files
-    for sty_path in sty_files:
-        with open(sty_path, "r") as sty:
-            matches: list[tuple] = re.findall(req_pkg_pattern, sty.read())
+            content = sty.read()
+            matches: list[tuple] = re.findall(req_pkg_pattern, content, re.MULTILINE)
             for (package_names, package_version) in matches:
                 package_names = package_names.split(',')
                 for name in package_names:
-                    if name in included_deps:
-                        # Sort out deps whose files were included in the download of current dep
-                        # This assumes that when I download package A which depends on (included) fileB, fileB is included in the right version
-                        # Could check for assumption, but it seems versions in \RequirePackage are sometimes outdated and not up-to-date
-                        logger.debug(f"{dep.id} depends on {name}, which was included in its download")
-                        continue
-                    try:
-                        deps_of_files.add(Dependency(CTAN.get_id_from_name(name), name, package_version))
-                        logger.debug(f"Adding {name} as dependency of {dep.id}")
-                    except CtanPackageNotFoundError as e:
-                        logger.warning(f"{os.path.basename(sty_path)} from package {dep.id} depends on {name}, but CTAN has no information about {name}. {name} will not be installed. If problems arise, please install {name} manually.")
+                    # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
+                    if name in file_names and name not in already_extracted and name not in to_extract: 
+                        # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
+                        logger.debug(f"{sty_name} depends on {name}, which was included in its download")
+                        to_extract.append(f'{name}.sty')
+                    else:
+                        try:
+                            try:
+                                pkg_id = CTAN.get_id_from_name(name)
+                            except CtanPackageNotFoundError:
+                                aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+                                pkg_id, name = aliased_by['id'], aliased_by['name']
+                            
+                            final_deps.append(Dependency(pkg_id, name, package_version))
+                            logger.debug(f"Adding {name} as dependency of {dep.id}")
+                        except CtanPackageNotFoundError as e:
+                            logger.warning(f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, but CTAN has no information about {name}. {name} will not be installed. If problems arise, please install {name} manually.")
 
-    logger.info(f"{dep} has {len(deps_of_files)} dependencies: {', '.join([dep.id for dep in deps_of_files])}")
-    return list(deps_of_files)
+    logger.info(f"{dep} has {len(final_deps)} dependencies: {', '.join([dep.id for dep in final_deps])}")
+    return list(final_deps)
+    
