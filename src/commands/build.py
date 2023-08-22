@@ -1,13 +1,36 @@
+import json
+import os
+import docker
 
 
-def build():
+def build(args: list):
+    client = docker.from_env()
+
     # Get container for this project
+    if not os.path.exists('.lpmconf'):
+        print('Please initialize a new project first using "lpm init"')
 
-    # Run container and mount volume
+    with open('.lpmconf', 'r') as conffile:
+        conf = json.load(conffile)
+        image_id = conf['docker-id']
 
-    # Set TEXINPUTS to include volume path
+    # Run container and mount volume (containing project files and packages-folder)
+    # vol_path = f"{os.path.join(os.getcwd(), 'packages')}:/root/lpm/packages"
+    vol_path = f"{os.getcwd()}:/root/lpm"
+    container = client.containers.run(
+            image=image_id, 
+            command='tail -f /dev/null', # TODO: Try running args here
+            detach=True,
+            volumes=[vol_path],
+            environment={'TEXINPUTS': '.:/root/lpm/packages//'}, # Set TEXINPUTS to include volume path
+            working_dir='/root/lpm',
+            remove=True # Delete container when build is over
+        )
+    
 
     # Execute passed arguments in cmd
+    print(f"Executing {' '.join(args)} in container {container.id}")
+    container.exec_run(args)
 
-    # Reset TEXINPUTS to remove volume path
-    pass
+if __name__ == '__main__':
+    build()

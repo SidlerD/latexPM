@@ -4,6 +4,8 @@ packages/
 requirements-lock.json
 requirements.json
 t.py
+.lpmconf
+Dockerfile
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

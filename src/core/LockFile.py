@@ -21,11 +21,11 @@ def get_name():
 
 def create():
     if os.path.exists(lock_file_name):
-        if os.path.isfile(os.path.abspath(lock_file_name)):
-            logger.info("Lockfile already exists")
-        else:
-            f = open(lock_file_name, "x")
-            f.close()
+        logger.info("Lockfile already exists")
+    else:
+        f = open(lock_file_name, "x")
+        f.write('{}')
+        f.close()
     
 def get_packages_from_file() -> list[Dependency]:
     logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
