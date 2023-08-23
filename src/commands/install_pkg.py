@@ -6,15 +6,16 @@ from anytree import Node, RenderTree, findall, AsciiStyle
 
 from src.core.PackageInstaller import PackageInstaller
 from src.core import LockFile
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DependencyNode
 from src.API import CTAN
 from src.helpers.DependenciesHelpers import extract_dependencies
 from src.commands.remove import remove
+from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.exceptions.download.DownloadError import DownloadError
 
 logger = logging.getLogger("default")
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node) -> bool:
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     existing_node = LockFile.is_in_tree(dep)
 
     # If dependency is already installed, warn and return
@@ -31,28 +32,18 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node) -> b
         
         logger.warn(msg)
         logger.info(f"Skipped install of {dep}")
-        return True
+        return
     
-    try:
-        # Download package
-        downloaded_dep = PackageInstaller.install_specific_package(dep)
-        if not downloaded_dep:
-            return False
-        
-        node = DependencyNode(downloaded_dep, parent=parent)
+    # Download package
+    downloaded_dep = PackageInstaller.install_specific_package(dep)
 
-        # Extract dependencies of package, download those recursively
-        unsatisfied_deps = extract_dependencies(downloaded_dep) 
-        for child_dep in unsatisfied_deps:
-            try:
-                _handle_dep(child_dep, node, root)
-            except (ValueError, NotImplementedError) as e :
-                print(e)
-                return False
-        return True
-    except (ValueError, NotImplementedError) as e :
-        logging.error(f"Problem while installing {dep}: {str(e)}")
-        return False
+    node = DependencyNode(downloaded_dep, parent=parent)
+
+    # Extract dependencies of package, download those recursively
+    unsatisfied_deps = extract_dependencies(downloaded_dep) 
+    
+    for child_dep in unsatisfied_deps:
+        _handle_dep(child_dep, node, root)
 
 def install_pkg(pkg_id: str, version: str = ""):
     """Installs one specific package and all its dependencies\n"""
@@ -77,19 +68,19 @@ def install_pkg(pkg_id: str, version: str = ""):
             return
         
         # Download the package files
-        suc = _handle_dep(dep, rootNode, rootNode) 
-        if suc:
-            LockFile.write_tree_to_file()
-            logger.info(f"Installed {pkg_id} and its dependencies")
+        _handle_dep(dep, rootNode, rootNode) 
+        
+        LockFile.write_tree_to_file()
+        logger.info(f"Installed {pkg_id} and its dependencies")
         
     except Exception as e:
         # Log information
-        msg = f"Couldn't install package {pkg_id}: {str(e)}.\n"
-        if rootNode:
-            msg += f"\tCurrent state: {RenderTree(rootNode, style=AsciiStyle())}"
+        msg = f"Couldn't install package {pkg_id}: {str(e)}."
+        # if rootNode:
+        #     msg += f"\nCurrent state: {RenderTree(rootNode, style=AsciiStyle())}"
         # logging.exception(e)
         logger.error(msg)
-        logger.info(f"Removing {pkg_id} and its installed dependencies due to error while installing")
+        logger.info(f"Will remove {pkg_id} and its installed dependencies due to error while installing")
 
         # Remove installed package + its dependencies which are already installed
         remove(pkg_id, by_user=False)
