@@ -112,7 +112,7 @@ def find_by_id(pkg_id: str) -> DependencyNode:
     if(len(occurences) > 1):
         logger.warning(f"{pkg_id} is in tree {len(occurences)} times")
     elif len(occurences) == 0:
-        raise RuntimeWarning(f"{pkg_id} is not in tree")
+        raise ValueError(f"{pkg_id} is not in tree")
     
     return occurences[0] if occurences else None
 
