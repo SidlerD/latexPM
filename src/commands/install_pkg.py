@@ -86,12 +86,12 @@ def install_pkg(pkg_id: str, version: str = ""):
         # Log information
         msg = f"Couldn't install package {pkg_id}: {str(e)}.\n"
         if rootNode:
-            msg += f"Current state: {RenderTree(rootNode, style=AsciiStyle())}"
+            msg += f"\tCurrent state: {RenderTree(rootNode, style=AsciiStyle())}"
+        # logging.exception(e)
         logger.error(msg)
-        logging.exception(e)
+        logger.info(f"Removing {pkg_id} and its installed dependencies due to error while installing")
 
         # Remove installed package + its dependencies which are already installed
-        installed_pkg = LockFile.find_by_id(pkg_id)
-        remove(installed_pkg, by_user=False)
+        remove(pkg_id, by_user=False)
 
         
