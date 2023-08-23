@@ -28,6 +28,8 @@ class Docker:
 
 
 def _create_Dockerfile():
+    # TODO: Could use weekly snapshots of TL as base image here: https://gitlab.com/islandoftex/images/texlive#:~:text=is%20tagged%20with-,TL%7BRELEASE%7D%2D%7BYEAR%7D%2D%7BMONTH%7D%2D%7BDAY%7D,-apart%20from%20being
+    
     with open("Dockerfile", "w") as f:
         settings = [
             'FROM ubuntu',

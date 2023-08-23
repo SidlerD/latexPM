@@ -27,7 +27,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
     if not exists(join(dep.path, to_extract[0])):
         # No sty-file in package-files
-        logger.info(f"{dep.id} does not include any .sty files. Dependency extraction skipped")
+        logger.info(f"{dep.id} does not include any relevant .sty files. Dependency extraction skipped")
         return []
 
     sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]

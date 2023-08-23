@@ -14,7 +14,7 @@ from src.commands.remove import remove
 
 logger = logging.getLogger("default")
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node) -> bool:
     existing_node = LockFile.is_in_tree(dep)
 
     # If dependency is already installed, warn and return
@@ -31,11 +31,13 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         
         logger.warn(msg)
         logger.info(f"Skipped install of {dep}")
-        return
+        return True
     
     try:
         # Download package
         downloaded_dep = PackageInstaller.install_specific_package(dep)
+        if not downloaded_dep:
+            return False
         
         node = DependencyNode(downloaded_dep, parent=parent)
 
@@ -46,9 +48,11 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
                 _handle_dep(child_dep, node, root)
             except (ValueError, NotImplementedError) as e :
                 print(e)
-    
+                return False
+        return True
     except (ValueError, NotImplementedError) as e :
         logging.error(f"Problem while installing {dep}: {str(e)}")
+        return False
 
 def install_pkg(pkg_id: str, version: str = ""):
     """Installs one specific package and all its dependencies\n"""
@@ -73,10 +77,10 @@ def install_pkg(pkg_id: str, version: str = ""):
             return
         
         # Download the package files
-        _handle_dep(dep, rootNode, rootNode) 
-
-        LockFile.write_tree_to_file()
-        logger.info(f"Installed {pkg_id} and its dependencies")
+        suc = _handle_dep(dep, rootNode, rootNode) 
+        if suc:
+            LockFile.write_tree_to_file()
+            logger.info(f"Installed {pkg_id} and its dependencies")
         
     except Exception as e:
         # Log information
