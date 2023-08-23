@@ -17,15 +17,13 @@ def download_and_extract_zip(url: str, dep: Dependency):
     download_folder = join(pkg_folder, dep.name)
     zip_file_name =  join(download_folder, url.split('/')[-1].split('?')[0]) 
 
-    logger.debug(f"Downloading files into {download_folder}")
-
-    os.makedirs(download_folder, exist_ok=True)
-    
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     if not response.ok:
-        print('invalid response')
-        raise DownloadError("Response from CTAN is invalid")
+        raise DownloadError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
+    
+    os.makedirs(download_folder, exist_ok=True)
+    logger.debug(f"Downloading files into {download_folder}")
     
     with open(zip_file_name, 'wb') as file:
         file.write(response.content)

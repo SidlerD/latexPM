@@ -17,22 +17,18 @@ class PackageInstaller:
         
         # TODO: Add interface for DownloadSources (TL, CTAN) which defines method download_pkg and explains it needs to return DownloadedDependency
         try:
-            if(pkg.version == None):
-                try:
-                    downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
-                except DownloadError as e:
-                    logger.info(f"{pkg.id} is not available on CTAN")
-                    downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+            version_matches = "version" in pkgInfo and Version(pkgInfo['version']) == pkg.version
             
-            elif "version" in pkgInfo and Version(pkgInfo['version']) == pkg.version:
-                # Version to be installed matches version on CTAN
+            if pkg.version == None or version_matches:
                 downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
-            else: # Need specific older version => Download from TL
+            else: # Need specific older version => Download from VPTAN
                 downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+        
         except zipfile.BadZipFile:
-            logging.error(f"Error while downloading zip-file for {os.path.basename(pkg.id)}: Cannot open zip file")
-            return
+            raise DownloadError(f"Error while downloading zip-file for {os.path.basename(pkg.id)}: Cannot open zip file")
+        
+
         downloaded_dep.files = [elem for elem in os.listdir(downloaded_dep.path) if isfile(join(downloaded_dep.path, elem))]
         logger.debug(f"{pkg.id} included {len(downloaded_dep.files)} files in its download")
 
