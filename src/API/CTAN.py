@@ -118,7 +118,7 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     
     elif "ctan" in pkgInfo:
         path = pkgInfo['ctan']['path']
-        url = f"https://mirror.ctan.org/tex-archive/{path}.zip"
+        url = f"https://mirror.ctan.org{path}.zip"
     else:
         if "id" in pkgInfo:
             raise CtanPackageNotFoundError(f"{pkgInfo['id']} cannot be downloaded from CTAN")
