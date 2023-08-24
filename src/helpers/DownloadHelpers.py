@@ -5,6 +5,7 @@ import subprocess
 import zipfile
 import requests
 import logging
+from src.API import CTAN
 from src.core import config
 from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency
@@ -14,8 +15,15 @@ logger = logging.getLogger("default")
 def download_and_extract_zip(url: str, dep: Dependency):
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
-    download_folder = join(pkg_folder, dep.name)
-    zip_file_name =  join(download_folder, url.split('/')[-1].split('?')[0]) 
+    try:
+        pkgInfo = CTAN.get_package_info(dep.id)
+        ctan_path = pkgInfo['ctan']['path']
+        download_folder = join(pkg_folder, ctan_path.split('/')[-1])
+    except KeyError:
+        logger.debug(f"Using {dep.name} as fallback for folder name")
+        download_folder = join(pkg_folder, dep.name)
+
+    zip_file_name =  join(download_folder, basename(download_folder) + '.zip') 
 
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
@@ -29,7 +37,7 @@ def download_and_extract_zip(url: str, dep: Dependency):
         file.write(response.content)
     
     # Extract the files into a folder
-    # FIXME: This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
+    # This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(download_folder)
 
