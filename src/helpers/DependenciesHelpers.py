@@ -22,6 +22,7 @@ logger = logging.getLogger("default")
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     logger.info("Extracting dependencies of " + dep.id)
 
+    #FIXME: DOnt only look at pkg_id.sty, but also .cls and others
     to_extract, already_extracted = [f'{dep.name}.sty'], []
     final_deps: list[Dependency] = []
 
@@ -30,9 +31,9 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
         logger.info(f"{dep.id} does not include any relevant .sty files. Dependency extraction skipped")
         return []
 
+    #FIXME: Packages can not only depend on .sty files, but also .cls and others
     sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
     file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
-
 
     while to_extract:
         sty_name = to_extract.pop()
