@@ -60,11 +60,17 @@ def install_pkg(pkg_id: str, version: str = ""):
             pkg_id, name = aliased_by['id'], aliased_by['name']
             dep = Dependency(pkg_id, name, version=version, alias = {'id': alias_id, 'name': ''})
 
+        pkgInfo = CTAN.get_package_info(dep.id)
+        ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
+
         # Check if package is already installed            
         rootNode = LockFile.read_file_as_tree()
-        exists = LockFile.is_in_tree(dep)
+        exists = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
         if exists:
-            logger.warning(f"{pkg_id} is already installed installed at {exists.ppath}{', but in a different version' if exists.dep.version != dep.version else ''}. Skipping install")
+            if exists.id == pkg_id:
+                logger.warning(f"{pkg_id} is already installed installed at {exists.ppath}{', but in a different version' if exists.dep.version != dep.version else ''}. Skipping install")
+            else:
+                logger.info(f"{pkg_id} is on CTAN as {exists.dep.ctan_path}, which is already installed because {exists.id} also has the same path on CTAN.")
             return
         
         # Download the package files

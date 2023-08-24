@@ -36,6 +36,7 @@ def get_alias_of_package(id = '', name = '') -> dict:
         raise ValueError(f"Please provide valid argument for at least one of id and name")
     
     def find():
+        # URGENT: Alias file is not relative to where lpm was called, but to where lpm was cloned
         if not isfile(abspath(aliases_file)):
             update_aliases("Need to build a list of all aliases of packages on CTAN. This can take a very long time. Do you want to continue`[y / n]: ")
         with open(aliases_file, "r") as f:
@@ -126,5 +127,10 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     
     logger.info(f"CTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
+    
+    try:
+        ctan_path = pkgInfo['ctan']['path']
+    except KeyError:
+        ctan_path=None
 
-    return DownloadedDependency(dep, folder_path, url)
+    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path)
