@@ -26,7 +26,8 @@ def add_upgrade_parser(subparsers):
     
 
 def add_init_parser(subparsers):
-    subparsers.add_parser('init', help='Initialize a new project')
+    init_parser = subparsers.add_parser('init', help='Initialize a new project')
+    init_parser.add_argument('-i', '--dockerimage', type=str, help='Name/ID of Docker Image to use. Will be used to compile your TeX files', metavar="")
     
 def add_list_parser(subparsers):
     # Create sub-parser for the install command
@@ -70,7 +71,10 @@ def handle_input(args):
         else:
             print("Package-id needed to remove")
     elif args.command == 'init':
-        lpm_inst.init()
+        if args.dockerimage:
+            lpm_inst.init(args.dockerimage)
+        else:
+            lpm_inst.init()
     elif args.command == 'list':
         lpm_inst.list_packages(args.toplevel, args.tree)
     elif args.command == 'build':

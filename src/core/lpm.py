@@ -52,9 +52,9 @@ class lpm:
         """Lock dependencies and write current dependencies + versions to file"""
         raise NotImplementedError
 
-    def init(self):
+    def init(self, docker_image: str = ''):
         """Create a new project: LockFile, Docker for packages"""
-        init()
+        init(docker_image)
 
     def build(self, args: list):
         """Build tex-files using the docker-container with the packages"""

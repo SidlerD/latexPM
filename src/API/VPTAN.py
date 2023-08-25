@@ -8,10 +8,10 @@ import logging
 _base_url = "http://127.0.0.1:8000/packages"
 logger = logging.getLogger("default")
 
-def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from VPTAN")
     
-    url = _get_url_for_version(dep)
+    url = _get_url_for_version(dep, closest=closest)
 
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
@@ -25,7 +25,7 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
 
 
 
-def _get_url_for_version(dep: Dependency) -> str:
+def _get_url_for_version(dep: Dependency, closest: bool) -> str:
     v = dep.version
 
     url = f"{_base_url}/{dep.id}"
@@ -35,6 +35,8 @@ def _get_url_for_version(dep: Dependency) -> str:
         url += f'?date={v.date}'
     elif v.number:
         url += f'?number={v.number}'
+
+    url += f'&closest={closest}' if '?' in url else f'?closest={closest}'
 
     logger.debug("VPTAN Download url: " + url)
     return url
