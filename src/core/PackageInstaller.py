@@ -5,7 +5,7 @@ from src.models.Dependency import Dependency, DownloadedDependency
 
 from src.API import CTAN, VPTAN
 from src.models.Version import Version
-from src.exceptions.download.DownloadError import DownloadError
+from src.exceptions.download.DownloadError import DownloadError, VersionNotAvailableError
 import logging
 
 logger = logging.getLogger("default")
@@ -23,7 +23,25 @@ class PackageInstaller:
                 downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
             else: # Need specific older version => Download from VPTAN
-                downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+                try:
+                    downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+                except VersionNotAvailableError:
+                    # Try to install closest version available
+                    if pkg.version.date: # Can only install closest version with dates
+                        decision = ''
+                        while decision not in ['y', 'n']:
+                            decision = input(f"{pkg.id} is not available on VPTAN in version {pkg.version}. Do you want to install the closest later version? [y/n]: ").lower()
+                        if decision == 'n':
+                            raise
+                        logger.info(f"Downloading the closest later version for {pkg} from VPTAN")
+                        try:
+                            downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo, closest=True)
+                        except VersionNotAvailableError:
+                            # Happens if version extraction always failed on CTAN git archive
+                            logger.info(f"VPTAN has no information about {pkg.id}. DOwnloading from CTAN in newest version")
+                            downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
+                    else:
+                        raise
         
         except zipfile.BadZipFile:
             raise DownloadError(f"Error while downloading zip-file for {os.path.basename(pkg.id)}: Cannot open zip file")

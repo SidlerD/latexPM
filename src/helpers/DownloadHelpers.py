@@ -7,7 +7,7 @@ import requests
 import logging
 from src.API import CTAN
 from src.core import config
-from src.exceptions.download.DownloadError import DownloadError
+from src.exceptions.download.DownloadError import DownloadError, VersionNotAvailableError
 from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
@@ -28,7 +28,7 @@ def download_and_extract_zip(url: str, dep: Dependency):
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     if not response.ok:
-        raise DownloadError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
+        raise VersionNotAvailableError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
     
     os.makedirs(download_folder, exist_ok=True)
     logger.debug(f"Downloading files into {download_folder}")
