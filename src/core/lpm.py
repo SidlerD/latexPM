@@ -5,7 +5,6 @@ from src.commands.remove import remove
 from src.commands.upgrade import upgrade
 from src.commands.upgrade_pkg import upgrade_pkg
 from src.commands.build import build
-from src.core.Docker import Docker
 from src.helpers.Logger import make_logger
 from src.commands.install import install
 from src.commands.install_pkg import install_pkg

@@ -14,7 +14,6 @@ def build(args: list):
         conf = json.load(conffile)
         image_id = conf['docker-id']
     
-    # print(f"Executing {' '.join(args)} in container {container.id}")
 
     # Run container and mount volume (containing project files and packages-folder)
     # vol_path = f"{os.path.join(os.getcwd(), 'packages')}:/root/lpm/packages"
@@ -23,11 +22,13 @@ def build(args: list):
         image=image_id, 
         command=args, # Execute passed arguments in cmd
         detach=True,
-        volumes=[vol_path],
+        volumes=[vol_path], # Make files in project dir available to container, put output there too
         environment={'TEXINPUTS': '.:/root/lpm/packages//'}, # Set TEXINPUTS to include volume path
         working_dir='/root/lpm',
         # remove=True # Delete container when build is over
     )
+
+    print(container.logs()) # TODO: This doesn't really show build process, only some preliminary message
 
 if __name__ == '__main__':
     build()

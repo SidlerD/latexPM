@@ -9,6 +9,7 @@ def init():
     LockFile.create()
     
     os.mkdir('packages')
-    docker = Docker()
+    Docker()
+    
     install_pkg('latex-base')
     install_pkg('l3backend')
