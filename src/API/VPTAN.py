@@ -16,7 +16,12 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
     
-    return DownloadedDependency(dep, folder_path, url) 
+    try:
+        ctan_path = pkgInfo['ctan']['path']
+    except KeyError:
+        ctan_path=None
+
+    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path) 
 
 
 

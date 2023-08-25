@@ -6,11 +6,12 @@ from anytree import Node, RenderTree, findall, AsciiStyle
 
 from src.core.PackageInstaller import PackageInstaller
 from src.core import LockFile
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DependencyNode
 from src.API import CTAN
 from src.helpers.DependenciesHelpers import extract_dependencies
 from src.commands.remove import remove
+from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.exceptions.download.DownloadError import DownloadError
 
 logger = logging.getLogger("default")
 
@@ -33,22 +34,16 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         logger.info(f"Skipped install of {dep}")
         return
     
-    try:
-        # Download package
-        downloaded_dep = PackageInstaller.install_specific_package(dep)
-        
-        node = DependencyNode(downloaded_dep, parent=parent)
+    # Download package
+    downloaded_dep = PackageInstaller.install_specific_package(dep)
 
-        # Extract dependencies of package, download those recursively
-        unsatisfied_deps = extract_dependencies(downloaded_dep) 
-        for child_dep in unsatisfied_deps:
-            try:
-                _handle_dep(child_dep, node, root)
-            except (ValueError, NotImplementedError) as e :
-                print(e)
+    node = DependencyNode(downloaded_dep, parent=parent)
+
+    # Extract dependencies of package, download those recursively
+    unsatisfied_deps = extract_dependencies(downloaded_dep) 
     
-    except (ValueError, NotImplementedError) as e :
-        logging.error(f"Problem while installing {dep}: {str(e)}")
+    for child_dep in unsatisfied_deps:
+        _handle_dep(child_dep, node, root)
 
 def install_pkg(pkg_id: str, version: str = ""):
     """Installs one specific package and all its dependencies\n"""
@@ -60,34 +55,41 @@ def install_pkg(pkg_id: str, version: str = ""):
             name = CTAN.get_name_from_id(pkg_id)
             dep = Dependency(pkg_id, name, version=version)
         except CtanPackageNotFoundError as e:
+            logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
             aliased_by = CTAN.get_alias_of_package(id=pkg_id)
             alias_id = pkg_id
             pkg_id, name = aliased_by['id'], aliased_by['name']
             dep = Dependency(pkg_id, name, version=version, alias = {'id': alias_id, 'name': ''})
 
+        pkgInfo = CTAN.get_package_info(dep.id)
+        ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
+
         # Check if package is already installed            
         rootNode = LockFile.read_file_as_tree()
-        exists = LockFile.is_in_tree(dep)
+        exists = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
         if exists:
-            logger.warning(f"{pkg_id} is already installed installed at {exists.ppath}{', but in a different version' if exists.dep.version != dep.version else ''}. Skipping install")
+            if exists.id == pkg_id:
+                logger.warning(f"{pkg_id} is already installed installed at {exists.ppath}{', but in a different version' if exists.dep.version != dep.version else ''}. Skipping install")
+            else:
+                logger.info(f"{pkg_id} is on CTAN as {exists.dep.ctan_path}, which is already installed because {exists.id} also has the same path on CTAN.")
             return
         
         # Download the package files
         _handle_dep(dep, rootNode, rootNode) 
-
+        
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")
         
     except Exception as e:
         # Log information
-        msg = f"Couldn't install package {pkg_id}: {str(e)}.\n"
-        if rootNode:
-            msg += f"Current state: {RenderTree(rootNode, style=AsciiStyle())}"
+        msg = f"Couldn't install package {pkg_id}: {str(e)}."
+        # if rootNode:
+        #     msg += f"\nCurrent state: {RenderTree(rootNode, style=AsciiStyle())}"
+        # logging.exception(e)
         logger.error(msg)
-        logging.exception(e)
+        logger.info(f"Will remove {pkg_id} and its installed dependencies due to error while installing")
 
         # Remove installed package + its dependencies which are already installed
-        installed_pkg = LockFile.find_by_id(pkg_id)
-        remove(installed_pkg, by_user=False)
+        remove(pkg_id, by_user=False)
 
         

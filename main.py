@@ -39,6 +39,10 @@ def add_remove_parser(subparsers):
     remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="")
     add_debug_option(remove_parser)
 
+def add_build_parser(subparsers):
+    build_parser = subparsers.add_parser('build', help='Build your project')
+    build_parser.add_argument('build_args', help='Build command to execute', nargs="+")
+
 def add_debug_option(parser):
     parser.add_argument('-debug', action='store_true', help='Set logging level to debug instead of info')
 
@@ -69,6 +73,8 @@ def handle_input(args):
         lpm_inst.init()
     elif args.command == 'list':
         lpm_inst.list_packages(args.toplevel, args.tree)
+    elif args.command == 'build':
+        lpm_inst.build(args.build_args)
     else:
         print("Command not recognized. Please use -h for to see the available commands")
 
@@ -80,8 +86,9 @@ def main():
     subparsers = parser.add_subparsers(dest='command')
     add_install_parser(subparsers)
     add_upgrade_parser(subparsers)
-    add_init_parser(subparsers)
     add_remove_parser(subparsers)
+    add_build_parser(subparsers)
+    add_init_parser(subparsers)
     add_list_parser(subparsers)
 
     # Set the function to be called when the command is run

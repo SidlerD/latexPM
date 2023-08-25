@@ -33,7 +33,13 @@ def remove(pkg_id: str, by_user: bool = True):
     """Remove package and its dependencies
         by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages
     """
-    dep_node = LockFile.find_by_id(pkg_id)
+    try:
+        dep_node = LockFile.find_by_id(pkg_id)
+    except ValueError:
+        if by_user:
+            logger.warn(f"Attempted to remove {pkg_id} which is not installed")
+        return 
+    
     # If package was not installed by user directly, warn and ask if he really wants to since it will probably break package that installed it
     if by_user and dep_node.depth > 1: 
         decision = ""

@@ -19,6 +19,14 @@ _root = None
 def get_name(): 
     return lock_file_name
 
+def create():
+    if os.path.exists(lock_file_name):
+        logger.info("Lockfile already exists")
+    else:
+        f = open(lock_file_name, "x")
+        f.write('{}')
+        f.close()
+    
 def get_packages_from_file() -> list[Dependency]:
     logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
 
@@ -77,18 +85,28 @@ def read_file_as_tree() -> Node:
         logger.debug(f"Tree constructed successfully")
     return _root
 
-def is_in_tree(dep: Dependency) -> DependencyNode:
+def is_in_tree(dep: Dependency, check_ctan_path:str = None) -> DependencyNode:
     """Returns DependencNode that stores dep that is passed as argument, None if not in tree.\n
-    Searching is done by id, version is ignored"""
+    Searching is done by id, version is ignored\n
+    If check_ctan_path is provided, node with matching ctan_path will be returned"""
     global _root
     _root = read_file_as_tree()
-
+    
+    # ASSUMPTION: Don't need to check version equality here since I can't install two versions of one package
     filter = lambda node: (
-        hasattr(node, 'dep')
-        and (
-            node.dep.id == dep.id # Is  the same dependency
-            # ASSUMPTION: Don't need to check version equality here since I can't install two versions of one package
+        (
+            hasattr(node, 'dep')
         )
+        and (
+            (
+                node.dep.id == dep.id # Is  the same dependency
+            ) 
+            or  
+            ( 
+                check_ctan_path and node.dep.ctan_path == check_ctan_path # Has same download-path on ctan if downloadpath provided
+            )
+        )
+        
     )
     prev_occurences = findall(_root, filter_= filter)
     if(len(prev_occurences) > 1):
@@ -104,7 +122,7 @@ def find_by_id(pkg_id: str) -> DependencyNode:
     if(len(occurences) > 1):
         logger.warning(f"{pkg_id} is in tree {len(occurences)} times")
     elif len(occurences) == 0:
-        raise RuntimeWarning(f"{pkg_id} is not in tree")
+        raise ValueError(f"{pkg_id} is not in tree")
     
     return occurences[0] if occurences else None
 
@@ -112,7 +130,7 @@ def find_by_id(pkg_id: str) -> DependencyNode:
 def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], version=Version(dep_info["version"]), alias=dep_info['alias'])
-    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], files=dep_info['files'])
+    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], ctan_path=dep_info['ctan_path'], files=dep_info['files'])
     node = DependencyNode(downloaded_dep, parent=parent, dependents=[Dependency(d['id'], d['name'], version=d['version'], alias=d['alias']) for d in data['dependents']])
     if "children" in data:
         for child_data in data["children"]:

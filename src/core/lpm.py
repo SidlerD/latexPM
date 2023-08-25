@@ -1,8 +1,10 @@
+from src.commands.init import init
 import logging
 from src.commands.list_packages import list_packages
 from src.commands.remove import remove
 from src.commands.upgrade import upgrade
 from src.commands.upgrade_pkg import upgrade_pkg
+from src.commands.build import build
 from src.helpers.Logger import make_logger
 from src.commands.install import install
 from src.commands.install_pkg import install_pkg
@@ -51,5 +53,9 @@ class lpm:
         raise NotImplementedError
 
     def init(self):
-        """Create a new project: Creates new Docker in which packages will live"""
-        raise NotImplementedError
+        """Create a new project: LockFile, Docker for packages"""
+        init()
+
+    def build(self, args: list):
+        """Build tex-files using the docker-container with the packages"""
+        build(args)

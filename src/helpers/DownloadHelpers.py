@@ -5,7 +5,9 @@ import subprocess
 import zipfile
 import requests
 import logging
+from src.API import CTAN
 from src.core import config
+from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
@@ -13,39 +15,60 @@ logger = logging.getLogger("default")
 def download_and_extract_zip(url: str, dep: Dependency):
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
-    download_folder = join(pkg_folder, dep.name)
-    zip_file_name =  join(download_folder, url.split('/')[-1].split('?')[0]) 
+    try:
+        pkgInfo = CTAN.get_package_info(dep.id)
+        ctan_path = pkgInfo['ctan']['path']
+        download_folder = join(pkg_folder, ctan_path.split('/')[-1])
+    except KeyError:
+        logger.debug(f"Using {dep.name} as fallback for folder name")
+        download_folder = join(pkg_folder, dep.name)
 
-    logger.debug(f"Downloading files into {download_folder}")
+    zip_file_name =  join(download_folder, basename(download_folder) + '.zip') 
 
-    os.makedirs(download_folder, exist_ok=True)
-    
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
+    if not response.ok:
+        raise DownloadError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
+    
+    os.makedirs(download_folder, exist_ok=True)
+    logger.debug(f"Downloading files into {download_folder}")
+    
     with open(zip_file_name, 'wb') as file:
         file.write(response.content)
     
     # Extract the files into a folder
-    # FIXME: This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
+    # This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(download_folder)
-    
+
     # Return the path to the folder
     os.remove(zip_file_name)
-    organize_files(download_folder)
+    organize_files(download_folder, tds=url.endswith('.tds.zip'))
 
     return download_folder
 
 
-def organize_files(folder_path: str):
+def organize_files(folder_path: str, tds: bool):
     """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins/.dtx to .sty"""
     
     if not exists(folder_path):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")
     
+    files_path = folder_path
+    if tds:
+        # TDS-packaged packages (TEX Directory Standard) follow a certain folder structure: 
+        #   the subfolder 'tex' contains the built files that latex uses, other folders contain the source code and documentation 
+        # For more information, see https://ctan.org/TDS-guidelines
+
+        # If a package is tds-packages, we only need the files in subfolder 'tex' and don't need to try and build the source files
+        if exists(join(folder_path, 'tex')):
+            # Inspect files in files_path, but move them to folder_path and delete subfolders of folder_path
+            files_path = join(folder_path, 'tex')
+            
+
     # Get path for all files in subdirs
     relevant_files = []
-    for root, dirs, files in os.walk(folder_path):
+    for root, dirs, files in os.walk(files_path):
         relevant_files.extend([join(root, file) for file in files])
     # Move files to top of folder
     for ins_file in relevant_files:
@@ -60,6 +83,9 @@ def organize_files(folder_path: str):
     for folder in folders:
         shutil.rmtree(folder)
 
+    if tds:
+        return
+    
     # Convert .ins and .dtx to .sty
     old_cwd = os.getcwd()
     os.chdir(folder_path)
