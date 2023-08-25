@@ -6,10 +6,18 @@ from src.commands.install_pkg import install_pkg
 
 
 def init():
+    # TODO: Make it possible for user to specify his own Docker image to use
+    if os.path.exists('packages') or os.path.exists('.lpmconf'):
+        print(f"There is already a project in this folder")
+        return
+    
+    Docker()
+
     LockFile.create()
     
-    os.mkdir('packages')
-    Docker()
+    if not os.path.exists('packages'):
+        os.mkdir('packages')
+
     
     install_pkg('latex-base')
     install_pkg('l3backend')
