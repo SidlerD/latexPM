@@ -55,6 +55,7 @@ def install_pkg(pkg_id: str, version: str = ""):
             name = CTAN.get_name_from_id(pkg_id)
             dep = Dependency(pkg_id, name, version=version)
         except CtanPackageNotFoundError as e:
+            logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
             aliased_by = CTAN.get_alias_of_package(id=pkg_id)
             alias_id = pkg_id
             pkg_id, name = aliased_by['id'], aliased_by['name']

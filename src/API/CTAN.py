@@ -23,7 +23,7 @@ def get_id_from_name(name: str) -> str:
 
 @cache
 def get_name_from_id(id: str) -> str:
-    res = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
+    res = get_package_info(id)
     if "id" in res:
         return res['name']
     raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
@@ -98,6 +98,9 @@ def get_package_info(id: str):
     pkgInfo = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
     if "id" not in pkgInfo or "name" not in pkgInfo:
         raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
+    
+    if 'ctan' not in pkgInfo or not pkgInfo['ctan']:
+        raise CtanPackageNotFoundError(f"{id} is on CTAN, but not downloadable")
     return pkgInfo
 
 @cache
