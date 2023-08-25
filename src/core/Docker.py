@@ -5,9 +5,13 @@ import docker
 
 logger = make_logger()
 
-class Docker:
-    def __init__(self) -> None:
-        client = docker.from_env()
+def get_image(image_name: str) -> str:
+    """If not provided, figure out a suitable docker-image. Pull image"""
+    client = docker.from_env()
+    
+    if not image_name:
+        logger.info(f"Searching for and pulling Docker image. This can take a long time")
+
         image_url_format = 'registry.gitlab.com/islandoftex/images/texlive:TL%d-%d-%02d-%02d-small'
         
         curr_date = dt.date.today()
@@ -22,20 +26,22 @@ class Docker:
 
         # Find name that exists
         found = False
-        for name in possible_image_names:
+        for image_name in possible_image_names:
             try:
-                client.images.get(name)
+                client.images.pull(image_name)
                 found = True
                 break
-            except docker.errors.ImageNotFound:
+            except docker.errors.NotFound:
                 pass
 
         if not found:
-            logger.error("Couldn't find a suitable Docker image to use. Please edit .lpmconf and specify a image-id")
-            raise Exception()
-            
-        logger.info(f"Using {name} as Docker Image")
-
+            raise docker.errors.ImageNotFound("Couldn't find a suitable Docker image to use. Please edit .lpmconf and specify a image-id")
         
-        with open('.lpmconf', 'w') as conffile:
-            json.dump({'docker-id': name}, conffile)
+        logger.info(f"Using {image_name} as Docker Image")
+
+    elif image_name:
+        logger.info(f"Pulling Docker image. This can take a long time the first time it is done")
+        client.images.pull(image_name)
+        logger.debug("Docker image pulled successfully")
+
+    return image_name
