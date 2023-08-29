@@ -18,17 +18,18 @@ def build(args: list):
     # Run container and mount volume (containing project files and packages-folder)
     # vol_path = f"{os.path.join(os.getcwd(), 'packages')}:/root/lpm/packages"
     vol_path = f"{os.getcwd()}:/root/lpm"
-    container = client.containers.run(
+    client.containers.run(
         image=image_id, 
         command=args, # Execute passed arguments in cmd
-        detach=True,
+        # detach=True,
         volumes=[vol_path], # Make files in project dir available to container, put output there too
         environment={'TEXINPUTS': '.:/root/lpm/packages//'}, # Set TEXINPUTS to include volume path
-        working_dir='/root/lpm',
+        working_dir='/root/lpm'
+        # user='root'
         # remove=True # Delete container when build is over
     )
-
-    print(container.logs()) # TODO: This doesn't really show build process, only some preliminary message
+    
+    # TODO: Show build process without detaching container
 
 if __name__ == '__main__':
     build()
