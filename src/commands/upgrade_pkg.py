@@ -4,7 +4,7 @@
 
 
 import logging
-from src.API import CTAN
+from src.API import CTAN, VPTAN
 from src.commands.install_pkg import install_pkg
 from src.commands.remove import remove
 from src.core import LockFile
@@ -65,10 +65,12 @@ def upgrade_pkg(pkg_id: str):
             name = CTAN.get_name_from_id(pkg_id)
             dep = Dependency(pkg_id, name)
         except CtanPackageNotFoundError as e:
-            aliased_by = CTAN.get_alias_of_package(id=pkg_id)
-            alias_id = pkg_id
-            pkg_id, name = aliased_by['id'], aliased_by['name']
-            dep = Dependency(pkg_id, name, alias = {'id': alias_id, 'name': ''})
+            logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
+            alias = VPTAN.get_alias_of_package(id=pkg_id)
+            alias_id, alias_name = alias['id'], alias['name']
+            pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
+            dep = Dependency(pkg_id, name, alias = {'id': alias_id, 'name': alias_name})
+
 
         exists = LockFile.is_in_tree(dep)
         if not exists:

@@ -69,10 +69,11 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                                 pkg_id = CTAN.get_id_from_name(name)
                                 new_dep = Dependency(pkg_id, name, package_version)
                             except CtanPackageNotFoundError:
-                                aliased_by = CTAN.get_alias_of_package(name=name)
-                                alias_name = name
-                                pkg_id, name = aliased_by['id'], aliased_by['name']
-                                new_dep = Dependency(pkg_id, name, package_version, alias={'id': None, 'name': alias_name})
+                                logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
+                                alias = VPTAN.get_alias_of_package(id=pkg_id)
+                                alias_id, alias_name = alias['id'], alias['name']
+                                pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
+                                new_dep = Dependency(pkg_id, name, package_version, alias={'id': alias_id, 'name': alias_name})
                             
                             final_deps.append(new_dep)
                             logger.debug(f"Adding {name} as dependency of {dep.id}")

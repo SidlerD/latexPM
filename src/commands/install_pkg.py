@@ -7,7 +7,7 @@ from anytree import Node, RenderTree, findall, AsciiStyle
 from src.core.PackageInstaller import PackageInstaller
 from src.core import LockFile
 from src.models.Dependency import Dependency, DependencyNode
-from src.API import CTAN
+from src.API import CTAN, VPTAN
 from src.helpers.DependenciesHelpers import extract_dependencies
 from src.commands.remove import remove
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
@@ -56,10 +56,10 @@ def install_pkg(pkg_id: str, version: str = ""):
             dep = Dependency(pkg_id, name, version=version)
         except CtanPackageNotFoundError as e:
             logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
-            aliased_by = CTAN.get_alias_of_package(id=pkg_id)
-            alias_id = pkg_id
-            pkg_id, name = aliased_by['id'], aliased_by['name']
-            dep = Dependency(pkg_id, name, version=version, alias = {'id': alias_id, 'name': ''})
+            alias = VPTAN.get_alias_of_package(id=pkg_id)
+            alias_id, alias_name = alias['id'], alias['name']
+            pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
+            dep = Dependency(pkg_id, name, version=version, alias = {'id': alias_id, 'name': alias_name})
 
         pkgInfo = CTAN.get_package_info(dep.id)
         ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None

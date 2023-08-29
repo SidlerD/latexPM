@@ -4,8 +4,11 @@ from src.models.Version import Version
 from src.helpers.DownloadHelpers import download_and_extract_zip
 from src.exceptions.download.DownloadError import DownloadError
 import logging
+from typing import TypedDict
+import urllib.parse
+import requests
 
-_base_url = "http://127.0.0.1:8000/packages"
+_base_url = "http://127.0.0.1:8000"
 logger = logging.getLogger("default")
 
 def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDependency:
@@ -28,7 +31,7 @@ def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDepe
 def _get_url_for_version(dep: Dependency, closest: bool) -> str:
     v = dep.version
 
-    url = f"{_base_url}/{dep.id}"
+    url = f"{_base_url}/packages/{dep.id}"
     if v.date and v.number:
         url += f'?date={v.date}&number={v.number}'
     elif v.date:
@@ -40,3 +43,21 @@ def _get_url_for_version(dep: Dependency, closest: bool) -> str:
 
     logger.debug("VPTAN Download url: " + url)
     return url
+
+
+def get_alias_of_package(id = '', name = '') -> dict:
+    """Some packages are not available on CTAN directly, but are under another package, where they are listed as 'aliases'
+    Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. Therefore, we should download pgf to get tikz"""
+    logger.debug(f'Searching for {id if id else name} in aliases')
+    if not id and not name:
+        raise ValueError(f"Please provide valid argument for at least one of id and name")
+    
+    params = {'id': id, 'name': name}
+    url = _base_url + '/alias?' + urllib.parse.urlencode(params)
+
+    response = requests.get(url)
+    if not response.ok:
+        print(f"{id if id else name} has no alias")
+        raise Exception #TODO: Raise specific Error here
+
+    return response.json()
