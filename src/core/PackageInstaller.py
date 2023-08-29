@@ -39,6 +39,7 @@ class PackageInstaller:
                         except VersionNotAvailableError:
                             # Happens if version extraction always failed on CTAN git archive
                             logger.info(f"VPTAN has no information about {pkg.id}. DOwnloading from CTAN in newest version")
+                            pkg.version = Version() # Because we now install latest version
                             downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
                     else:
                         raise

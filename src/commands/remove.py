@@ -56,11 +56,16 @@ def remove(pkg_id: str, by_user: bool = True):
 
 
 def delete_pkg_files(dep_node: DependencyNode):
+    logger.debug(f"Removing files for {dep_node}")
     if not hasattr(dep_node, 'dep_node') and not hasattr(dep_node.dep, 'files'):
         raise RuntimeError(f"Couldn't find files to delete for {dep_node.dep}.")
 
     # Remove folder including its files
     folder = dep_node.dep.path
+    if not os.path.exists(folder):
+        logger.debug(f"{folder} does not exist")
+        return
+    
     cnt_files = len([file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
     shutil.rmtree(folder)
 

@@ -36,9 +36,11 @@ def get_alias_of_package(id = '', name = '') -> dict:
         raise ValueError(f"Please provide valid argument for at least one of id and name")
     
     def find():
-        # URGENT: Alias file is not relative to where lpm was called, but to where lpm was cloned
+        # URGENT: Alias file is not relative to where lpm was called, but to where lpm was cloned. Move to backend
         if not isfile(abspath(aliases_file)):
-            update_aliases("Need to build a list of all aliases of packages on CTAN. This can take a very long time. Do you want to continue`[y / n]: ")
+            updated = update_aliases("Need to build a list of all aliases of packages on CTAN. This can take a very long time. Do you want to continue`[y / n]: ")
+            if not updated:
+                raise CtanPackageNotFoundError(f"{id if id else name} is not available on CTAN under any alias")
         with open(aliases_file, "r") as f:
             aliases = json.load(f)
             for alias in aliases:
@@ -62,7 +64,7 @@ def get_alias_of_package(id = '', name = '') -> dict:
             
     raise CtanPackageNotFoundError(f"{id if id else name} is not available on CTAN under any alias")
 
-def update_aliases(prompt_msg: str = ""):
+def update_aliases(prompt_msg: str = "") -> bool:
     """prompt_msg: Message that roughly asks 'Do you want to update alias', giving some additional context"""
     # Let user choose whether to update aliases
     decision = ""
@@ -71,7 +73,7 @@ def update_aliases(prompt_msg: str = ""):
     
     if(decision == 'n'): 
         logger.info(f"Not updating aliases due to user decision")
-        return
+        return False
     
     logger.info('Updating list of aliases from CTAN. Please note that this can take very long')
     all = requests.get(f"{_ctan_url}json/2.0/packages").json()
@@ -92,6 +94,8 @@ def update_aliases(prompt_msg: str = ""):
     
     with open(aliases_file, 'w') as f:
         json.dump(f, aliases, indent=2)
+
+    return True
 
 @cache
 def get_package_info(id: str):

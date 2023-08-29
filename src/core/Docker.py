@@ -40,7 +40,7 @@ def get_image(image_name: str) -> str:
         logger.info(f"Using {image_name} as Docker Image")
 
     elif image_name:
-        logger.info(f"Pulling Docker image. This can take a long time the first time it is done")
+        logger.info(f"Pulling {image_name}. This can take a long time the first time it is done")
         client.images.pull(image_name)
         logger.debug("Docker image pulled successfully")
 

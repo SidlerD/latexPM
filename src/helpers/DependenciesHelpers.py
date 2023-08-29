@@ -35,6 +35,8 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
     file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
 
+    to_extract = sty_files
+
     while to_extract:
         sty_name = to_extract.pop()
         if sty_name in already_extracted:
@@ -50,7 +52,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
             else:
                 raise RuntimeError(f"Cannot extract dependencies for {dep.id}: {sty_path} does not exist")
         
-        with open(sty_path, "r") as sty:
+        with open(sty_path, "r", errors='ignore') as sty:
             content = sty.read()
             matches: list[tuple] = re.findall(req_pkg_pattern, content, re.MULTILINE)
             for (package_names, package_version) in matches:
@@ -65,11 +67,14 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                         try:
                             try:
                                 pkg_id = CTAN.get_id_from_name(name)
+                                new_dep = Dependency(pkg_id, name, package_version)
                             except CtanPackageNotFoundError:
-                                aliased_by = CTAN.get_alias_of_package(id=pkg_id)
+                                aliased_by = CTAN.get_alias_of_package(name=name)
+                                alias_name = name
                                 pkg_id, name = aliased_by['id'], aliased_by['name']
+                                new_dep = Dependency(pkg_id, name, package_version, alias={'id': None, 'name': alias_name})
                             
-                            final_deps.append(Dependency(pkg_id, name, package_version))
+                            final_deps.append(new_dep)
                             logger.debug(f"Adding {name} as dependency of {dep.id}")
                         except CtanPackageNotFoundError as e:
                             logger.warning(f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, but CTAN has no information about {name}. {name} will not be installed. If problems arise, please install {name} manually.")
