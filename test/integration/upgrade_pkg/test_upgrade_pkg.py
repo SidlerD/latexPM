@@ -16,7 +16,7 @@ class UpgradePkgTest(unittest.TestCase):
         root = Node('root')
         dep_version = Version("v1.2a")
         dep = Dependency('A', '', dep_version)
-        down_dep = DownloadedDependency(dep, "path", "https://download/A")
+        down_dep = DownloadedDependency(dep, "path", "https://download/A", 'contrib/A')
         dep_node = DependencyNode(down_dep, parent=root)
 
 

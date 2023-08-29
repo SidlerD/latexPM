@@ -18,7 +18,7 @@ class InstallAllTest(unittest.TestCase):
     def test_install_all_gets_right_files(self, install_spec_pkg_mock, LF_write, LF_read, FH_clear_folder, user_input_mock):
         """Install deps from Lockfile, then check that correct folders would have been created"""
         dep_ams = Dependency("amsmath", "amsmath", "v1.2a")
-        down_dep = DownloadedDependency(dep_ams, "path", "https://download/amsmath")
+        down_dep = DownloadedDependency(dep_ams, "path", "https://download/amsmath", 'required/amsmath')
         rootNode = Node('root')
         DependencyNode(down_dep, rootNode)
 
@@ -59,6 +59,7 @@ class InstallAllTest(unittest.TestCase):
 
             installed_files = os.listdir(os.path.join(tempdir, installed_packages[0]))
             self.assertTrue(any(file.endswith(".sty") for file in installed_files)) # At least one .sty file downloaded
+            self.assertTrue(False)
 
     @patch("src.commands.install.LockFile.get_packages_from_file")
     @patch("src.commands.install.FileHelper.clear_and_remove_packages_folder") 
