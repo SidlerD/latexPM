@@ -59,7 +59,6 @@ class InstallAllTest(unittest.TestCase):
 
             installed_files = os.listdir(os.path.join(tempdir, installed_packages[0]))
             self.assertTrue(any(file.endswith(".sty") for file in installed_files)) # At least one .sty file downloaded
-            self.assertTrue(False)
 
     @patch("src.commands.install.LockFile.get_packages_from_file")
     @patch("src.commands.install.FileHelper.clear_and_remove_packages_folder") 
