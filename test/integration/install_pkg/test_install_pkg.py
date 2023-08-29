@@ -7,6 +7,8 @@ from src.models.Dependency import Dependency, DownloadedDependency
 from src.core.lpm import lpm
 from anytree import Node
 import tempfile
+from parameterized import parameterized
+
 
 class InstallPkgTest(unittest.TestCase):
 
@@ -56,9 +58,13 @@ class InstallPkgTest(unittest.TestCase):
             install_spec_pkg_mock.assert_has_calls([call(depA), call(depB)], any_order=False)
 
 
+    @parameterized.expand([
+        ['\\begin{equation*}\n  a=b\n\\end{equation*}',"amsmath"],
+        ['\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}', "listings"],
+    ])
     @patch("src.API.CTAN.input")
     @patch("src.core.PackageInstaller.input") 
-    def test_install_listings_and_build_file(self, install_closest_version_input, build_aliases_file_input):
+    def test_install_packages_and_build_file(self, text, pkg_name, install_closest_version_input, build_aliases_file_input):
         install_closest_version_input.return_value = 'y'
         build_aliases_file_input.return_value = 'n'
 
@@ -66,59 +72,15 @@ class InstallPkgTest(unittest.TestCase):
         with open('file.tex', 'w') as f:
             f.write('\n'.join([
                 r'\documentclass{article}',
-                r'\usepackage{listings}',
+                '\\usepackage{%s}' % pkg_name,
                 r'\begin{document}',
-                r'\begin{lstlisting}',
-                r'    import numpy as np',
-                r'\end{lstlisting}',
+                text,
                 r'\end{document}'
             ]))
         lpm_inst = lpm()
         lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
         
-        lpm_inst.install_pkg('listings')
-
-        lpm_inst.build(['pdflatex', 'file.tex'])
-
-        if os.path.exists('file.log'):
-            with open('file.log', 'r') as log:
-                print(log.read())
-        else:
-            print('file.log does not exist')    
-            files = [file for file in os.listdir() if os.path.isfile(file)]
-            log_files = [file for file in files if file.endswith('.log')]
-            print(f"Files in directory: {', '.join(files)}")
-            for file in log_files:
-                if not os.path.exists(file):
-                    continue
-                with open(file, 'r') as log:
-                    print(f"==== {file} =====")
-                    print(log.read())
-        
-        
-        self.assertTrue(os.path.exists('file.pdf'))
-
-    @patch("src.API.CTAN.input")
-    @patch("src.core.PackageInstaller.input") 
-    def test_install_amsmath_and_build_file(self, install_closest_version_input, build_aliases_file_input):
-        install_closest_version_input.return_value = 'y'
-        build_aliases_file_input.return_value = 'n'
-
-        os.chdir(self.test_dir)
-        with open('file.tex', 'w') as f:
-            f.write('\n'.join([
-                r'\documentclass{article}',
-                r'\usepackage{amsmath}',
-                r'\begin{document}',
-                r'\begin{equation*}',
-                r'  a=b',
-                r'\end{equation*}',
-                r'\end{document}'
-            ]))
-        lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
-        
-        lpm_inst.install_pkg('amsmath')
+        lpm_inst.install_pkg(pkg_name)
 
         lpm_inst.build(['pdflatex', 'file.tex'])
 
