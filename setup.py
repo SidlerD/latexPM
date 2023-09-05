@@ -24,3 +24,6 @@ if system == 'linux':
     pass
 if system == 'darwin': # darwin = MacOS
     pass
+
+# URGENT: Setup VPTAN here
+# Could host image with VPTAN on Docker hub, that would make it easy to install on all systems. No overhead since Docker is needed for build anyway

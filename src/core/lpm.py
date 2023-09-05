@@ -46,6 +46,7 @@ class lpm:
         upgrade()
 
     def list_packages(self, top_level_only = False, tree = False):
+        """Print list of all installed packages in current project"""
         list_packages(top_level_only, tree)
 
     def freeze(self):
@@ -57,5 +58,5 @@ class lpm:
         init(docker_image)
 
     def build(self, args: list):
-        """Build tex-files using the docker-container with the packages"""
+        """Build tex-files by executing the provided args in the docker container, using the installed packages"""
         build(args)

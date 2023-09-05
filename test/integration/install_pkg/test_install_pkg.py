@@ -61,6 +61,7 @@ class InstallPkgTest(unittest.TestCase):
     @parameterized.expand([
         ['\\begin{equation*}\n  a=b\n\\end{equation*}',"amsmath"],
         ['\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}', "listings"],
+        ['\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}', "tikz"]
     ])
     @patch("src.API.CTAN.input")
     @patch("src.core.PackageInstaller.input") 

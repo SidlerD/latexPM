@@ -12,7 +12,7 @@ from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
 
-def download_and_extract_zip(url: str, dep: Dependency):
+def download_and_extract_zip(url: str, dep: Dependency) -> str:
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
     try:
@@ -60,7 +60,7 @@ def organize_files(folder_path: str, tds: bool):
         #   the subfolder 'tex' contains the built files that latex uses, other folders contain the source code and documentation 
         # For more information, see https://ctan.org/TDS-guidelines
 
-        # If a package is tds-packages, we only need the files in subfolder 'tex' and don't need to try and build the source files
+        # If a package is tds-packaged, we only need the files in subfolder 'tex' and don't need to try and build the source files
         if exists(join(folder_path, 'tex')):
             # Inspect files in files_path, but move them to folder_path and delete subfolders of folder_path
             files_path = join(folder_path, 'tex')
@@ -86,7 +86,7 @@ def organize_files(folder_path: str, tds: bool):
     if tds:
         return
     
-    # Convert .ins and .dtx to .sty
+    # Convert .ins and .dtx to .sty and .cls
     old_cwd = os.getcwd()
     os.chdir(folder_path)
 
