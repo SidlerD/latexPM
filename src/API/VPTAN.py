@@ -1,31 +1,28 @@
 from src.models.Dependency import Dependency, DownloadedDependency
 
-from src.models.Version import Version
 from src.helpers.DownloadHelpers import download_and_extract_zip
-from src.exceptions.download.DownloadError import DownloadError
 import logging
-from typing import TypedDict
 import urllib.parse
 import requests
 
 _base_url = "http://127.0.0.1:8000"
 logger = logging.getLogger("default")
 
+
 def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from VPTAN")
-    
+
     url = _get_url_for_version(dep, closest=closest)
 
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
-    
+
     try:
         ctan_path = pkgInfo['ctan']['path']
     except KeyError:
-        ctan_path=None
+        ctan_path = None
 
-    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path) 
-
+    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path)
 
 
 def _get_url_for_version(dep: Dependency, closest: bool) -> str:
@@ -45,18 +42,18 @@ def _get_url_for_version(dep: Dependency, closest: bool) -> str:
     return url
 
 
-def get_alias_of_package(id = '', name = '') -> dict:
+def get_alias_of_package(id='', name='') -> dict:
     """Some packages are not available on CTAN directly, but are under another package, where they are listed as 'aliases'
     Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. Therefore, we should download pgf to get tikz"""
     logger.debug(f'Searching for {id if id else name} in aliases')
     if not id and not name:
-        raise ValueError(f"Please provide valid argument for at least one of id and name")
-    
+        raise ValueError("Please provide valid argument for at least one of id and name")
+
     params = {'id': id, 'name': name}
     url = _base_url + '/alias?' + urllib.parse.urlencode(params)
 
     response = requests.get(url)
     if not response.ok:
-        raise Exception(f"{id if id else name} has no alias") #TODO: Raise specific Error here
+        raise Exception(f"{id if id else name} has no alias")  # TODO: Raise specific Error here
 
     return response.json()

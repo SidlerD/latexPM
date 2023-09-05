@@ -10,6 +10,7 @@ from src.commands.install import install
 from src.commands.install_pkg import install_pkg
 from src.core import LockFile
 
+
 # TODO: Should probably add some "guard" that checks if Lockfile matches with packages folder. If not, this could lead to weird behaviours if user has changed anything manually
 class lpm:
     """Provides all the commands for the package manager, allows for 1:1 mapping from cmd input to functions"""
@@ -17,9 +18,9 @@ class lpm:
     def __init__(self, log_debug=False):
         if log_debug:
             self._logger = make_logger("default", logging_level=logging.DEBUG)
-        else: 
+        else:
             self._logger = make_logger("default")
-        
+
     def install_pkg(self, pkg_id: str, version: str = ""):
         """Install a specific package"""
         self._logger.info(f"Installing package {pkg_id} {version}")
@@ -42,10 +43,10 @@ class lpm:
 
     def upgrade(self):
         """Upgrade all packages"""
-        self._logger.info(f"Updating all packages")
+        self._logger.info("Updating all packages")
         upgrade()
 
-    def list_packages(self, top_level_only = False, tree = False):
+    def list_packages(self, top_level_only=False, tree=False):
         """Print list of all installed packages in current project"""
         list_packages(top_level_only, tree)
 

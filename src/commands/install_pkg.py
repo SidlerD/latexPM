@@ -1,8 +1,5 @@
-import json
 import logging
-import os
-import logging
-from anytree import Node, RenderTree, findall, AsciiStyle
+from anytree import Node
 
 from src.core.PackageInstaller import PackageInstaller
 from src.core import LockFile
@@ -11,9 +8,9 @@ from src.API import CTAN, VPTAN
 from src.helpers.DependenciesHelpers import extract_dependencies
 from src.commands.remove import remove
 from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
-from src.exceptions.download.DownloadError import DownloadError
 
 logger = logging.getLogger("default")
+
 
 def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     existing_node = LockFile.is_in_tree(dep)
@@ -22,49 +19,50 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     if existing_node:
         existing_par = existing_node.parent
         if hasattr(existing_par, 'dependents'):
-            existing_node.dependents.append(parent.dep) 
-            
+            existing_node.dependents.append(parent.dep)
+
         installed_by = "as requested by the user" if type(existing_par) == Node else "by " + existing_par.ppath
         msg = f"""{parent} depends on {dep}, which is already installed {installed_by}"""
 
         if existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."
-        
+
         logger.warn(msg)
         logger.info(f"Skipped install of {dep}")
         return
-    
+
     # Download package
     downloaded_dep = PackageInstaller.install_specific_package(dep)
 
     node = DependencyNode(downloaded_dep, parent=parent)
 
     # Extract dependencies of package, download those recursively
-    unsatisfied_deps = extract_dependencies(downloaded_dep) 
-    
+    unsatisfied_deps = extract_dependencies(downloaded_dep)
+
     for child_dep in unsatisfied_deps:
         _handle_dep(child_dep, node, root)
 
+
 def install_pkg(pkg_id: str, version: str = ""):
     """Installs one specific package and all its dependencies\n"""
-    
-    rootNode = None # Available in except clause
+
+    rootNode = None  # Available in except clause
     try:
         # Build dependency-model with needed information
         try:
             name = CTAN.get_name_from_id(pkg_id)
             dep = Dependency(pkg_id, name, version=version)
-        except CtanPackageNotFoundError as e:
+        except CtanPackageNotFoundError:
             logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
             alias = VPTAN.get_alias_of_package(id=pkg_id)
             alias_id, alias_name = alias['id'], alias['name']
             pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
-            dep = Dependency(pkg_id, name, version=version, alias = {'id': alias_id, 'name': alias_name})
+            dep = Dependency(pkg_id, name, version=version, alias={'id': alias_id, 'name': alias_name})
 
         pkgInfo = CTAN.get_package_info(dep.id)
         ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
 
-        # Check if package is already installed            
+        # Check if package is already installed
         rootNode = LockFile.read_file_as_tree()
         exists = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
         if exists:
@@ -73,13 +71,13 @@ def install_pkg(pkg_id: str, version: str = ""):
             else:
                 logger.info(f"{pkg_id} is on CTAN as {exists.dep.ctan_path}, which is already installed because {exists.id} also has the same path on CTAN.")
             return
-        
+
         # Download the package files
-        _handle_dep(dep, rootNode, rootNode) 
-        
+        _handle_dep(dep, rootNode, rootNode)
+
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")
-        
+
     except Exception as e:
         # Log information
         msg = f"Couldn't install package {pkg_id}: {str(e)}."
@@ -91,5 +89,3 @@ def install_pkg(pkg_id: str, version: str = ""):
 
         # Remove installed package + its dependencies which are already installed
         remove(pkg_id, by_user=False)
-
-        

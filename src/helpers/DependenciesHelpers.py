@@ -1,5 +1,5 @@
 import os
-from os.path import basename, join, exists, abspath
+from os.path import basename, join, exists
 import re
 import logging
 from src.API import CTAN, VPTAN
@@ -19,10 +19,11 @@ req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)\s*(?:\[(?:.*?)\
 """
 logger = logging.getLogger("default")
 
+
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     logger.info("Extracting dependencies of " + dep.id)
 
-    #FIXME: DOnt only look at pkg_id.sty, but also .cls and others
+    # FIXME: DOnt only look at pkg_id.sty, but also .cls and others
     to_extract, already_extracted = [f'{dep.name}.sty'], []
     final_deps: list[Dependency] = []
 
@@ -31,7 +32,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
         logger.info(f"{dep.id} does not include any relevant .sty files. Dependency extraction skipped")
         return []
 
-    #FIXME: Packages can not only depend on .sty files, but also .cls and others
+    # FIXME: Packages can not only depend on .sty files, but also .cls and others
     sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
     file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
 
@@ -51,7 +52,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                 sty_path = os.path.abspath(sty_name)
             else:
                 raise RuntimeError(f"Cannot extract dependencies for {dep.id}: {sty_path} does not exist")
-        
+
         with open(sty_path, "r", errors='ignore') as sty:
             content = sty.read()
             matches: list[tuple] = re.findall(req_pkg_pattern, content, re.MULTILINE)
@@ -59,7 +60,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                 package_names = package_names.split(',')
                 for name in package_names:
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
-                    if name in file_names and name not in already_extracted and name not in to_extract: 
+                    if name in file_names and name not in already_extracted and name not in to_extract:
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
                         logger.debug(f"{sty_name} depends on {name}, which was included in its download")
                         to_extract.append(f'{name}.sty')
@@ -74,12 +75,11 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                                 alias_id, alias_name = alias['id'], alias['name']
                                 pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
                                 new_dep = Dependency(pkg_id, name, package_version, alias={'id': alias_id, 'name': alias_name})
-                            
+
                             final_deps.append(new_dep)
                             logger.debug(f"Adding {name} as dependency of {dep.id}")
-                        except CtanPackageNotFoundError as e:
+                        except CtanPackageNotFoundError:
                             logger.warning(f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, but CTAN has no information about {name}. {name} will not be installed. If problems arise, please install {name} manually.")
 
     logger.info(f"{dep} has {len(final_deps)} dependencies: {', '.join([dep.id for dep in final_deps])}")
     return list(final_deps)
-    
