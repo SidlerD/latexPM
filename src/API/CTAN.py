@@ -11,7 +11,7 @@ from src.models.Version import Version
 
 _ctan_url = "https://www.ctan.org/"
 logger = logging.getLogger("default") # DECIDE: Is this good??
-    
+
 @cache
 def get_id_from_name(name: str) -> str:
     all = requests.get(f"{_ctan_url}json/2.0/packages").json()

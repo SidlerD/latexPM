@@ -12,7 +12,7 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 logger = logging.getLogger("default")
 
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool):
     existing_node = LockFile.is_in_tree(dep)
 
     # If dependency is already installed, warn and return
@@ -32,7 +32,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
         return
 
     # Download package
-    downloaded_dep = PackageInstaller.install_specific_package(dep)
+    downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts)
 
     node = DependencyNode(downloaded_dep, parent=parent)
 
@@ -40,10 +40,10 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node):
     unsatisfied_deps = extract_dependencies(downloaded_dep)
 
     for child_dep in unsatisfied_deps:
-        _handle_dep(child_dep, node, root)
+        _handle_dep(child_dep, node, root, accept_prompts)
 
 
-def install_pkg(pkg_id: str, version: str = ""):
+def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
     """Installs one specific package and all its dependencies\n"""
 
     rootNode = None  # Available in except clause
@@ -73,7 +73,7 @@ def install_pkg(pkg_id: str, version: str = ""):
             return
 
         # Download the package files
-        _handle_dep(dep, rootNode, rootNode)
+        _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts)
 
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")

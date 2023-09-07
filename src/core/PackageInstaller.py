@@ -13,14 +13,14 @@ logger = logging.getLogger("default")
 
 class PackageInstaller:
     @staticmethod
-    def install_specific_package(pkg: Dependency) -> DownloadedDependency:
+    def install_specific_package(pkg: Dependency, accept_prompts: bool = False) -> DownloadedDependency:
         pkgInfo = CTAN.get_package_info(pkg.id)
 
         # TODO: Add interface for DownloadSources (TL, CTAN) which defines method download_pkg and explains it needs to return DownloadedDependency
         try:
             version_matches = "version" in pkgInfo and Version(pkgInfo['version']) == pkg.version
 
-            if pkg.version is None or version_matches:
+            if pkg.version == None or version_matches: # pkg.version == None instead of is None so that Version.__eq__ is called
                 downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
             else:  # Need specific older version => Download from VPTAN
@@ -29,7 +29,7 @@ class PackageInstaller:
                 except VersionNotAvailableError:
                     # Try to install closest version available
                     if pkg.version.date:  # Can only install closest version with dates
-                        decision = ''
+                        decision = 'y' if accept_prompts else ''
                         while decision not in ['y', 'n']:
                             decision = input(f"{pkg.id} is not available on VPTAN in version {pkg.version}. Do you want to install the closest later version? [y/n]: ").lower()
                         if decision == 'n':

@@ -21,10 +21,10 @@ class lpm:
         else:
             self._logger = make_logger("default")
 
-    def install_pkg(self, pkg_id: str, version: str = ""):
+    def install_pkg(self, pkg_id: str, version: str = "", accept_prompts: bool = False):
         """Install a specific package"""
         self._logger.info(f"Installing package {pkg_id} {version}")
-        install_pkg(pkg_id, version=version)
+        install_pkg(pkg_id, version=version, accept_prompts=accept_prompts)
 
     def install(self):
         """Install all packages as specified in lock-file"""
