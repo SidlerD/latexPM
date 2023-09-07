@@ -57,13 +57,13 @@ class InstallPkgTest(unittest.TestCase):
             install_spec_pkg_mock.assert_has_calls([call(depA), call(depB)], any_order=False)
 
     @parameterized.expand([
-        ['\\begin{equation*}\n  a=b\n\\end{equation*}', "amsmath"],
-        ['\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}', "listings"],
-        ['\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}', "tikz"]
+        ["amsmath", '\\begin{equation*}\n  a=b\n\\end{equation*}'],
+        [ "listings", '\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}'],
+        ["tikz", '\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}']
     ])
     @patch("src.API.CTAN.input")
     @patch("src.core.PackageInstaller.input")
-    def test_install_packages_and_build_file(self, text, pkg_name, install_closest_version_input, build_aliases_file_input):
+    def test_install_packages_and_build_file(self, pkg_name, text, install_closest_version_input, build_aliases_file_input):
         install_closest_version_input.return_value = 'y'
         build_aliases_file_input.return_value = 'n'
 
