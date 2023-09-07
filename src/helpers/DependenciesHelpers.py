@@ -23,20 +23,15 @@ logger = logging.getLogger("default")
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     logger.info("Extracting dependencies of " + dep.id)
 
+
+
     # FIXME: DOnt only look at pkg_id.sty, but also .cls and others
-    to_extract, already_extracted = [f'{dep.name}.sty'], []
-    final_deps: list[Dependency] = []
-
-    if not exists(join(dep.path, to_extract[0])):
-        # No sty-file in package-files
-        logger.info(f"{dep.id} does not include any relevant .sty files. Dependency extraction skipped")
-        return []
-
     # FIXME: Packages can not only depend on .sty files, but also .cls and others
-    sty_files = [file_name for file_name in dep.files if file_name.endswith('.sty')]
-    file_names = [basename(sty_path).split('.')[0] for sty_path in sty_files]
+    to_extract = [file_name for file_name in dep.files if file_name.endswith('.sty')]
+    included_file_names = [basename(sty_path).split('.')[0] for sty_path in to_extract]
 
-    to_extract = sty_files
+    already_extracted = []
+    final_deps: list[Dependency] = []
 
     while to_extract:
         sty_name = to_extract.pop()
@@ -51,6 +46,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
             if os.path.exists(os.path.abspath(sty_name)):
                 sty_path = os.path.abspath(sty_name)
             else:
+                # TODO: Handle this error case
                 raise RuntimeError(f"Cannot extract dependencies for {dep.id}: {sty_path} does not exist")
 
         with open(sty_path, "r", errors='ignore') as sty:
@@ -60,11 +56,12 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
                 package_names = package_names.split(',')
                 for name in package_names:
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
-                    if name in file_names and name not in already_extracted and name not in to_extract:
+                    if name in included_file_names:
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
                         logger.debug(f"{sty_name} depends on {name}, which was included in its download")
-                        to_extract.append(f'{name}.sty')
-                    else:
+                    elif name in [dep.name for dep in final_deps]:
+                        continue
+                    else:  # Extract dependencies of file
                         try:
                             try:
                                 pkg_id = CTAN.get_id_from_name(name)
