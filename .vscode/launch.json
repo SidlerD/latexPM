@@ -10,13 +10,23 @@
     ],
     "configurations": [
         {
+            "name": "Generate Timing",
+            "type": "python",
+            "request": "launch",
+            "module": "test.timing.TimeCommandExecution",
+            "justMyCode": true
+        },
+        {
             "name": "Upgrade all packages",
             "type": "python",
             "request": "launch",
             "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["upgrade", "--all"]
+            "args": [
+                "upgrade",
+                "--all"
+            ]
         },
         {
             "name": "Install amsmath",
@@ -37,7 +47,9 @@
             "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["init"]
+            "args": [
+                "init"
+            ]
         },
         {
             "name": "Remove amsmath",
@@ -46,7 +58,10 @@
             "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["remove", "amsmath"]
+            "args": [
+                "remove",
+                "amsmath"
+            ]
         },
         {
             "name": "Install acro",
