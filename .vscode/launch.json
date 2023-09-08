@@ -126,6 +126,7 @@
             "console": "integratedTerminal",
             "request": "launch",
             "program": "${file}",
+            "args": "${input:fileArguments}",
             "justMyCode": true
         },
     ]

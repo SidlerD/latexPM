@@ -54,6 +54,6 @@ def get_alias_of_package(id='', name='') -> dict:
 
     response = requests.get(url)
     if not response.ok:
-        raise Exception(f"{id if id else name} has no alias")  # TODO: Raise specific Error here
+        raise ValueError(f"{id if id else name} has no alias")  # TODO: Raise something more specific here
 
     return response.json()
