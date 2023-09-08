@@ -22,10 +22,12 @@ class Dependency:
         return hash((self.id, self.version))
 
     def __repr__(self):
+        repr = [self.name]
         if self.alias:
-            return f"{self.name}({self.alias['id'] if self.alias['id'] else self.alias['name']}): {self.version}"
-
-        return f"{self.name}: {self.version}"
+            repr.append(f"({self.alias['id'] if self.alias['id'] else self.alias['name']})")
+        if self.version != None:
+            repr.append(': ' + str(self.version))
+        return ''.join(repr)
 
 
 class DownloadedDependency(Dependency):
