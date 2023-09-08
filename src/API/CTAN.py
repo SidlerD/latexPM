@@ -65,6 +65,11 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
     logger.info(f"CTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
     
+    if 'version' in pkgInfo:
+        version = Version(pkgInfo['version'])
+        dep.version = version
+    else:
+        logger.warn(f"Couldn't find version for {dep}")
     try:
         ctan_path = pkgInfo['ctan']['path']
     except KeyError:
