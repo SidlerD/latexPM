@@ -13,9 +13,9 @@ from src.models.Dependency import Dependency, DownloadedDependency
 """
 
 # FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} (I don't know which file types are supported for importing with \input)
-req_pkg_pattern = r'^\s*(?<!%)\s*\\(?:RequirePackage|usepackage)\s*(?:\[(?:.*?)\])?\{(.*?)\}(?:\[(.*?)\])?.*'
+req_pkg_pattern = r'^\s*\\(?:RequirePackage|usepackage)\s*?(?:\[(?:.*?)\])?\s*?\{(.*?)\}\s*?(?:\[(.*?)\])?.*?$'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/yKfVDC/1
+    https://regex101.com/r/gFxWPO/1
 """
 logger = logging.getLogger("default")
 
@@ -86,7 +86,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
 
 # Simplified code for thesis
-# """
+"""
 def extract_dependencies(pkg: DownloadedDependency) -> list[Dependency]:
     
     # Names of files to extract dependencies from
