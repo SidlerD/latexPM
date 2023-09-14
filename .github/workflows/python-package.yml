@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small
     strategy:
       fail-fast: false
       matrix:
