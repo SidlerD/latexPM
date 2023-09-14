@@ -40,6 +40,8 @@ jobs:
             with:
                 image: sidlerd/vptan:latest
                 options: -p 8000:8000
+                run: |
+                  echo "hello world"
     - name: Test with pytest
       run: |
         pytest
