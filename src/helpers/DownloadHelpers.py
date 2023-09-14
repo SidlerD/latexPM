@@ -16,13 +16,22 @@ logger = logging.getLogger("default")
 def download_and_extract_zip(url: str, dep: Dependency) -> str:
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
+
+    
+    # Use pkg.name for normal pkgs, name of collection for packages that are in collection
     try:
         pkgInfo = CTAN.get_package_info(dep.id)
-        ctan_path = pkgInfo['ctan']['path']
-        download_folder = join(pkg_folder, ctan_path.split('/')[-1])
+        if 'topics' in pkgInfo and 'collections' in pkgInfo['topics']:
+            ctan_path = pkgInfo['ctan']['path']
+            # problem: Last elem of ctan path is sometimes not pkg-name. E.g. tikz, where ctan path is /graphics/pgf/base
+            name = ctan_path.split('/')[-1]
+        else:
+            name = dep.name
     except KeyError:
         logger.debug(f"Using {dep.name} as fallback for folder name")
-        download_folder = join(pkg_folder, dep.name)
+        name = dep.name
+
+    download_folder = join(pkg_folder, name)
 
     zip_file_name = join(download_folder, basename(download_folder) + '.zip')
 
