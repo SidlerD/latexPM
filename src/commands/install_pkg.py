@@ -20,7 +20,8 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
     existing_node = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
     if existing_node:
         existing_par = existing_node.parent
-        if hasattr(existing_par, 'dependents'):
+        # URGENT: If parent is root-node, this fails because it doesnt have dep-attribute. Maybe switch to node-id?
+        if hasattr(existing_node, 'dependents'):
             existing_node.dependents.append(parent.dep)
 
         if existing_node.id != dep.id:

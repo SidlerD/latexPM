@@ -91,7 +91,7 @@ def extract_dependencies(pkg: DownloadedDependency) -> list[Dependency]:
     
     # Names of files to extract dependencies from
     pkg_files = [file_name for file_name in pkg.files if file_name.endswith('.sty')]
-    # File-names from to_extract, but without file extension
+    # File-names from pkg_files, but without file extension
     pkg_file_names = [basename(sty_path).split('.')[0] for sty_path in pkg_files]
 
     already_extracted = []

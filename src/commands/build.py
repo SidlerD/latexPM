@@ -30,6 +30,3 @@ def build(args: list):
     )
     
     # TODO: Show build process without detaching container
-
-if __name__ == '__main__':
-    build()
