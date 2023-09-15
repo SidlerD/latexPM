@@ -19,7 +19,7 @@ jobs:
       matrix:
         python-version: ["3.10"]
     services:
-      vptan:
+      localhost:
         image: sidlerd/vptan:0.1
         ports:
            - 8000:8000
