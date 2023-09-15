@@ -4,8 +4,9 @@ from src.helpers.DownloadHelpers import download_and_extract_zip
 import logging
 import urllib.parse
 import requests
+import os
 
-_base_url = "http://127.0.0.1:8000"
+_base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.get('VPTAN_PORT', '8000')
 logger = logging.getLogger("default")
 
 

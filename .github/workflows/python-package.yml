@@ -5,20 +5,29 @@ name: Python package
 
 on:
   push:
-    branches: [ "master", "github_actions" ]
+    branches: [ "master", "github_actions", "make_actions_work" ]
   pull_request:
     branches: [ "master" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10"]
-
+    services:
+      vptan:
+        image: sidlerd/vptan:0.1.1
+        ports:
+           - 8000:8000
     steps:
+    # - uses: xu-cheng/texlive-action/small@v1
+    #   with:
+    #     run: |
+    #       apk add make
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
@@ -35,11 +44,9 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-     - name: Run VPTAN with Docker
-            uses: addnab/docker-run-action@v3
-            with:
-                image: sidlerd/vptan:latest
-                options: -p 8000:8000
     - name: Test with pytest
       run: |
         pytest
+      env:
+        VPTAN_HOST: vptan
+        VPTAN_PORT: ${{ job.services.vptan.ports[8000] }}

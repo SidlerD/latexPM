@@ -40,7 +40,10 @@ class InstallPkgTest(unittest.TestCase):
         depA, depB = Dependency('A', 'A'), Dependency('B', 'B')
 
         extract_dependencies_mock.side_effect = lambda dep: [depB] if dep.id == 'A' else [depA]
-        install_spec_pkg_mock.side_effect = lambda dep: DownloadedDependency(dep, "path", "https://download", 'path/on/ctan')
+        
+        def PackageInstaller_sideeffect(dep, accept_prompts: bool = False):
+            return DownloadedDependency(dep, "path", "https://download", 'path/on/ctan')
+        install_spec_pkg_mock.side_effect = PackageInstaller_sideeffect
         CTAN_id_to_name_mock.return_value = ""
         CTAN_pkg_info_mock.return_value = {'ctan': {'path': '/path/on/ctan'}}
         LockFile_read.return_value = Node('root')
@@ -48,13 +51,13 @@ class InstallPkgTest(unittest.TestCase):
 
         with self.assertLogs('default', level='INFO') as cm:
             lpm_inst = lpm()
-            lpm_inst.install_pkg("A")
+            lpm_inst.install_pkg("A", accept_prompts=True)
             log_msg = "already installed as requested by the user"
             # Assert correct msg has been logged
             self.assertTrue(any([log_msg in log for log in cm.output]), 0)
             # Assert pkgA and pkgB were both installed only once
             self.assertEqual(install_spec_pkg_mock.call_count, 2)
-            install_spec_pkg_mock.assert_has_calls([call(depA), call(depB)], any_order=False)
+            install_spec_pkg_mock.assert_has_calls([call(depA, accept_prompts=True), call(depB, accept_prompts=True)], any_order=False)
 
     @parameterized.expand([
         ["amsmath", '\\begin{equation*}\n  a=b\n\\end{equation*}'],
