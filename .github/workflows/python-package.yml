@@ -20,7 +20,7 @@ jobs:
         python-version: ["3.10"]
     services:
       localhost:
-        image: sidlerd/vptan:0.1
+        image: sidlerd/vptan:0.1.1
         ports:
            - 8000:8000
     steps:

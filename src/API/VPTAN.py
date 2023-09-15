@@ -5,7 +5,7 @@ import logging
 import urllib.parse
 import requests
 
-_base_url = "http://localhost:8000"
+_base_url = "http://127.0.0.1:8000"
 logger = logging.getLogger("default")
 
 
