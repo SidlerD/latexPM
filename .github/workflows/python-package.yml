@@ -5,9 +5,10 @@ name: Python package
 
 on:
   push:
-    branches: [ "master", "github_actions", "make_actions_work" ]
-  pull_request:
-    branches: [ "master" ]
+    # branches: [ "master", "github_actions", "make_actions_work" ]
+    branches: [ ]
+  # pull_request:
+    # branches: [ "master" ]
 
 jobs:
   build:
