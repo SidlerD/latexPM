@@ -57,7 +57,7 @@ def remove(pkg_id: str, by_user: bool = True):
 
 def delete_pkg_files(dep_node: DependencyNode):
     logger.debug(f"Removing files for {dep_node}")
-    if not hasattr(dep_node, 'dep_node') and not hasattr(dep_node.dep, 'files'):
+    if not hasattr(dep_node, 'dep') or not hasattr(dep_node.dep, 'files'):
         raise RuntimeError(f"Couldn't find files to delete for {dep_node.dep}.")
 
     # Remove folder including its files

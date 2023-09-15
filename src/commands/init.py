@@ -10,7 +10,6 @@ from src.helpers.Logger import make_logger
 logger = make_logger()
 
 def init(image_name: str):
-    # TODO: Make it possible for user to specify his own Docker image to use
     if os.path.exists('packages') or os.path.exists('.lpmconf'):
         print(f"There is already a project in this folder")
         return
@@ -31,5 +30,6 @@ def init(image_name: str):
         os.mkdir('packages')
 
     
+    # TODO: Add other packages from bundle "required"
     install_pkg('latex-base')
     install_pkg('l3backend')

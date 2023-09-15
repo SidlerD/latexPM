@@ -9,7 +9,8 @@ def add_install_parser(subparsers):
     # Create sub-parser for the install command
     install_parser = subparsers.add_parser('install', help='Install package(s)')
     install_parser.add_argument('-v', '--version', type=str, help='Version to install: Either number (e.g. 1.2a) or date (YYYY/MM/DD)', metavar="")
-    
+    install_parser.add_argument('-y', '--yes_to_prompts', action='store_true', help='If provided, answer all prompts with yes')
+
     mutual_excl_args = install_parser.add_mutually_exclusive_group(required=True)
     mutual_excl_args.add_argument('package', default=None, nargs='?', help='Package id to install')
     mutual_excl_args.add_argument('--lockfile', action='store_true', help='Install packages from lockfile')
@@ -55,10 +56,10 @@ def handle_input(args):
 
     if args.command == 'install':
         if args.package:
-            lpm_inst.install_pkg(args.package, args.version)
+            lpm_inst.install_pkg(args.package, args.version, args.yes_to_prompts)
         elif args.lockfile:
             if args.version:
-                print(f"WARN: Version will be ignored since --lockfile was given")
+                print("WARN: Version will be ignored since --lockfile was given")
             lpm_inst.install()
     elif args.command == 'upgrade':
         if args.package:
