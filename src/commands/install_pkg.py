@@ -18,10 +18,22 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
 
     # If dependency is already installed, warn and return
     existing_node = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
-    if existing_node:
+    newer_than = lambda dateA, dateB: dateA and dateB and dateA > dateB
+   
+    if existing_node and newer_than(dep.version.date, existing_node.dep.version.date):
+        # If version to install > installed version, version to install will 
+        # satisfy every requirepackage{}[installed_version], according to syntax of date in \requirepackage
+        # Therefore, remove installed version and install the newer requested version.
+        # TODO: Test this clause
+        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}. \
+                    Requested install in version {dep.version}. \
+                    Installing  in {dep.version} because it is newer")
+        remove(pkg_id=dep.id, by_user=False)
+    elif existing_node:
         existing_par = existing_node.parent
-        # URGENT: If parent is root-node, this fails because it doesnt have dep-attribute. Maybe switch to node-id?
+
         if hasattr(existing_node, 'dependents'):
+            # URGENT: If parent is root-node, this fails because it doesnt have dep-attribute. Maybe switch to node-id?
             existing_node.dependents.append(parent.dep)
 
         if existing_node.id != dep.id:

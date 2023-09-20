@@ -14,7 +14,6 @@ def add_install_parser(subparsers):
     mutual_excl_args = install_parser.add_mutually_exclusive_group(required=True)
     mutual_excl_args.add_argument('package', default=None, nargs='?', help='Package id to install')
     mutual_excl_args.add_argument('--lockfile', action='store_true', help='Install packages from lockfile')
-    add_debug_option(install_parser)
 
 def add_upgrade_parser(subparsers):
     # Create sub-parser for the upgrade command
@@ -23,7 +22,6 @@ def add_upgrade_parser(subparsers):
 
     mutual_excl_args.add_argument('-p', '--package', type=str, help='upgrade specific package', metavar="")
     mutual_excl_args.add_argument('-a', '--all',action='store_true', help='upgrade all packages')
-    add_debug_option(upgrade_parser)
     
 
 def add_init_parser(subparsers):
@@ -39,7 +37,6 @@ def add_list_parser(subparsers):
 def add_remove_parser(subparsers):
     remove_parser = subparsers.add_parser('remove', help='Uninstall a package from project')
     remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="")
-    add_debug_option(remove_parser)
 
 def add_build_parser(subparsers):
     build_parser = subparsers.add_parser('build', help='Build your project')
@@ -49,9 +46,9 @@ def add_debug_option(parser):
     parser.add_argument('-debug', action='store_true', help='Set logging level to debug instead of info')
 
 def handle_input(args):
-    try:
-        lpm_inst = lpm(args.debug)
-    except AttributeError:
+    if args.debug:
+        lpm_inst = lpm(log_debug=True)
+    else:
         lpm_inst = lpm()
 
     if args.command == 'install':
@@ -86,6 +83,7 @@ def handle_input(args):
 def main():
     print(f" -- lpm called from {os.getcwd()} -- \n")
     parser = ArgumentParser(prog='lpm')
+    add_debug_option(parser=parser)
     
     # Create all subparsers
     subparsers = parser.add_subparsers(dest='command')
