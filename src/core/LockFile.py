@@ -20,6 +20,7 @@ def get_name():
 
 
 def create():
+    """Create empty lockfile, pass if already exists"""
     if os.path.exists(lock_file_name):
         logger.info("Lockfile already exists")
     else:

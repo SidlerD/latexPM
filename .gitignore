@@ -6,6 +6,7 @@ requirements.json
 t.py
 .lpmconf
 Dockerfile
+tlmgr_deps_of_files_output.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

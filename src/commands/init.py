@@ -10,7 +10,7 @@ from src.helpers.Logger import make_logger
 logger = make_logger()
 
 def init(image_name: str):
-    if os.path.exists('packages') or os.path.exists('.lpmconf'):
+    if os.path.exists('packages') and os.path.exists('.lpmconf'):
         print(f"There is already a project in this folder")
         return
     
