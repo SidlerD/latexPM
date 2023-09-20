@@ -10,11 +10,12 @@
     ],
     "configurations": [
         {
-            "name": "Generate Timing",
+            "name": "Dependency extraction accuracy",
             "type": "python",
             "request": "launch",
-            "module": "test.timing.TimeCommandExecution",
-            "justMyCode": true
+            "module": "thesis.dep_extraction_accuracy.main",
+            "justMyCode": true,
+            "args": "${input:fileArguments}"
         },
         {
             "name": "Upgrade all packages",
