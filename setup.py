@@ -1,31 +1,3 @@
-# #!/usr/bin/env python3
-
-# import setuptools
-
-
-# install_requires = [
-#     "anytree",
-#     "python-dateutil",
-#     "requests",
-#     "argparse",
-#     "docker",
-#     "parameterized",
-#     "pandas"
-# ]
-
-# setuptools.setup(
-#     name="Latex package manager",
-#     version="1.0",
-#     packages=setuptools.find_packages(),
-#     install_requires=install_requires,
-#     entry_points={
-#         'console_scripts': [
-#             'lpm = main',
-#         ],
-#     },
-#     include_package_data=True,
-#     )
-
 import os
 import platform
 system = platform.system().lower()
