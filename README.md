@@ -10,6 +10,8 @@
 
 6. [Setup VPTAN](https://github.com/SidlerD/VPTAN#setup)
 
+- Additional: [Docker](https://docs.docker.com/get-docker/) and [latex](https://www.latex-project.org/get/) need to be installed on your system in order for lpm to complete it's tasks successfully. If you don't already have them installed, please do so before using lpm.
+
 ## Usage
 ### Get help / list all commands
 - Use `lpm -h` to get a list of all commands that `lpm` provides
