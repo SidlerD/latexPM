@@ -7,15 +7,20 @@ print("Setting up lpm installation")
 if not os.path.exists('venv'):
     print("Please create a virtual environment using the name 'venv' and try again")
     exit
-    
+
 # Add folder to PATH
 if system == 'windows':
     with open("lpm.bat", "w") as f:
         content = [
-            ":: This file is used to execute lpm from anywhere. Please make sure that the parent folder of this file is in PATH", 
-            "",
-            "./venv/Scripts/activate",
-            f"@python {os.path.join(os.getcwd(), 'main.py')} %*"
+            r'@echo off',
+            r':: "%~dp0" expands to full path to folder containing this .bat-file'
+            r':: Activate the virtual environment',
+            r':: "2>nul" hides output from user when /venv is not found: Makes it possible to install requirements.txt globally, although discouraged',
+            r':: powershell.exe: Which file to execute to run venv depends on whether cmd or powershell is used. Instead of checking manually, we just call powershell',
+            r'powershell.exe ". %~dp0\venv\Scripts\Activate.ps1" 2>nul',
+            r":: Run the Python script from lpm's directory",
+            r'python "%~dp0\main.py" %*',
+            r':: Do I need to Deactivate the virtual environment?? ',
             ]
         f.write("\n".join(content))
 
