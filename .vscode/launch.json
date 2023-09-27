@@ -18,6 +18,13 @@
             "args": "${input:fileArguments}"
         },
         {
+            "name": "Measure execution times",
+            "type": "python",
+            "request": "launch",
+            "module": "thesis.timing.TimeCommandExecution",
+            "justMyCode": true,
+        },
+        {
             "name": "Upgrade all packages",
             "type": "python",
             "request": "launch",
