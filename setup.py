@@ -41,7 +41,7 @@ if system == 'linux':
         content = [
             '#!/bin/bash',
             '',
-            "source venv/bin/activate",
+            f"source {os.getcwd()}/venv/bin/activate",
             f'python {os.path.join(os.getcwd(), "main.py")} "$@"' # "$@" so that arguments are passed
             ]
         f.write("\n".join(content))
