@@ -63,7 +63,7 @@ def read_file_as_tree() -> Node:
     # IF file is empty, create new tree
     if not os.path.exists(lock_file_name) or _file_is_empty(lock_file_name):
         logger.debug(f"Created new tree because {lock_file_name} is empty")
-        _root = Node('root', dependents=[])
+        _root = Node('root', id='root', dependents=[])
         return _root
 
     # Read the JSON file
@@ -79,7 +79,7 @@ def read_file_as_tree() -> Node:
     # return _root
 
     # Construct the tree
-    _root = Node('root', dependents=[])
+    _root = Node('root', id='root', dependents=[])
     if 'children' in json_data:
         for child_data in json_data["children"]:
             _construct_tree(child_data, parent=_root)
@@ -136,7 +136,7 @@ def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], version=Version(dep_info["version"]), alias=dep_info['alias'])
     downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], ctan_path=dep_info['ctan_path'], files=dep_info['files'])
-    node = DependencyNode(downloaded_dep, parent=parent, dependents=[Dependency(d['id'], d['name'], version=d['version'], alias=d['alias']) for d in data['dependents']])
+    node = DependencyNode(downloaded_dep, parent=parent, dependents=data['dependents'])
     if "children" in data:
         for child_data in data["children"]:
             _construct_tree(child_data, parent=node)

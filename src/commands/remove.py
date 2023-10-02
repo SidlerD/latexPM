@@ -23,9 +23,8 @@ def _handle_dep(pkg: DependencyNode):
         remove_from_tree(pkg)
     # Move pkg in tree from dep_to_remove to first package which depends on it
     elif len(pkg.dependents) > 0:
-        dest_dep = pkg.dependents.pop(0)
-        dest = LockFile.is_in_tree(dest_dep)
-
+        dest_dep_id = pkg.dependents.pop(0)
+        dest = LockFile.find_by_id(dest_dep_id)
         move_in_tree(dest=dest, node=pkg)
 
 

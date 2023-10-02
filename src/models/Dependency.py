@@ -46,7 +46,7 @@ class DownloadedDependency(Dependency):
 
 
 class DependencyNode(NodeMixin):
-    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[Dependency] = None):
+    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[str] = None):
         # super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep
@@ -65,6 +65,9 @@ class DependencyNode(NodeMixin):
         """Pretty path, use for printing path to node\n
         Example: acro:  --> translations:  --> (pdftexcmds: )"""
         return ' > '.join([str(node) if hasattr(node, 'id') else node.name for node in self.path][1:])
+    
+    def add_dependent(self, node_id: str):
+        self.dependents.append(node_id)
 
 
 def serialize_dependency(elem: any):

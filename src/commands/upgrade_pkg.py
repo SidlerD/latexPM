@@ -12,7 +12,6 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DependencyNode
 from src.models.Version import Version
 from src.helpers.DependenciesHelpers import extract_dependencies
-from anytree import Node
 
 logger = logging.getLogger("default")
 
