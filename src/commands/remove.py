@@ -23,9 +23,13 @@ def _handle_dep(pkg: DependencyNode):
         remove_from_tree(pkg)
     # Move pkg in tree from dep_to_remove to first package which depends on it
     elif len(pkg.dependents) > 0:
-        dest_dep_id = pkg.dependents.pop(0)
-        dest = LockFile.find_by_id(dest_dep_id)
-        move_in_tree(dest=dest, node=pkg)
+        while len(pkg.dependents) > 0:
+            dest_dep_id = pkg.dependents.pop(0)
+            try:
+                dest = LockFile.find_by_id(dest_dep_id)
+                move_in_tree(dest=dest, node=pkg)
+            except ValueError as e:
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} not in tree anymore")
 
 
 def remove(pkg_id: str, by_user: bool = True):
