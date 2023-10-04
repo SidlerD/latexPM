@@ -5,9 +5,10 @@ requirements-lock.json
 requirements.json
 t.py
 .lpmconf
-Dockerfile
+*Dockerfile
 *deps_of_files_output.json
-dep_comparison.*
+*.dat
+dep_comparison*.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
