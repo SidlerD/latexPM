@@ -8,6 +8,7 @@ t.py
 Dockerfile
 *deps_of_files_output.json
 dep_comparison.*
+*.dat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
