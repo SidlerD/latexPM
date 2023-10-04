@@ -25,11 +25,12 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
 
 
-    # FIXME: DOnt only look at pkg_id.sty, but also .cls and others
-    # FIXME: Packages can not only depend on .sty files, but also .cls and others
-    
+    """ TODO: Check whether extracting from .def files is a good idea
+        Reason for including .def for extraction: when using tikz, epstopdf-base is required by graphics-def/pdftex.def 
+    """
+
     # Names of files to extract dependencies from
-    to_extract = [file_name for file_name in dep.files if file_name.endswith('.sty')]
+    to_extract = [file_name for file_name in dep.files if file_name.endswith(('.sty', '.def', '.cls'))]
     # File-names from to_extract, but without file extension
     included_file_names = [basename(sty_path).split('.')[0] for sty_path in to_extract]
 

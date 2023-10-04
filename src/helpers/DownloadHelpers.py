@@ -111,7 +111,7 @@ def organize_files(folder_path: str, tds: bool):
             try:
                 # DECIDE: Could parse sty-file names that are generated from ins-file and delete them, so that prompt does not occur
                 # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
-                subprocess.run(['latex', ins_file], stdout=subprocess.DEVNULL, timeout=3)
+                subprocess.run(['latex', basename(ins_file)], stdout=subprocess.DEVNULL, timeout=3)
             except Exception as e:
                 # Possible reasons for timeout: File should not be executed, .sty file already exists and user gets prompted wheter or not to overwrite
                 logger.warning(f"Problem while installing {name}.ins: {e}")
