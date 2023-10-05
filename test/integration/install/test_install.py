@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 from unittest.mock import patch, call, ANY
 from anytree import Node
@@ -10,7 +11,15 @@ from src.core.lpm import lpm
 
 
 class InstallAllTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.old_cwd = os.getcwd()
+        self.tmp_dir = tempfile.mkdtemp()
+        os.chdir(self.tmp_dir)
 
+    def tearDown(self):
+        os.chdir(self.old_cwd)
+        shutil.rmtree(self.tmp_dir)
+        
     @patch("src.commands.install.input")
     @patch("src.commands.install.FileHelper.clear_and_remove_packages_folder")
     @patch("src.commands.install.LockFile.read_file_as_tree")  # path to actual file because mocked methods are static
@@ -38,28 +47,26 @@ class InstallAllTest(unittest.TestCase):
     @patch("src.commands.install.input")
     @patch("src.commands.install.LockFile.get_packages_from_file")
     @patch("src.commands.install.LockFile.write_tree_to_file")
-    @patch("src.helpers.DownloadHelpers.config.get_package_dir")
-    def test_install_creates_folder_and_downloads_files(self, get_pkg_dir, LF_write, LF_get_packages, user_input_mock):
+    def test_install_creates_folder_and_downloads_files(self, LF_write, LF_get_packages, user_input_mock):
+        os.mkdir('packages')
+        self.assertEqual(0, len(os.listdir('packages')))  # Dir empty at beginning
+
         dep_ams = Dependency("amsmath", "amsmath")
 
         LF_get_packages.return_value = [dep_ams]
         LF_write.return_value = None
         user_input_mock.return_value = 'y'  # User agrees to packages-folder being cleared
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            get_pkg_dir.return_value = tempdir
 
-            self.assertEqual(0, len(os.listdir(tempdir)))  # Dir empty at beginning
+        lpm_inst = lpm()
+        lpm_inst.install()
 
-            lpm_inst = lpm()
-            lpm_inst.install()
+        installed_packages = os.listdir('packages')
+        self.assertEqual(1, len(installed_packages))
 
-            installed_packages = os.listdir(tempdir)
-            self.assertEqual(1, len(installed_packages))
-
-            installed_files = os.listdir(os.path.join(tempdir, installed_packages[0]))
-            self.assertTrue(any(file.endswith(".sty") for file in installed_files))  # At least one .sty file downloaded
-            self.assertTrue('amsmath.sty' in installed_files)
+        installed_files = os.listdir(os.path.join('packages', installed_packages[0]))
+        self.assertTrue(any(file.endswith(".sty") for file in installed_files))  # At least one .sty file downloaded
+        self.assertTrue('amsmath.sty' in installed_files)
 
     @patch("src.commands.install.LockFile.get_packages_from_file")
     @patch("src.commands.install.FileHelper.clear_and_remove_packages_folder")
@@ -80,42 +87,28 @@ class InstallAllTest(unittest.TestCase):
     def test_uses_url_from_lockfile_ctan(self, user_input_mock):
         user_input_mock.return_value = 'y'  # Agree to clearing package folder
 
-        old_cwd = os.getcwd()
+        lpm_inst = lpm()
+        lpm_inst.install_pkg('amsmath', accept_prompts=True)
+        amsmath_installed = LockFile.find_by_id('amsmath')
+        self.assertIsNotNone(amsmath_installed)
+        url = amsmath_installed.dep.url
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            os.chdir(tempdir)
-            try:
-                lpm_inst = lpm()
-                lpm_inst.install_pkg('amsmath', accept_prompts=True)
-                amsmath_installed = LockFile.find_by_id('amsmath')
-                self.assertIsNotNone(amsmath_installed)
-                url = amsmath_installed.dep.url
-
-                with patch("src.API.CTAN.download_and_extract_zip") as download_patch:
-                    lpm_inst.install()
-                    download_patch.assert_called_once_with(url, ANY)
-
-            finally:
-                os.chdir(old_cwd)
+        with patch("src.API.CTAN.download_and_extract_zip") as download_patch:
+            lpm_inst.install()
+            download_patch.assert_called_once_with(url, ANY)
 
     @patch("src.commands.install.input")
     def test_uses_url_from_lockfile_vptan(self, user_input_mock):
         user_input_mock.return_value = 'y'  # Agree to clearing package folder
 
-        old_cwd = os.getcwd()
+        # Install amsmath in specific version, save the download url
+        lpm_inst = lpm()
+        lpm_inst.install_pkg('amsmath', version='2.17j', accept_prompts=True)
+        amsmath_installed = LockFile.find_by_id('amsmath')
+        self.assertIsNotNone(amsmath_installed)
+        url = amsmath_installed.dep.url
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            os.chdir(tempdir)
-            try:
-                lpm_inst = lpm()
-                lpm_inst.install_pkg('amsmath', version='2.17j', accept_prompts=True)
-                amsmath_installed = LockFile.find_by_id('amsmath')
-                self.assertIsNotNone(amsmath_installed)
-                url = amsmath_installed.dep.url
-
-                with patch("src.API.VPTAN.download_and_extract_zip") as download_patch:
-                    lpm_inst.install()
-                    download_patch.assert_called_once_with(url, ANY)
-
-            finally:
-                os.chdir(old_cwd)
+        # Assert that when installing from LF, that same url is used
+        with patch("src.API.VPTAN.download_and_extract_zip") as download_patch:
+            lpm_inst.install()
+            download_patch.assert_called_once_with(url, ANY)

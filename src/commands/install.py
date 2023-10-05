@@ -7,7 +7,7 @@ from src.helpers import FileHelper
 
 def install():
     """
-    Install packages as specified in lock-file\n
+    Install packages as specified in lock-file
     - Clears package folder first
     - Doesn't look into dependencies of those packages
     - Installs the exact version specified in lock-file
@@ -25,8 +25,10 @@ def install():
     FileHelper.clear_and_remove_packages_folder()
 
     try:
-        to_install = LockFile.get_packages_from_file()  # returns list of packages with version
+        # Get list of all installed packages from Lockfile
+        to_install = LockFile.get_packages_from_file()
 
+        # Install those packages 
         for pkg in to_install:
             PackageInstaller.install_specific_package(pkg)
 

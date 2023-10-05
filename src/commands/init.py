@@ -16,12 +16,16 @@ def init(image_name: str):
     else:
         logger.debug("Packages folder already exists")
 
-    lockfile_image = LockFile.get_docker_image()
-    if lockfile_image and image_name:
-        logger.error("You passed a docker image for lpm init, but the lockfile already specifies an image")
-        return
     
     if LockFile.exists():
+        lockfile_image = LockFile.get_docker_image()
+        if image_name:
+            logger.error("You passed a docker image for lpm init, but the lockfile already exists")
+            return
+        if not lockfile_image:
+            logger.error("Lockfile does not specify a Docker image. Cannot use lockfile to initialize project")
+            return
+        
         logger.info("Lockfile detected. Initializing from Lockfile")
         # Pull the specified image
         try:

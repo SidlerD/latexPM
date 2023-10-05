@@ -44,4 +44,5 @@ def get_image(image_name: str) -> str:
         client.images.pull(image_name)
         logger.debug("Docker image pulled successfully")
 
+    logger.debug(f"Finished pulling {image_name}. Using as Docker image for project")
     return image_name
