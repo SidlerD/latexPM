@@ -4,7 +4,6 @@ packages/
 requirements-lock.json
 requirements.json
 t.py
-.lpmconf
 *Dockerfile
 *deps_of_files_output.json
 *.dat

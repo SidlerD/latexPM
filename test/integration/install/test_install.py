@@ -1,8 +1,9 @@
 import os
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch, call, ANY
 from anytree import Node
 import tempfile
+from src.core import LockFile
 
 from src.models.Dependency import Dependency, DependencyNode, DownloadedDependency
 from src.core.lpm import lpm
@@ -20,7 +21,7 @@ class InstallAllTest(unittest.TestCase):
         dep_ams = Dependency("amsmath", "amsmath", "v1.2a")
         down_dep = DownloadedDependency(dep_ams, "path", "https://download/amsmath", 'required/amsmath')
         rootNode = Node('root')
-        DependencyNode(down_dep, rootNode)
+        dep_node = DependencyNode(down_dep, rootNode)
 
         install_spec_pkg_mock.side_effect = lambda dep: DownloadedDependency(dep, "path", "https://download/amsmath")
         LF_read.return_value = rootNode
@@ -32,7 +33,7 @@ class InstallAllTest(unittest.TestCase):
 
         # Assert only one package was installed
         self.assertEqual(install_spec_pkg_mock.call_count, 1)
-        install_spec_pkg_mock.assert_has_calls([call(down_dep)])
+        install_spec_pkg_mock.assert_has_calls([call(dep_node.dep)])
 
     @patch("src.commands.install.input")
     @patch("src.commands.install.LockFile.get_packages_from_file")
@@ -58,6 +59,7 @@ class InstallAllTest(unittest.TestCase):
 
             installed_files = os.listdir(os.path.join(tempdir, installed_packages[0]))
             self.assertTrue(any(file.endswith(".sty") for file in installed_files))  # At least one .sty file downloaded
+            self.assertTrue('amsmath.sty' in installed_files)
 
     @patch("src.commands.install.LockFile.get_packages_from_file")
     @patch("src.commands.install.FileHelper.clear_and_remove_packages_folder")
@@ -73,3 +75,47 @@ class InstallAllTest(unittest.TestCase):
             FH_remove_folder_mock.assert_not_called()
             LF_get_packages_mock.assert_not_called()
             self.assertTrue(any(["aborted" in log for log in cm.output]))
+
+    @patch("src.commands.install.input")
+    def test_uses_url_from_lockfile_ctan(self, user_input_mock):
+        user_input_mock.return_value = 'y'  # Agree to clearing package folder
+
+        old_cwd = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            os.chdir(tempdir)
+            try:
+                lpm_inst = lpm()
+                lpm_inst.install_pkg('amsmath', accept_prompts=True)
+                amsmath_installed = LockFile.find_by_id('amsmath')
+                self.assertIsNotNone(amsmath_installed)
+                url = amsmath_installed.dep.url
+
+                with patch("src.API.CTAN.download_and_extract_zip") as download_patch:
+                    lpm_inst.install()
+                    download_patch.assert_called_once_with(url, ANY)
+
+            finally:
+                os.chdir(old_cwd)
+
+    @patch("src.commands.install.input")
+    def test_uses_url_from_lockfile_vptan(self, user_input_mock):
+        user_input_mock.return_value = 'y'  # Agree to clearing package folder
+
+        old_cwd = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            os.chdir(tempdir)
+            try:
+                lpm_inst = lpm()
+                lpm_inst.install_pkg('amsmath', version='2.17j', accept_prompts=True)
+                amsmath_installed = LockFile.find_by_id('amsmath')
+                self.assertIsNotNone(amsmath_installed)
+                url = amsmath_installed.dep.url
+
+                with patch("src.API.VPTAN.download_and_extract_zip") as download_patch:
+                    lpm_inst.install()
+                    download_patch.assert_called_once_with(url, ANY)
+
+            finally:
+                os.chdir(old_cwd)

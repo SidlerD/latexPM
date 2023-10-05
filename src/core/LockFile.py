@@ -18,18 +18,43 @@ _root = None
 def get_name():
     return lock_file_name
 
+def exists() -> bool:
+    return os.path.exists(lock_file_name)
 
-def create():
+def create(docker_image: str|None):
     """Create empty lockfile, pass if already exists"""
+    global _root
+
     if os.path.exists(lock_file_name):
         logger.info("Lockfile already exists")
     else:
-        f = open(lock_file_name, "x")
-        f.write('{}')
-        f.close()
+        logger.info("Creating lock file")
+        _root = Node('root', id='root', dependents=[], docker_image=docker_image)
+        write_tree_to_file()
 
+def get_docker_image() -> str|None:
+    root = read_file_as_tree()
+    return root.docker_image if hasattr(root, 'docker_image') else None
 
-def get_packages_from_file() -> list[Dependency]:
+def update_image(image_name: str):
+    if not image_name:
+        logger.debug("Cannot update LockFile.docker_image with empty image_name")
+        return
+    
+    read_file_as_tree()
+    old_image = get_docker_image()
+    if old_image:
+        decision = '' 
+        while decision not in ['y', 'n']:
+            decision = input(f"Lockfile specifies {old_image} as docker image. Do you want to overwrite?: ").lower()
+        if decision == 'n':
+            return
+    
+    _root.docker_image = image_name
+    logger.debug(f"Changed docker-image from {old_image} to {image_name}")
+    write_tree_to_file()
+
+def get_packages_from_file() -> list[DependencyNode]:
     logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
 
     if _file_is_empty(lock_file_name):
@@ -42,7 +67,6 @@ def get_packages_from_file() -> list[Dependency]:
 
 
 def write_tree_to_file():
-    logger = logging.getLogger("default")
     logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
 
     # exporter = JsonExporter(indent=2)
@@ -62,29 +86,22 @@ def read_file_as_tree() -> Node:
 
     # IF file is empty, create new tree
     if not os.path.exists(lock_file_name) or _file_is_empty(lock_file_name):
-        logger.debug(f"Created new tree because {lock_file_name} is empty")
-        _root = Node('root', id='root', dependents=[])
+        create(docker_image=None)
         return _root
-
+    
     # Read the JSON file
     with open(lock_file_name, "r") as file:
         json_data = json.load(file)
     logger.debug(f"{lock_file_name} read successfully")
 
-    # _root = importer.import_(json_data)
-    # for node in LevelOrderIter(_root):
-    #     print(node)
-    #     node.dep =
-
-    # return _root
-
     # Construct the tree
-    _root = Node('root', id='root', dependents=[])
+    _root = Node('root', id='root', dependents=[], docker_image=json_data['docker_image'])
     if 'children' in json_data:
         for child_data in json_data["children"]:
             _construct_tree(child_data, parent=_root)
 
         logger.debug("Tree constructed successfully")
+
     return _root
 
 
@@ -144,7 +161,7 @@ def _construct_tree(data, parent=None):
 
 
 def _get_packages_from_tree(tree: Node):
-    return [node.dep for node in LevelOrderIter(tree) if hasattr(node, "dep")]
+    return [node for node in LevelOrderIter(tree) if hasattr(node, "dep")]
 
 
 def _file_is_empty(path: str):

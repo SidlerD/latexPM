@@ -44,11 +44,34 @@ def get_version(id: str) -> Version:
         return Version(pkgInfo['version'])
     raise CtanPackageNotFoundError(f"{id} has no version on CTAN")
 
-def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
+
+def download_pkg(dep: Dependency, pkgInfo=None, url:str = None) -> DownloadedDependency:
     logger.debug(f"Downloading {dep.id} from CTAN")
     if not pkgInfo:
         pkgInfo = get_package_info(dep.id)
-        
+    
+    if not url:
+        url = _get_download_url(dep, pkgInfo)
+    
+    logger.info(f"CTAN: Installing {dep} from {url}")
+    folder_path = download_and_extract_zip(url, dep)
+    
+    # Add version to dep so that installed version is written to lockfile
+    if 'version' in pkgInfo:
+        version = Version(pkgInfo['version'])
+        dep.version = version
+    else:
+        logger.warn(f"CTAN: Couldn't find version for {dep}")
+    
+    try:
+        ctan_path = pkgInfo['ctan']['path']
+    except KeyError:
+        ctan_path=None
+
+    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path)
+
+
+def _get_download_url(dep, pkgInfo):
     # Extract download path
     if "install" in pkgInfo:
         path = pkgInfo['install']
@@ -62,19 +85,4 @@ def download_pkg(dep: Dependency, pkgInfo=None) -> DownloadedDependency:
             raise CtanPackageNotFoundError(f"{pkgInfo['id']} cannot be downloaded from CTAN")
         raise CtanPackageNotFoundError(f"Couldn't find package {dep.id} on CTAN")
     
-    logger.info(f"CTAN: Installing {dep} from {url}")
-    folder_path = download_and_extract_zip(url, dep)
-    
-    # Add version to dep so that installed version is written to lockfile
-    if 'version' in pkgInfo:
-        version = Version(pkgInfo['version'])
-        dep.version = version
-    else:
-        logger.warn(f"Couldn't find version for {dep}")
-    
-    try:
-        ctan_path = pkgInfo['ctan']['path']
-    except KeyError:
-        ctan_path=None
-
-    return DownloadedDependency(dep, folder_path, url, ctan_path=ctan_path)
+    return url

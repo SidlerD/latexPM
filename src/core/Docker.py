@@ -35,7 +35,7 @@ def get_image(image_name: str) -> str:
                 pass
 
         if not found:
-            raise docker.errors.ImageNotFound("Couldn't find a suitable Docker image to use. Please edit .lpmconf and specify a image-id")
+            raise docker.errors.ImageNotFound("Couldn't find a suitable Docker image to use.")
         
         logger.info(f"Using {image_name} as Docker Image")
 

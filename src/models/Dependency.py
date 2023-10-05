@@ -38,12 +38,11 @@ class DownloadedDependency(Dependency):
         self.ctan_path = ctan_path
         self.files = files if files else []  # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
 
-    def __repr__(self):
-        return f"_{self.name}{self.version}"
-
     def __str__(self) -> str:
         return f"{self.name}{self.version}"
 
+    def __repr__(self) -> str:
+        return f"_{self.name}{self.version}"
 
 class DependencyNode(NodeMixin):
     def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[str] = None):

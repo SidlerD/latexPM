@@ -10,10 +10,11 @@ _base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.
 logger = logging.getLogger("default")
 
 
-def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo=None, closest=False, url:str=None) -> DownloadedDependency:
     logger.info(f"Downloading {dep.id} from VPTAN")
 
-    url = _get_url_for_version(dep, closest=closest)
+    if not url:
+        url = _get_url_for_version(dep, closest=closest)
 
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
