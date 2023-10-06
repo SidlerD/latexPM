@@ -57,11 +57,15 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
 
     node = DependencyNode(downloaded_dep, parent=parent)
 
-    # Extract dependencies of package, download those recursively
+    # Extract dependencies of package
     unsatisfied_deps = extract_dependencies(downloaded_dep)
 
+    # Download those recursively
     for child_dep in unsatisfied_deps:
-        _handle_dep(child_dep, node, root, accept_prompts)
+        try:
+            _handle_dep(child_dep, node, root, accept_prompts)
+        except CtanPackageNotFoundError as e:
+            logger.error(f"{str(e)}: Skipping install of {child_dep.id}. If problems arise, install manually")
 
 
 def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
@@ -81,7 +85,7 @@ def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
             dep = Dependency(pkg_id, name, version=version, alias={'id': alias_id, 'name': alias_name})
 
 
-        # Download the package files
+        # Download the package files and all its dependencies
         rootNode = LockFile.read_file_as_tree()
         _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts)
 

@@ -55,10 +55,11 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
         with open(sty_path, "r", errors='ignore') as sty:
             content = sty.read()
-            matches: list[tuple] = re.findall(req_pkg_pattern, content, re.MULTILINE)
+            matches: list[tuple[str,str]] = re.findall(req_pkg_pattern, content, re.MULTILINE)
             for (package_names, package_version) in matches:
                 package_names = package_names.split(',')
                 for name in package_names:
+                    name = name.strip()
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
                     if name in included_file_names:
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here

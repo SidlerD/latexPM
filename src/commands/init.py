@@ -47,5 +47,5 @@ def init(image_name: str):
     LockFile.create(image_name)
     
     # TODO: Add other packages from bundle "required"
-    install_pkg('latex-base')
-    install_pkg('l3backend')
+    install_pkg('latex-base', accept_prompts=True)
+    install_pkg('l3backend', accept_prompts=True)
