@@ -49,3 +49,7 @@ def init(image_name: str):
     # TODO: Add other packages from bundle "required"
     install_pkg('latex-base', accept_prompts=True)
     install_pkg('l3backend', accept_prompts=True)
+    
+    # Needed by graphics.sty, throws error otherwise. E.g. when installing and then using tikz
+    install_pkg('graphics-cfg', accept_prompts=True) 
+    install_pkg('graphics-def', accept_prompts=True) 
