@@ -60,8 +60,6 @@ def remove(pkg_id: str, by_user: bool = True):
 
 def delete_pkg_files(dep_node: DependencyNode):
     logger.debug(f"Removing files for {dep_node}")
-    if not hasattr(dep_node, 'dep') or not hasattr(dep_node.dep, 'files'):
-        raise RuntimeError(f"Couldn't find files to delete for {dep_node.dep}.")
 
     # Remove folder including its files
     folder = dep_node.dep.path
@@ -79,9 +77,10 @@ def move_in_tree(dest: DependencyNode|Node, node: DependencyNode|Node):
     node.parent = dest
     logger.info(f"Moved {node.id} from {before} to {node.parent}")
 
-def remove_from_tree(child):
-    if len(child.children) != 0:
+def remove_from_tree(pkg_node: DependencyNode):
+    if len(pkg_node.children) != 0:
         raise Exception("Attempted to remove a node from Tree which still has children")
     
-    child.parent = None
-    # TODO: Remove dep from all .dependents of tree
+    LockFile.remove_from_dependents(pkg_id=pkg_node.id)
+
+    pkg_node.parent = None

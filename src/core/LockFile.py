@@ -152,7 +152,7 @@ def find_by_id(pkg_id: str) -> DependencyNode:
 def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], version=Version(dep_info["version"]), alias=dep_info['alias'])
-    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], ctan_path=dep_info['ctan_path'], files=dep_info['files'])
+    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], ctan_path=dep_info['ctan_path'])
     node = DependencyNode(downloaded_dep, parent=parent, dependents=data['dependents'])
     if "children" in data:
         for child_data in data["children"]:

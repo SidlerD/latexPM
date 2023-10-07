@@ -30,7 +30,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
     """
 
     # Names of files to extract dependencies from
-    to_extract = [file_name for file_name in dep.files if file_name.endswith(('.sty', '.def', '.cls'))]
+    to_extract = [elem for elem in os.listdir(dep.path) if elem.endswith(('.sty', '.def', '.cls'))]
     # File-names from to_extract, but without file extension
     included_file_names = [basename(sty_path).split('.')[0] for sty_path in to_extract]
 
@@ -92,7 +92,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 def extract_dependencies(pkg: DownloadedDependency) -> list[Dependency]:
     
     # Names of files to extract dependencies from
-    pkg_files = [file_name for file_name in pkg.files if file_name.endswith('.sty')]
+    to_extract = [elem for elem in os.listdir(dep.path) if elem.endswith(('.sty', '.def', '.cls'))]
     # File-names from pkg_files, but without file extension
     pkg_file_names = [basename(sty_path).split('.')[0] for sty_path in pkg_files]
 

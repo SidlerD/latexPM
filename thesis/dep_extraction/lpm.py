@@ -29,7 +29,6 @@ def get_deps_of_pkgs(tlmgr_pkgs):
             dep = Dependency(pkg['name'], pkg['name'])
 
             downloaded_dep = CTAN.download_pkg(dep)
-            downloaded_dep.files = [elem for elem in os.listdir(downloaded_dep.path) if isfile(join(downloaded_dep.path, elem))]
 
             deps = extract_dependencies(downloaded_dep)
             res.append({

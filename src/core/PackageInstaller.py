@@ -56,7 +56,4 @@ class PackageInstaller:
         except zipfile.BadZipFile:
             raise DownloadError(f"Error while downloading zip-file for {os.path.basename(pkg.id)}: Cannot open zip file")
 
-        downloaded_dep.files = [elem for elem in os.listdir(downloaded_dep.path) if isfile(join(downloaded_dep.path, elem))]
-        logger.debug(f"{pkg.id} included {len(downloaded_dep.files)} files in its download")
-
         return downloaded_dep

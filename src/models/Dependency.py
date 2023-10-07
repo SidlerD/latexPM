@@ -31,12 +31,11 @@ class Dependency:
 
 
 class DownloadedDependency(Dependency):
-    def __init__(self, dep: Dependency, folder_path: str, download_url: str, ctan_path, files: list[str] = None) -> None:
+    def __init__(self, dep: Dependency, folder_path: str, download_url: str, ctan_path) -> None:
         super().__init__(dep.id, dep.name, dep.version, dep.alias)
         self.path = folder_path
         self.url = download_url
         self.ctan_path = ctan_path
-        self.files = files if files else []  # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
 
     def __str__(self) -> str:
         return f"{self.name}{self.version}"
@@ -82,7 +81,6 @@ def serialize_dependency(elem: any):
             'alias': elem.alias,
             'path': elem.path,
             'url': elem.url,
-            'files': elem.files,
             'ctan_path': elem.ctan_path
         }
     if type(elem) == Dependency:
