@@ -45,7 +45,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         
         msg = f"""{'root' if parent.id == 'root' else parent} depends on {dep}, which is already installed {installed_by}"""
 
-        if existing_node.dep.version != dep.version:
+        if existing_node.dep.version and dep.version and existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."
 
         logger.info(msg)

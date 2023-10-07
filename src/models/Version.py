@@ -13,6 +13,8 @@ class Version:
             self.number = number
 
 
+    def __bool__(self) -> bool:
+        return bool(self.date and self.number)
 
     def __eq__(self, other) -> bool:
         # TODO: What about case where both have one field the same, and for the other field one has None while the other has something?  

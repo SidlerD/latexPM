@@ -55,7 +55,7 @@ class DependencyNode(NodeMixin):
 
     def __repr__(self):
         if self.dependents:
-            return f"({self.dep})"
+            return f"{self.dep}"
         return str(self.dep)
 
     @property
