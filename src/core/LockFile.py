@@ -147,6 +147,12 @@ def find_by_id(pkg_id: str) -> DependencyNode:
 
     return occurences[0] if occurences else None
 
+def remove_from_dependents(pkg_id: str) -> None:
+    for node in LevelOrderIter(_root):
+        if hasattr(node, 'dependents'):
+            if pkg_id in node.dependents:
+                node.dependents.remove(pkg_id)
+                logger.debug(f"Removed {pkg_id} from {node.id}.dependents")
 
 # TODO: Find out how to do this using anytree-functionality and ending up with a tree of DependencyNodes that have .dep as DownloadedDependency, not dict
 def _construct_tree(data, parent=None):
@@ -162,6 +168,7 @@ def _construct_tree(data, parent=None):
 
 def _get_packages_from_tree(tree: Node):
     return [node for node in LevelOrderIter(tree) if hasattr(node, "dep")]
+
 
 
 def _file_is_empty(path: str):

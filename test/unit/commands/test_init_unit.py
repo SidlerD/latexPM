@@ -113,6 +113,24 @@ class Test_init_unit(unittest.TestCase):
 
     @patch('src.commands.init.install')
     @patch('src.commands.init.install_pkg')
+    @patch('src.commands.init.Docker.get_image')
+    def test_init_pulls_docker_image_from_LF_2(self, docker_getimg, install_pkg, install_all):
+        docker_img_used = 'my-image'
+
+        LockFile.create(docker_image=docker_img_used)
+
+        with self.assertLogs('default', level='WARN') as cm:
+            # Two sources for docker image (LF and arg to init). Lpm should warn and return
+            init(image_name='my-other-image')
+
+            self.assertTrue(any(["lockfile already exists" in log for log in cm.output]))
+            docker_getimg.assert_not_called()
+            install_all.assert_not_called()
+            install_pkg.assert_not_called()
+            
+
+    @patch('src.commands.init.install')
+    @patch('src.commands.init.install_pkg')
     def test_init_installs_from_LF_if_present(self, install_pkg, install_all):
         # Given LF that exists
         LockFile.create(docker_image='my-docker-image')

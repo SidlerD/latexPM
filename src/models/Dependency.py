@@ -65,7 +65,9 @@ class DependencyNode(NodeMixin):
         return ' > '.join([str(node) if hasattr(node, 'id') else node.name for node in self.path][1:])
     
     def add_dependent(self, node_id: str):
-        self.dependents.append(node_id)
+        "Adds node_id to self.dependents if not already in self.dependents"
+        if node_id not in self.dependents:
+            self.dependents.append(node_id)
 
 
 def serialize_dependency(elem: any):

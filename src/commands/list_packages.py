@@ -10,7 +10,10 @@ logger = logging.getLogger("default")
 
 def list_packages(top_level_only, tree) -> list[Dependency]:
     root = LockFile.read_file_as_tree()
-
+    if not root or hasattr(root, 'children') and len(root.children) == 0:
+        print("No packages installed yet")
+        return
+    
     if tree:
         if top_level_only:
             print(RenderTree(root, maxlevel=2).by_attr(lambda n: n.dep if hasattr(n, 'dep') else n.name))

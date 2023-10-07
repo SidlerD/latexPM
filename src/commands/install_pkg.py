@@ -33,8 +33,8 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         existing_par = existing_node.parent
 
         if hasattr(existing_node, 'dependents'):
-            # URGENT: If parent is root-node, this fails because it doesnt have dep-attribute. Maybe switch to node-id?
-            existing_node.add_dependent(parent.id)
+            if existing_node.parent.id != parent.id:
+                existing_node.add_dependent(parent.id)
 
         if existing_node.id != dep.id:
             installed_by = f"because {existing_node.id} has the same path on CTAN: {existing_node.dep.ctan_path}"
