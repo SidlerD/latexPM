@@ -24,14 +24,8 @@ if system == 'windows':
             ]
         f.write("\n".join(content))
 
-    # TODO: Figure out how to append cwd to PATH here, or else ask user to do it manually. os.environ["PATH"] += doesn't persist changes
-    
     print(f"Please add {os.getcwd()} to PATH so that you can use lpm from anywhere")
 
-    # my_path = os.getcwd()
-    # new_path = my_path  + os.pathsep + os.environ["PATH"]
-    # print(f"Adding {my_path} to PATH...")
-    # os.environ["PATH"] = new_path
 
 if system == 'linux':
     print("... Creating executable shell script")

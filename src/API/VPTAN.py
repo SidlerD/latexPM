@@ -10,7 +10,18 @@ _base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.
 logger = logging.getLogger("default")
 
 
-def download_pkg(dep: Dependency, pkgInfo=None, closest=False, url:str=None) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo:dict = None, closest=False, url:str=None) -> DownloadedDependency:
+    """Download package from VPTAN, return DownloadedDependency containg details about download
+
+    Args:
+        dep (Dependency): Package to download
+        pkgInfo (dict, optional): CTAN response from /packages for package
+        closest (bool, optional): If True and version not available on CTAN, download the closest later version of the package
+        url (str, optional): If present, use this url to download package from
+
+    Returns:
+        DownloadedDependency: Input dep with additional information
+    """
     logger.info(f"Downloading {dep.id} from VPTAN")
 
     if not url:

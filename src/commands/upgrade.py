@@ -10,6 +10,8 @@ from src.commands.upgrade_pkg import upgrade_pkg
 logger = logging.getLogger("default")
 
 def upgrade():
+    """Upgrade all installed packages to newest version
+    """
     failed_deps = []
     all_deps = LockFile.get_packages_from_file()
 

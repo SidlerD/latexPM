@@ -69,9 +69,17 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
 
 
 def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
-    """Installs one specific package and all its dependencies\n"""
+    """Installs one specific package and all its dependencies\n
 
+
+    Args:
+        pkg_id (str): Id of package to install
+        version (str, optional): String containing version of package to install
+        accept_prompts (bool, optional): If True, user will not be prompted\
+             about decisions during install of package and dependencies
+    """
     rootNode = None  # Available in except clause
+
     try:
         # Build dependency-model with needed information
         try:

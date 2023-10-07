@@ -15,14 +15,28 @@ _root = None
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
 # URGENT: Create a class for the normal requirements.json file, since that needs to be updated too.
-def get_name():
+def get_name() -> str:
+    """Get name of lock file
+
+    Returns:
+        str: Name of Lock file
+    """
     return lock_file_name
 
 def exists() -> bool:
+    """Check if lock file already exists
+
+    Returns:
+        bool: True if file with name of lockfile exists in cwd
+    """
     return os.path.exists(lock_file_name)
 
-def create(docker_image: str|None):
-    """Create empty lockfile, pass if already exists"""
+def create(docker_image: str|None) -> None:
+    """Create empty lockfile, do nothing if it already exists
+
+    Args:
+        docker_image (str | None): Docker image to write to lock file
+    """
     global _root
 
     if os.path.exists(lock_file_name):
@@ -33,10 +47,20 @@ def create(docker_image: str|None):
         write_tree_to_file()
 
 def get_docker_image() -> str|None:
+    """Get name of Docker image specified in lock file
+
+    Returns:
+        str|None: Name of Docker Image, None if not specified
+    """
     root = read_file_as_tree()
     return root.docker_image if hasattr(root, 'docker_image') else None
 
-def update_image(image_name: str):
+def update_image(image_name: str) -> None:
+    """Update docker image in Lockfile to image_name
+
+    Args:
+        image_name (str): Name of image to write to lockfile
+    """
     if not image_name:
         logger.debug("Cannot update LockFile.docker_image with empty image_name")
         return
@@ -55,6 +79,11 @@ def update_image(image_name: str):
     write_tree_to_file()
 
 def get_packages_from_file() -> list[DependencyNode]:
+    """List installed packages
+
+    Returns:
+        list[DependencyNode]: List of installed packages
+    """
     logger.info(f"Reading dependencies from {os.path.basename(lock_file_name)}")
 
     if _file_is_empty(lock_file_name):
@@ -66,7 +95,8 @@ def get_packages_from_file() -> list[DependencyNode]:
     return _get_packages_from_tree(tree)
 
 
-def write_tree_to_file():
+def write_tree_to_file() -> None:
+    """Persist the tree described by LockFile._root to the file"""
     logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
 
     # exporter = JsonExporter(indent=2)
@@ -77,7 +107,7 @@ def write_tree_to_file():
 
 
 def read_file_as_tree() -> Node:
-    """returns root-node of tree"""
+    """Read Tree from lockfile (if not already read), return root-node of tree"""
     global _root
     if _root:
         return _root
@@ -105,10 +135,17 @@ def read_file_as_tree() -> Node:
     return _root
 
 
-def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode:
-    """Returns DependencNode that stores dep that is passed as argument, None if not in tree.\n
-    Searching is done by id, version is ignored\n
-    If check_ctan_path is provided, node with matching ctan_path will be returned"""
+def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode|None:
+    """Find package by its id in tree, return its node or None if not found
+
+    Args:
+        dep (Dependency): Package to find in Tree (Version is ignored)
+        check_ctan_path (str, optional): Path of package on CTAN. If provided, \
+        may return different package in Tree that has same path on CTAN
+
+    Returns:
+        DependencyNode|None: DependencyNode of package in Tree
+    """
     global _root
     _root = read_file_as_tree()
 
@@ -134,8 +171,19 @@ def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode:
 
     return prev_occurences[0] if prev_occurences else None
 
-
+# TODO: Merge this with is_in_tree
 def find_by_id(pkg_id: str) -> DependencyNode:
+    """Find package by its id in tree, return its node or None if not found
+
+    Args:
+        pkg_id (str): Id of package to find
+
+    Raises:
+        ValueError: If package with pkg_id not in tree
+
+    Returns:
+        DependencyNode: Package that has pkg_id as id or as id of its alias
+    """
     global _root
     _root = read_file_as_tree()
     occurences = findall(_root, filter_=lambda node: hasattr(node, 'id') and node.id == pkg_id or hasattr(node, 'dep') and 'id' in node.dep.alias and node.dep.alias['id'] == pkg_id)
@@ -148,6 +196,11 @@ def find_by_id(pkg_id: str) -> DependencyNode:
     return occurences[0] if occurences else None
 
 def remove_from_dependents(pkg_id: str) -> None:
+    """Remove pkg_id from node.dependents for all nodes in tree
+
+    Args:
+        pkg_id (str): Id of package to remove from all dependents
+    """
     for node in LevelOrderIter(_root):
         if hasattr(node, 'dependents'):
             if pkg_id in node.dependents:
@@ -168,7 +221,6 @@ def _construct_tree(data, parent=None):
 
 def _get_packages_from_tree(tree: Node):
     return [node for node in LevelOrderIter(tree) if hasattr(node, "dep")]
-
 
 
 def _file_is_empty(path: str):

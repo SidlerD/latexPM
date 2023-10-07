@@ -1,7 +1,8 @@
 import logging
 import os
+import docker
 
-from src.core import LockFile
+from src.core import Docker, LockFile
 from src.core.PackageInstaller import PackageInstaller
 from src.helpers import FileHelper
 
@@ -10,11 +11,24 @@ def install():
     """
     Install packages as specified in lock-file
     - Clears package folder first
+    - Pulls docker image from Lockfile
     - Doesn't look into dependencies of those packages
     - Installs the exact version specified in lock-file
     """
     logger = logging.getLogger("default")
 
+    # Try to pull the specified image
+    lockfile_image = LockFile.get_docker_image()
+    if not lockfile_image:
+        logger.error("No docker image specified in lock file")
+        return
+    try:
+        Docker.get_image(lockfile_image)
+    except docker.errors.ImageNotFound as e:
+        logger.error("Invalid docker image in lock file")
+        return
+
+    # Clear packages folder
     if os.path.exists('packages') and len(os.listdir('packages')) != 0:
         decision = ""
         while decision not in ['y', 'n']:

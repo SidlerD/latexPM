@@ -7,13 +7,25 @@ import requests
 import logging
 from src.API import CTAN
 from src.core import config
-from src.exceptions.download.DownloadError import VersionNotAvailableError
+from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
 
 
 def download_and_extract_zip(url: str, dep: Dependency) -> str:
+    """Download and extract a zip-file, organize files using DownloadHelpers.organize_files
+
+    Args:
+        url (str): Url to download zip-file from
+        dep (Dependency): Package that is in zip-file
+
+    Raises:
+        DownloadError: If url responds with status-code above 400
+
+    Returns:
+        str: Path to folder that now contains the package files
+    """
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
 
@@ -38,7 +50,7 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     if not response.ok:
-        raise VersionNotAvailableError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
+        raise DownloadError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
 
     os.makedirs(download_folder, exist_ok=True)
     logger.debug(f"Downloading files into {download_folder}")
@@ -59,7 +71,15 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
 
 
 def organize_files(folder_path: str, tds: bool):
-    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins/.dtx to .sty"""
+    """Flatten folder, convert .ins/.dtx to .sty, unnecessary files/folders are deleted
+
+    Args:
+        folder_path (str): Path of folder to organize
+        tds (bool): Is content of folder_path organized according to TeX Directory Structure Guidelines?
+
+    Raises:
+        OSError: folder_path is not a valid folder
+    """
 
     if not exists(folder_path):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")

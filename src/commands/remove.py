@@ -33,8 +33,11 @@ def _handle_dep(pkg: DependencyNode):
 
 
 def remove(pkg_id: str, by_user: bool = True):
-    """Remove package and its dependencies
-        by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages
+    """Remove the specified package and its dependencies
+
+    Args:
+        pkg_id (str): Id of package to remove
+        by_user (bool, optional): Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages. Defaults to True.
     """
     try:
         dep_node = LockFile.find_by_id(pkg_id)
@@ -59,6 +62,11 @@ def remove(pkg_id: str, by_user: bool = True):
 
 
 def delete_pkg_files(dep_node: DependencyNode):
+    """Delete all files of package from system
+
+    Args:
+        dep_node (DependencyNode): Package whose files to delete
+    """
     logger.debug(f"Removing files for {dep_node}")
 
     # Remove folder including its files
@@ -73,11 +81,25 @@ def delete_pkg_files(dep_node: DependencyNode):
     logger.info(f"Removed {cnt_files} files for {dep_node}")    
 
 def move_in_tree(dest: DependencyNode|Node, node: DependencyNode|Node):
+    """Move a node in tree from its current parent to another parent
+
+    Args:
+        dest (DependencyNode | Node): New parent of node
+        node (DependencyNode | Node): Node to move in tree
+    """
     before = str(node.parent)
     node.parent = dest
     logger.info(f"Moved {node.id} from {before} to {node.parent}")
 
 def remove_from_tree(pkg_node: DependencyNode):
+    """Remove all references to pkg_node from tree
+
+    Args:
+        pkg_node (DependencyNode): Node of package to remove
+
+    Raises:
+        Exception: If pkg_node has children
+    """
     if len(pkg_node.children) != 0:
         raise Exception("Attempted to remove a node from Tree which still has children")
     

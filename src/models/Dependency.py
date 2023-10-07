@@ -5,9 +5,24 @@ from src.models.Version import Version
 
 logger = logging.getLogger("default")
 
-
 class Dependency:
+    """A class for modeling a package or dependency
+
+    Attributes:
+            id (str): Id of the package
+            name (str): Name of the package
+            version (Version): Version of the package
+            alias (dict): Dict with "name" and "id" of alias that package is available on CTAN under
+    """
     def __init__(self, id: str, name: str, version: str | dict | Version | None = None, alias: dict = None):
+        """A class for modeling a package or dependency
+
+        Args:
+            id (str): Id of the package
+            name (str): Name of the package
+            version (str | dict | Version | None, optional): Version of the package
+            alias (dict, optional):  Dict with "name" and "id" of alias that package is available on CTAN under
+        """
         self.id = id
         self.name = name
         self.version = version if isinstance(version, Version) else Version(version)
@@ -31,7 +46,26 @@ class Dependency:
 
 
 class DownloadedDependency(Dependency):
-    def __init__(self, dep: Dependency, folder_path: str, download_url: str, ctan_path) -> None:
+    """Class for modeling a downloaded package or dependency. Inherits from Dependency
+
+    Attributes:
+        id (str): Id of the package
+        name (str): Name of the package
+        version (str | dict | Version | None, optional): Version of the package
+        alias (dict, optional):  Dict with "name" and "id" of alias that package is available on CTAN under
+        path (str): Path to folder package is installed in
+        url (str): Url used for downloading the package
+        ctan_path (str): Path of package on CTAN
+    """
+    def __init__(self, dep: Dependency, folder_path: str, download_url: str, ctan_path: str) -> None:
+        """Class for modeling a downloaded package or dependency. Inherits from Dependency
+
+        Args:
+            dep (Dependency): Package that this Object is based on
+            folder_path (str): Path to folder package is installed in
+            download_url (str): Url used for downloading the package
+            ctan_path (str): Path of package on CTAN
+        """
         super().__init__(dep.id, dep.name, dep.version, dep.alias)
         self.path = folder_path
         self.url = download_url
@@ -44,7 +78,24 @@ class DownloadedDependency(Dependency):
         return f"_{self.name}{self.version}"
 
 class DependencyNode(NodeMixin):
-    def __init__(self, dep: DownloadedDependency, parent=None, children=None, dependents: list[str] = None):
+    """ Class for a node representing a package in the dependency tree
+    
+    Attributes:
+        id (str): Id of node, which is equal to dep.id
+        dep (DownloadedDependency): Package that node represents
+        parent (DependencyNode|Node, optional): Parent of package in tree
+        children (DependencyNode|Node, optional): Children of package in tree (i.e. its dependencies)
+        dependents (list[str], optional): Other packages that depend on this package
+    """
+    def __init__(self, dep: DownloadedDependency, parent, children=None, dependents: list[str] = None):
+        """ Adds a node to the tree representign the passed package
+
+        Args:
+            dep (DownloadedDependency):Package to include in tree
+            parent (DependencyNode|Node, optional): Parent of package in tree
+            children (DependencyNode|Node, optional): Children of package in tree (i.e. its dependencies)
+            dependents (list[str], optional): Other packages that depend on this package
+        """
         # super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep

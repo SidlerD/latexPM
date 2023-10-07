@@ -5,8 +5,18 @@ import docker
 
 logger = make_logger()
 
-def get_image(image_name: str) -> str:
-    """If not provided, figure out a suitable docker-image. Pull image"""
+def get_image(image_name: str = None) -> str:
+    """Decide on image to use, pull image and returns its name
+
+    Args:
+        image_name (str, optional): Use this image. Skips decision process
+
+    Raises:
+        docker.errors.ImageNotFound: Couldn't find a suitable Docker image to use
+
+    Returns:
+        str: Name of pulled docker Image. Equal to image_name if provided
+    """
     client = docker.from_env()
     
     if not image_name:

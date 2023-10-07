@@ -5,7 +5,7 @@ from src.models.Dependency import Dependency, DependencyNode, DownloadedDependen
 
 from src.API import CTAN, VPTAN
 from src.models.Version import Version
-from src.exceptions.download.DownloadError import DownloadError, VersionNotAvailableError
+from src.exceptions.download.DownloadError import DownloadError
 import logging
 
 logger = logging.getLogger("default")
@@ -14,6 +14,18 @@ logger = logging.getLogger("default")
 class PackageInstaller:
     @staticmethod
     def install_specific_package(pkg: Dependency|DependencyNode, accept_prompts: bool = False) -> DownloadedDependency:
+        """Download pkg from CTAN or VPTAN to packages folder, install and organize its files
+
+        Args:
+            pkg (Dependency | DependencyNode): Package to install. If type is DependencyNode, use its .dep.url as download-url
+            accept_prompts (bool, optional): If True, user will not be prompted for decisions
+
+        Raises:
+            DownloadError: Downloaded zip-file cannot be opened
+
+        Returns:
+            DownloadedDependency
+        """
         pkgInfo = CTAN.get_package_info(pkg.id)
         version_matches = lambda p: "version" in pkgInfo and Version(pkgInfo['version']) == p.version
 
@@ -32,7 +44,7 @@ class PackageInstaller:
             else:  # Need specific older version => Download from VPTAN
                 try:
                     downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
-                except VersionNotAvailableError:
+                except DownloadError:
                     # Try to install closest version available
                     if not pkg.version.date:  # Can only install closest version with dates
                         raise
@@ -46,7 +58,7 @@ class PackageInstaller:
                     logger.info(f"Downloading the closest later version for {pkg} from VPTAN")
                     try:
                         downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo, closest=True)
-                    except VersionNotAvailableError:
+                    except DownloadError:
                         # Happens if version extraction always failed on CTAN git archive
                         logger.info(f"VPTAN has no information about {pkg.id}. Downloading from CTAN in newest version")
                         pkg.version = Version()  # Because we now install latest version

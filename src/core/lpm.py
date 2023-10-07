@@ -22,7 +22,7 @@ class lpm:
             self._logger = make_logger("default")
 
     def install_pkg(self, pkg_id: str, version: str = "", accept_prompts: bool = False):
-        """Install a specific package"""
+        """Install a specific package, including dependencies"""
         self._logger.info(f"Installing package {pkg_id} {version}")
         install_pkg(pkg_id, version=version, accept_prompts=accept_prompts)
 
@@ -49,10 +49,6 @@ class lpm:
     def list_packages(self, top_level_only=False, tree=False):
         """Print list of all installed packages in current project"""
         list_packages(top_level_only, tree)
-
-    def freeze(self):
-        """Lock dependencies and write current dependencies + versions to file"""
-        raise NotImplementedError
 
     def init(self, docker_image: str = ''):
         """Create a new project: LockFile, Docker for packages"""

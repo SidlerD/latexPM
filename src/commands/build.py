@@ -7,6 +7,11 @@ from src.core import LockFile
 logger = logging.getLogger('default')
 
 def build(args: list):
+    """Compile the project 
+
+    Args:
+        args (list): Commands to execute for compiling the project. E.g. ['pdflatex', 'file.tex']
+    """
     client = docker.from_env()
 
     # Get container for this project
@@ -26,7 +31,7 @@ def build(args: list):
         environment={'TEXINPUTS': '.:/root/lpm/packages//'}, # Set TEXINPUTS to include volume path
         working_dir='/root/lpm'
         # user='root'
-        # remove=True # Delete container when build is over
+        # remove=True # Delete container when build is over # TODO: Re-enable
     )
     
     # TODO: Show build process without detaching container

@@ -14,6 +14,17 @@ logger = logging.getLogger("default") # DECIDE: Is this good??
 
 @cache
 def get_id_from_name(name: str) -> str:
+    """Get the id of a package on CTAN based on its name
+
+    Args:
+        name (str): name of package
+
+    Raises:
+        CtanPackageNotFoundError: If name is not a valid name of package on CTAN
+
+    Returns:
+        id (str): id of package
+    """
     all = requests.get(f"{_ctan_url}json/2.0/packages").json()
     for pkg in all:
         if pkg['name'] == name:
@@ -22,6 +33,17 @@ def get_id_from_name(name: str) -> str:
 
 @cache
 def get_name_from_id(id: str) -> str:
+    """Get the name of a package on CTAN based on its Id
+
+    Args:
+        id (str): Id of package
+
+    Raises:
+        CtanPackageNotFoundError: If Id is not a valid ID of package on CTAN
+
+    Returns:
+        name (str): Name of package
+    """
     res = get_package_info(id)
     if "id" in res:
         return res['name']
@@ -29,6 +51,17 @@ def get_name_from_id(id: str) -> str:
 
 @cache
 def get_package_info(id: str):
+    """Returns CTAN's response for endpoint /packages called with id
+
+    Args:
+        id (str): id of package
+
+    Raises:
+        CtanPackageNotFoundError: If id not on CTAN or not downloadable
+
+    Returns:
+        dict: Dict containing json-response from CTAN
+    """
     pkgInfo = requests.get(f"{_ctan_url}json/2.0/pkg/{id}").json()
     if "id" not in pkgInfo or "name" not in pkgInfo:
         raise CtanPackageNotFoundError("CTAN has no information about package with id " + id)
@@ -45,7 +78,17 @@ def get_version(id: str) -> Version:
     raise CtanPackageNotFoundError(f"{id} has no version on CTAN")
 
 
-def download_pkg(dep: Dependency, pkgInfo=None, url:str = None) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo: dict=None, url:str = None) -> DownloadedDependency:
+    """Download package from CTAN, return DownloadedDependency containg details about download
+
+    Args:
+        dep (Dependency): Package to download
+        pkgInfo (dict, optional): CTAN response from /packages for package
+        url (str, optional): If present, use this url to download package from
+
+    Returns:
+        DownloadedDependency: Input dep with additional information
+    """
     logger.debug(f"Downloading {dep.id} from CTAN")
     if not pkgInfo:
         pkgInfo = get_package_info(dep.id)

@@ -21,14 +21,23 @@ logger = logging.getLogger("default")
 
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
-    logger.info("Extracting dependencies of " + dep.id)
+    """Extract all dependencies from all files of provided package
 
+    Args:
+        dep (DownloadedDependency): Package to extract dependencies from
+
+    Raises:
+        RuntimeError: One of the files of package cannot be found
+
+    Returns:
+        list[Dependency]: List of all dependencies of package that were not included in the packages download
+    """
+    logger.info("Extracting dependencies of " + dep.id)
 
 
     """ TODO: Check whether extracting from .def files is a good idea
         Reason for including .def for extraction: when using tikz, epstopdf-base is required by graphics-def/pdftex.def 
     """
-
     # Names of files to extract dependencies from
     to_extract = [elem for elem in os.listdir(dep.path) if elem.endswith(('.sty', '.def', '.cls'))]
     # File-names from to_extract, but without file extension

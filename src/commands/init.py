@@ -11,6 +11,11 @@ from src.helpers.Logger import make_logger
 logger = make_logger()
 
 def init(image_name: str):
+    """Initialize a new project from scratch or from lockfile if present
+
+    Args:
+        image_name (str): Docker image to use for this project. Needs to have latex installed
+    """
     if not os.path.exists('packages'):
         os.mkdir('packages')
     else:
@@ -20,18 +25,13 @@ def init(image_name: str):
     if LockFile.exists():
         lockfile_image = LockFile.get_docker_image()
         if image_name:
-            logger.error("You passed a docker image for lpm init, but the lockfile already exists")
+            logger.error("You passed a docker image to lpm init, but the lockfile already exists")
             return
         if not lockfile_image:
             logger.error("Lockfile does not specify a Docker image. Cannot use lockfile to initialize project")
             return
         
         logger.info("Lockfile detected. Initializing from Lockfile")
-        # Pull the specified image
-        try:
-            Docker.get_image(lockfile_image)
-        except docker.errors.ImageNotFound as e:
-            logger.error("Invalid docker image in lock file")
         
         # Install packages from lockfile
         install()

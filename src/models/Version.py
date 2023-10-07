@@ -3,7 +3,14 @@ import re
 from dateutil.parser import parse
 
 class Version:
+    """Class that models the version of a Package, made of a date and a number
+    """
     def __init__(self, version = None) -> None:
+        """Class that models the version of a Package
+
+        Args:
+            version (str|dict|None, optional): Object describing version. If dict, needs keys 'date' and 'number
+        """
         if(version == None):
             self.date = None
             self.number = None
@@ -46,6 +53,17 @@ class Version:
             
     
 def parse_version(version) -> tuple[date, str]:
+    """Parse a version from the provided input
+
+    Args:
+        version (str|dict|None): Version to parse. If dict, needs keys 'date' and 'number
+
+    Raises:
+        TypeError: All attempts at parsing version failed
+
+    Returns:
+        tuple[date, str]: date and number components of the version
+    """
     if type(version) == dict and 'date' in version and 'number' in version: # CTAN version field
         date = parse(version['date']).date() if version["date"] else None
         number = version['number'] if version['number'] else None
