@@ -28,7 +28,7 @@ class lpm:
 
     def install(self):
         """Install all packages as specified in lock-file"""
-        self._logger.info(f"Installing dependencies from {LockFile.get_name}")
+        self._logger.info(f"Installing dependencies from {LockFile.get_name()}")
         install()
 
     def remove(self, pkg_id: str):

@@ -72,7 +72,7 @@ def delete_pkg_files(dep_node: DependencyNode):
     # Remove folder including its files
     folder = dep_node.dep.path
     if not os.path.exists(folder):
-        logger.debug(f"{folder} does not exist")
+        logger.info(f"Problem while removing {dep_node.id}: {folder} does not exist")
         return
     
     cnt_files = len([file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])

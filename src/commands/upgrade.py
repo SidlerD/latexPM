@@ -20,7 +20,7 @@ def upgrade():
             upgrade_pkg(dep.id)
         except Exception as e:
             failed_deps.append(dep)
-            logger.warning(f"Was not able to upgrade {dep.id}. Will skip to next one ({e})")
+            logger.warning(f"Couldn't upgrade {dep.id}. Will skip to next one ({e})")
     
     if(len(failed_deps) > 0):
         logger.info(f"Upgraded {len(all_deps) - len(failed_deps)} of {len(all_deps)} packages")

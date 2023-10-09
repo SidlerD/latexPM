@@ -201,6 +201,8 @@ def remove_from_dependents(pkg_id: str) -> None:
     Args:
         pkg_id (str): Id of package to remove from all dependents
     """
+    global _root
+    _root = read_file_as_tree()
     for node in LevelOrderIter(_root):
         if hasattr(node, 'dependents'):
             if pkg_id in node.dependents:

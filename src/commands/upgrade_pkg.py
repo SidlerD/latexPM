@@ -96,4 +96,3 @@ def upgrade_pkg(pkg_id: str):
     except Exception as e:
         
         logger.error(f"Couldn't upgrade package {pkg_id}: {str(e)}")
-        logging.exception(e)
