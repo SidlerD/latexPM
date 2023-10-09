@@ -42,13 +42,15 @@ def install():
 
     try:
         # Get list of all installed packages from Lockfile
-        to_install = LockFile.get_packages_from_file()
+        to_install_nodes = LockFile.get_packages_from_file()
 
         # Install those packages 
-        for pkg in to_install:
-            PackageInstaller.install_specific_package(pkg)
+        for pkg_node in to_install_nodes:
+            downloaded_dep = PackageInstaller.install_specific_package(pkg_node, accept_prompts=True)
+            # Change path attr of node in Lockfile since it is now installed in a different location
+            pkg_node.dep.path = downloaded_dep.path
 
-        # No need to write to LockFile here because I installed exactly what is in LockFile
+        LockFile.write_tree_to_file()
     except Exception as e:
         logger.error("Error while installing packages from lock-file")
         logger.error(e)
