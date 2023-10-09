@@ -66,7 +66,7 @@ class InstallPkgTest(unittest.TestCase):
     @parameterized.expand([
     #   [pkg_name,      text]
         ["amsmath",     '\\begin{equation*}\n  a=b\n\\end{equation*}'],
-        [ "listings",   '\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}'],
+        ["listings",   '\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}'],
         ["tikz",        '\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}'],
         ["hyperref",    'The following link is clickable thanks to hyperref: \\url{http://stackoverflow.com/}'],
         ["multirow",    '\\begin{tabular}{c|c}\n\\multicolumn{2}{c}{spans two rows}\\\\ \n 1 & 2 \\\\ \n\\end{tabular}'],

@@ -90,17 +90,18 @@ class ReproducibilityTest(unittest.TestCase):
         @return: True if the directory trees are the same and 
             there were no errors while accessing the directories or files, 
             False otherwise.
+
         Taken from https://stackoverflow.com/a/6681395/10657095 and adapted
-    """
+        """
 
         # Compare contents of directories
-        dirs_cmp = filecmp.dircmp(dir1, dir2)
+        dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=['requirements-lock.json'])
+        diff = [file for file in dirs_cmp.diff_files if not file.endswith('.log')]
         if len(dirs_cmp.left_only)>0 or len(dirs_cmp.right_only)>0 or \
-            len(dirs_cmp.funny_files)>0:
+            len(dirs_cmp.funny_files)>0 or len(diff)>0:
             return False
         # Compare contents of files in directories 
-        # Ultimately compares binary contents of both files ( in filecmp.py _do_cmp)
-        # Except .log files: Contain path to other files, which differs between projects
+        # Except .log files: They can contain paths to other files, which differs between projects
         common_files = [file for file in dirs_cmp.common_files if not file.endswith('.log')]
         (_, mismatch, errors) =  filecmp.cmpfiles(
             dir1, dir2, common_files, shallow=False)
@@ -125,7 +126,7 @@ class ReproducibilityTest(unittest.TestCase):
                 r'\documentclass{article}',
                 '\\usepackage{%s}' % ','.join(packages),
                 r'\begin{document}',
-                'Some text that appears in every document',
+                'This is a short text that appears in every document. This file was created automatically.',
                 text,
                 r'\end{document}'
             ])

@@ -99,10 +99,8 @@ class Test_init_unit(unittest.TestCase):
 
             self.assertTrue(any(["lockfile already exists" in log for log in cm.output]))
     
-    @patch('src.commands.init.install')
-    @patch('src.commands.init.install_pkg')
     @patch('src.commands.init.Docker.get_image')
-    def test_init_pulls_docker_image_from_LF(self, docker_getimg, install_pkg, install_all):
+    def test_init_pulls_docker_image_from_LF(self, docker_getimg):
         docker_img_used = 'my-image'
 
         LockFile.create(docker_image=docker_img_used)
@@ -157,3 +155,17 @@ class Test_init_unit(unittest.TestCase):
         # Assert install_pkg was called, not install
         install_pkg.assert_called()
         install_all.assert_not_called()
+
+    @patch('src.commands.init.install_pkg')
+    @patch('src.commands.init.Docker')
+    def test_init_figures_out_docker_image_to_use(self, docker_mock, install_pkg_mock):
+
+        docker_mock.get_image.return_value = 'my-image'
+
+        init(image_name='')
+
+        docker_mock.get_image.assert_called_once()
+        self.assertTrue(LockFile.exists())
+        self.assertEqual(LockFile.get_docker_image(), 'my-image')
+
+
