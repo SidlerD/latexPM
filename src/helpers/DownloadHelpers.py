@@ -130,8 +130,8 @@ def organize_files(folder_path: str, tds: bool):
             # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
             try:
                 # DECIDE: Could parse sty-file names that are generated from ins-file and delete them, so that prompt does not occur
-                # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
-                subprocess.run(['latex', basename(ins_file)], stdout=subprocess.DEVNULL, timeout=3)
+                # In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: There's also cases where prompt is for something else, where I do not want to say 'n'
+                subprocess.run(['latex', basename(ins_file)], stdout=subprocess.DEVNULL, timeout=3, input=b'n\n')
             except Exception as e:
                 # Possible reasons for timeout: File should not be executed, .sty file already exists and user gets prompted wheter or not to overwrite
                 logger.warning(f"Problem while installing {name}.ins: {e}")
