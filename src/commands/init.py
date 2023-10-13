@@ -1,6 +1,7 @@
 import json
 import os
 import docker
+from src.API import CTAN
 
 from src.core import LockFile
 from src.core import Docker
@@ -46,10 +47,13 @@ def init(image_name: str):
 
     LockFile.create(image_name)
     
-    # TODO: Add other packages from bundle "required"
-    install_pkg('latex-base', accept_prompts=True)
+    # Download from VPTAN because for some obscure reason, 
+    # requests.get with latex-base from CTAN just never terminates
+    install_pkg('latex-base', accept_prompts=True, src='VPTAN')
     install_pkg('l3backend', accept_prompts=True)
     
     # Needed by graphics.sty, throws error otherwise. E.g. when installing and then using tikz
     install_pkg('graphics-cfg', accept_prompts=True) 
     install_pkg('graphics-def', accept_prompts=True) 
+
+    # TODO: Add other packages from bundle "required"
