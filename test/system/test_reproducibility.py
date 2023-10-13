@@ -96,13 +96,13 @@ class ReproducibilityTest(unittest.TestCase):
 
         # Compare contents of directories
         dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=['requirements-lock.json'])
-        diff = [file for file in dirs_cmp.diff_files if not file.endswith('.log')]
+        diff = [f for f in dirs_cmp.diff_files if not f.endswith('.log')]
         if len(dirs_cmp.left_only)>0 or len(dirs_cmp.right_only)>0 or \
             len(dirs_cmp.funny_files)>0 or len(diff)>0:
             return False
         # Compare contents of files in directories 
         # Except .log files: They can contain paths to other files, which differs between projects
-        common_files = [file for file in dirs_cmp.common_files if not file.endswith('.log')]
+        common_files = [f for f in dirs_cmp.common_files if not f.endswith('.log')]
         (_, mismatch, errors) =  filecmp.cmpfiles(
             dir1, dir2, common_files, shallow=False)
         if len(mismatch)>0 or len(errors)>0:
