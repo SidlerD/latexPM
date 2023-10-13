@@ -13,9 +13,9 @@ from src.models.Dependency import Dependency, DownloadedDependency
 """
 
 # FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} (I don't know which file types are supported for importing with \input)
-req_pkg_pattern = r'^\s*\\(?:RequirePackage|usepackage)\s*?(?:\[(?:.*?)\])?\s*?\{(.*?)\}\s*?(?:\[(.*?)\])?.*?$'
+req_pkg_pattern = r'^\s*\\(?:RequirePackage|usepackage)\s*?(?:\[(?:[\s\S]*?)\])?\s*?\{(.*?)\}\s*?(?:\[(.*?)\])?.*?$'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/gFxWPO/1
+    https://regex101.com/r/gFxWPO/3 (Regex may be out of date)
 """
 logger = logging.getLogger("default")
 

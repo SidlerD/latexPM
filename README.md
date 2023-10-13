@@ -52,7 +52,7 @@ When given a folder that contains at least a `requirements-lock.json` (+ some pr
 
 ### Create a new project
 1. Head to directory where your `.tex` file lives
-2. In command line, enter `lpm init`. This will create the necessary files for the package manager to work.
+2. In command line, enter `lpm init`. This will create the necessary files for the package manager to work and must always be the __first command__ of lpm __called in a new project__.
 
 ### Create a new project based on a lock file
 1. Head to directory where your `requirements-lock.json` file is
