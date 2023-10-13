@@ -118,11 +118,11 @@ def _get_download_url(dep, pkgInfo):
     # Extract download path
     if "install" in pkgInfo:
         path = pkgInfo['install']
-        url = "https://mirror.ctan.org/install" + path # Should end in .zip or similar
+        url = "https://mirrors.ctan.org/install" + path # Should end in .zip or similar
     
     elif "ctan" in pkgInfo:
         path = pkgInfo['ctan']['path']
-        url = f"https://mirror.ctan.org{path}.zip"
+        url = f"https://mirrors.ctan.org{path}.zip"
     else:
         if "id" in pkgInfo:
             raise CtanPackageNotFoundError(f"{pkgInfo['id']} cannot be downloaded from CTAN")

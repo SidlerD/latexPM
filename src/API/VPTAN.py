@@ -1,3 +1,4 @@
+from src.API import CTAN
 from src.models.Dependency import Dependency, DownloadedDependency
 
 from src.helpers.DownloadHelpers import download_and_extract_zip
@@ -30,6 +31,8 @@ def download_pkg(dep: Dependency, pkgInfo:dict = None, closest=False, url:str=No
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
 
+    if not pkgInfo:
+        pkgInfo = CTAN.get_package_info(dep.id)
     try:
         ctan_path = pkgInfo['ctan']['path']
     except KeyError:

@@ -12,7 +12,7 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 logger = logging.getLogger("default")
 
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool, src:str):
     pkgInfo = CTAN.get_package_info(dep.id)
     ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
 
@@ -25,9 +25,9 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         # satisfy every requirepackage{}[installed_version], according to syntax of date in \requirepackage
         # Therefore, remove installed version and install the newer requested version.
         # TODO: Test this clause
-        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}. \
-                    Requested install in version {dep.version}. \
-                    Installing  in {dep.version} because it is newer")
+        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}." \
+                    f" Requested install in version {dep.version}." \
+                    f" Installing  in {dep.version} because it is newer")
         remove(pkg_id=dep.id, by_user=False)
     elif existing_node:
         existing_par = existing_node.parent
@@ -52,8 +52,15 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         logger.info(f"Skipped install of {dep}")
         return
 
-    # Download package
-    downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts)
+    # Download package (No switch for easier backwards-compatibility with python)
+    if src == 'VPTAN':
+        downloaded_dep = VPTAN.download_pkg(dep, pkgInfo=pkgInfo, closest=True)
+    elif src== 'CTAN':
+        downloaded_dep = CTAN.download_pkg(dep=dep, pkgInfo=pkgInfo)
+    else:
+        if src:
+            logger.warning(f'Ignoring invalid src={src} passed to install_pkg')
+        downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts)
 
     node = DependencyNode(downloaded_dep, parent=parent)
 
@@ -63,21 +70,22 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
     # Download those recursively
     for child_dep in unsatisfied_deps:
         try:
-            _handle_dep(child_dep, node, root, accept_prompts)
+            _handle_dep(child_dep, node, root, accept_prompts, src=src)
         except CtanPackageNotFoundError as e:
             logger.error(f"{str(e)}: Skipping install of {child_dep.id}. If problems arise, install manually")
 
 
-def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
+def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False, src: str = None):
     """Installs one specific package and all its dependencies\n
-
 
     Args:
         pkg_id (str): Id of package to install
         version (str, optional): String containing version of package to install
         accept_prompts (bool, optional): If True, user will not be prompted\
              about decisions during install of package and dependencies
+        src (str, optional): Use to specify which repository to download from: possible values: ['VPTAN', 'CTAN', None]
     """
+
     rootNode = None  # Available in except clause
 
     try:
@@ -95,7 +103,7 @@ def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
 
         # Download the package files and all its dependencies
         rootNode = LockFile.read_file_as_tree()
-        _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts)
+        _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts, src=src)
 
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")
