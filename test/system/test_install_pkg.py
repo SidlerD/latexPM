@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 from unittest.mock import patch, call
+from src.commands.remove import remove
 from src.models.Dependency import Dependency, DownloadedDependency
 from src.core import LockFile
 from src.core.lpm import lpm
@@ -32,6 +33,9 @@ class InstallPkgTest(unittest.TestCase):
         LockFile._root = None
 
 
+    # FIXME: Test with tikz and todonotes fail because of known issue: 
+    #   A package requests "epstopdf-base", but lpm can't find it on CTAN
+    #   because it is in package "epstopdf-pkg"
     @parameterized.expand([
     #   [pkg_name,      text]
         ["amsmath",     '\\begin{equation*}\n  a=b\n\\end{equation*}'],
@@ -67,14 +71,14 @@ class InstallPkgTest(unittest.TestCase):
         
         # Initialize a project with lpm
         lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
+        lpm_inst.init()#docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
 
         # Install the needed package
         lpm_inst.install_pkg(pkg_name, accept_prompts=True)
 
         # Build the project
         lpm_inst.build(['pdflatex', 'file.tex'])
-        lpm_inst.remove(pkg_name)
+        remove(pkg_name, by_user=False)
 
         # Print log-file(s)
         if os.path.exists('file.log'):

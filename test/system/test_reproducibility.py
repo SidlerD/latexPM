@@ -18,10 +18,12 @@ class ReproducibilityTest(unittest.TestCase):
         self.old_cwd = os.getcwd()
         self.tmp_dir = tempfile.mkdtemp()
         os.chdir(self.tmp_dir)
+        LockFile._root = None
 
     def tearDown(self):
         os.chdir(self.old_cwd)
         shutil.rmtree(self.tmp_dir)
+        LockFile._root = None
         
     
     @parameterized.expand([

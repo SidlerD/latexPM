@@ -52,15 +52,8 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         logger.info(f"Skipped install of {dep}")
         return
 
-    # Download package (No switch for easier backwards-compatibility with python)
-    if src == 'VPTAN':
-        downloaded_dep = VPTAN.download_pkg(dep, pkgInfo=pkgInfo, closest=True)
-    elif src== 'CTAN':
-        downloaded_dep = CTAN.download_pkg(dep=dep, pkgInfo=pkgInfo)
-    else:
-        if src:
-            logger.warning(f'Ignoring invalid src={src} passed to install_pkg')
-        downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts)
+    # Download package 
+    downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts, src=src)
 
     node = DependencyNode(downloaded_dep, parent=parent)
 

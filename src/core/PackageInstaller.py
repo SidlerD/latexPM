@@ -13,12 +13,13 @@ logger = logging.getLogger("default")
 
 class PackageInstaller:
     @staticmethod
-    def install_specific_package(pkg: Dependency|DependencyNode, accept_prompts: bool = False) -> DownloadedDependency:
+    def install_specific_package(pkg: Dependency|DependencyNode, accept_prompts: bool = False, src: str = None) -> DownloadedDependency:
         """Download pkg from CTAN or VPTAN to packages folder, install and organize its files
 
         Args:
             pkg (Dependency | DependencyNode): Package to install. If type is DependencyNode, use its .dep.url as download-url
             accept_prompts (bool, optional): If True, user will not be prompted for decisions
+            src (str, optional): Use to specify which repository to download from: possible values: ['VPTAN', 'CTAN', None]
 
         Raises:
             DownloadError: Downloaded zip-file cannot be opened
@@ -38,7 +39,7 @@ class PackageInstaller:
                 else:
                     downloaded_dep = VPTAN.download_pkg(pkg.dep, url=url, pkgInfo=pkgInfo, closest=False)
 
-            elif pkg.version == None or version_matches(pkg): # pkg.version == None instead of is None so that Version.__eq__ is called
+            elif src == 'CTAN' or pkg.version == None or version_matches(pkg): # pkg.version == None instead of is None so that Version.__eq__ is called
                 downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
             else:  # Need specific older version => Download from VPTAN
