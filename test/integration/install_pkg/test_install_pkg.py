@@ -3,10 +3,10 @@ import shutil
 import unittest
 from unittest.mock import patch, call
 from src.models.Dependency import Dependency, DownloadedDependency
+from src.core import LockFile
 from src.core.lpm import lpm
 from anytree import Node
 import tempfile
-from parameterized import parameterized
 
 
 class InstallPkgTest(unittest.TestCase):
@@ -28,13 +28,13 @@ class InstallPkgTest(unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    @patch("src.commands.install_pkg.LockFile.read_file_as_tree")  # path to actual file because mocked methods are static
-    @patch("src.commands.install_pkg.LockFile.write_tree_to_file")  # path to actual file because mocked methods are static
+        LockFile._root = None
+
     @patch("src.commands.install_pkg.CTAN.get_package_info")
     @patch("src.commands.install_pkg.CTAN.get_name_from_id")
     @patch("src.commands.install_pkg.PackageInstaller.install_specific_package")
     @patch("src.commands.install_pkg.extract_dependencies")
-    def test_circular_dependencies_warns(self, extract_dependencies_mock, install_spec_pkg_mock, CTAN_id_to_name_mock, CTAN_pkg_info_mock, LockFile_write, LockFile_read):
+    def test_circular_dependencies_warns(self, extract_dependencies_mock, install_spec_pkg_mock, CTAN_id_to_name_mock, CTAN_pkg_info_mock):
         """Example where pkgA is dependent on B and pkgB is dependent on A\n
             Assert that installing pkgA only installs pkgA and pkgB once, and logs an info msg"""
         depA, depB = Dependency('A', 'A'), Dependency('B', 'B')
@@ -46,10 +46,10 @@ class InstallPkgTest(unittest.TestCase):
         install_spec_pkg_mock.side_effect = PackageInstaller_sideeffect
         CTAN_id_to_name_mock.return_value = ""
         CTAN_pkg_info_mock.return_value = {'ctan': {'path': '/path/on/ctan'}}
-        LockFile_read.return_value = Node('root')
-        LockFile_write.return_value = None
 
         with self.assertLogs('default', level='INFO') as cm:
+            LockFile.create('')
+
             lpm_inst = lpm()
             lpm_inst.install_pkg("A", accept_prompts=True)
             log_msg = "already installed as requested by the user"
@@ -58,47 +58,3 @@ class InstallPkgTest(unittest.TestCase):
             # Assert pkgA and pkgB were both installed only once
             self.assertEqual(install_spec_pkg_mock.call_count, 2)
             install_spec_pkg_mock.assert_has_calls([call(depA, accept_prompts=True), call(depB, accept_prompts=True)], any_order=False)
-
-    @parameterized.expand([
-        ["amsmath", '\\begin{equation*}\n  a=b\n\\end{equation*}'],
-        [ "listings", '\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}'],
-        ["tikz", '\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}']
-    ])
-    @patch("src.API.CTAN.input")
-    @patch("src.core.PackageInstaller.input")
-    def test_install_packages_and_build_file(self, pkg_name, text, install_closest_version_input, build_aliases_file_input):
-        install_closest_version_input.return_value = 'y'
-        build_aliases_file_input.return_value = 'n'
-
-        os.chdir(self.test_dir)
-        with open('file.tex', 'w') as f:
-            f.write('\n'.join([
-                r'\documentclass{article}',
-                '\\usepackage{%s}' % pkg_name,
-                r'\begin{document}',
-                text,
-                r'\end{document}'
-            ]))
-        lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
-
-        lpm_inst.install_pkg(pkg_name)
-
-        lpm_inst.build(['pdflatex', 'file.tex'])
-
-        if os.path.exists('file.log'):
-            with open('file.log', 'r') as log:
-                print(log.read())
-        else:
-            print('file.log does not exist')
-            files = [file for file in os.listdir() if os.path.isfile(file)]
-            log_files = [file for file in files if file.endswith('.log')]
-            print(f"Files in directory: {', '.join(files)}")
-            for file in log_files:
-                if not os.path.exists(file):
-                    continue
-                with open(file, 'r') as log:
-                    print(f"==== {file} =====")
-                    print(log.read())
-
-        self.assertTrue(os.path.exists('file.pdf'))

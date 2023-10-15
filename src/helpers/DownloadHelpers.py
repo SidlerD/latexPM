@@ -7,13 +7,25 @@ import requests
 import logging
 from src.API import CTAN
 from src.core import config
-from src.exceptions.download.DownloadError import VersionNotAvailableError
+from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency
 
 logger = logging.getLogger("default")
 
 
 def download_and_extract_zip(url: str, dep: Dependency) -> str:
+    """Download and extract a zip-file, organize files using DownloadHelpers.organize_files
+
+    Args:
+        url (str): Url to download zip-file from
+        dep (Dependency): Package that is in zip-file
+
+    Raises:
+        DownloadError: If url responds with status-code above 400
+
+    Returns:
+        str: Path to folder that now contains the package files
+    """
     # Extract the filename from the URL
     pkg_folder = abspath(config.get_package_dir())
 
@@ -38,7 +50,7 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
     # Download the ZIP file
     response = requests.get(url, allow_redirects=True)
     if not response.ok:
-        raise VersionNotAvailableError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
+        raise DownloadError(response.text if hasattr(response, 'text') and response.text else f'Cannot download {dep}: {response.reason}')
 
     os.makedirs(download_folder, exist_ok=True)
     logger.debug(f"Downloading files into {download_folder}")
@@ -59,7 +71,15 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
 
 
 def organize_files(folder_path: str, tds: bool):
-    """Ensure relevant files are at top-level of folder_path, unnecessary files/folders are deleted, convert .ins/.dtx to .sty"""
+    """Flatten folder, convert .ins/.dtx to .sty, unnecessary files/folders are deleted
+
+    Args:
+        folder_path (str): Path of folder to organize
+        tds (bool): Is content of folder_path organized according to TeX Directory Structure Guidelines?
+
+    Raises:
+        OSError: folder_path is not a valid folder
+    """
 
     if not exists(folder_path):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")
@@ -110,8 +130,8 @@ def organize_files(folder_path: str, tds: bool):
             # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
             try:
                 # DECIDE: Could parse sty-file names that are generated from ins-file and delete them, so that prompt does not occur
-                # FIXME: In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: THere's also cases where prompt is for something else, where I do not want to say 'n'
-                subprocess.run(['latex', ins_file], stdout=subprocess.DEVNULL, timeout=3)
+                # In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: There's also cases where prompt is for something else, where I do not want to say 'n'
+                subprocess.run(['latex', basename(ins_file)], stdout=subprocess.DEVNULL, timeout=3, input=b'n\n')
             except Exception as e:
                 # Possible reasons for timeout: File should not be executed, .sty file already exists and user gets prompted wheter or not to overwrite
                 logger.warning(f"Problem while installing {name}.ins: {e}")

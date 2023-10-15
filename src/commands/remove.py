@@ -23,14 +23,21 @@ def _handle_dep(pkg: DependencyNode):
         remove_from_tree(pkg)
     # Move pkg in tree from dep_to_remove to first package which depends on it
     elif len(pkg.dependents) > 0:
-        dest_dep_id = pkg.dependents.pop(0)
-        dest = LockFile.find_by_id(dest_dep_id)
-        move_in_tree(dest=dest, node=pkg)
+        while len(pkg.dependents) > 0:
+            dest_dep_id = pkg.dependents.pop(0)
+            try:
+                dest = LockFile.find_by_id(dest_dep_id)
+                move_in_tree(dest=dest, node=pkg)
+            except ValueError as e:
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} not in tree anymore")
 
 
 def remove(pkg_id: str, by_user: bool = True):
-    """Remove package and its dependencies
-        by_user: Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages
+    """Remove the specified package and its dependencies
+
+    Args:
+        pkg_id (str): Id of package to remove
+        by_user (bool, optional): Was remove requested by user directly? If True, user will be asked to confirm removal for non-top-level packages. Defaults to True.
     """
     try:
         dep_node = LockFile.find_by_id(pkg_id)
@@ -55,14 +62,17 @@ def remove(pkg_id: str, by_user: bool = True):
 
 
 def delete_pkg_files(dep_node: DependencyNode):
+    """Delete all files of package from system
+
+    Args:
+        dep_node (DependencyNode): Package whose files to delete
+    """
     logger.debug(f"Removing files for {dep_node}")
-    if not hasattr(dep_node, 'dep') or not hasattr(dep_node.dep, 'files'):
-        raise RuntimeError(f"Couldn't find files to delete for {dep_node.dep}.")
 
     # Remove folder including its files
     folder = dep_node.dep.path
     if not os.path.exists(folder):
-        logger.debug(f"{folder} does not exist")
+        logger.info(f"Problem while removing {dep_node.id}: {folder} does not exist")
         return
     
     cnt_files = len([file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))])
@@ -71,13 +81,28 @@ def delete_pkg_files(dep_node: DependencyNode):
     logger.info(f"Removed {cnt_files} files for {dep_node}")    
 
 def move_in_tree(dest: DependencyNode|Node, node: DependencyNode|Node):
+    """Move a node in tree from its current parent to another parent
+
+    Args:
+        dest (DependencyNode | Node): New parent of node
+        node (DependencyNode | Node): Node to move in tree
+    """
     before = str(node.parent)
     node.parent = dest
     logger.info(f"Moved {node.id} from {before} to {node.parent}")
 
-def remove_from_tree(child):
-    if len(child.children) != 0:
+def remove_from_tree(pkg_node: DependencyNode):
+    """Remove all references to pkg_node from tree
+
+    Args:
+        pkg_node (DependencyNode): Node of package to remove
+
+    Raises:
+        Exception: If pkg_node has children
+    """
+    if len(pkg_node.children) != 0:
         raise Exception("Attempted to remove a node from Tree which still has children")
     
-    child.parent = None
-    # TODO: Remove dep from all .dependents of tree
+    LockFile.remove_from_dependents(pkg_id=pkg_node.id)
+
+    pkg_node.parent = None

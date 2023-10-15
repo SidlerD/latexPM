@@ -4,11 +4,21 @@ packages/
 requirements-lock.json
 requirements.json
 t.py
-.lpmconf
-Dockerfile
+*Dockerfile
 *deps_of_files_output.json
-dep_comparison.*
+
 *.dat
+dep_comparison*.*
+*.aux
+*.log
+*.pdf
+*.nav
+*.out
+*.toc
+*.snm
+*.xml
+*.bcf
+*.bib
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

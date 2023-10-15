@@ -1,19 +1,24 @@
 import json
 import os
 import docker
+import logging
+from src.core import LockFile
 
+logger = logging.getLogger('default')
 
 def build(args: list):
+    """Compile the project 
+
+    Args:
+        args (list): Commands to execute for compiling the project. E.g. ['pdflatex', 'file.tex']
+    """
     client = docker.from_env()
 
     # Get container for this project
-    if not os.path.exists('.lpmconf'):
-        print('Please initialize a new project first using "lpm init"')
-
-    with open('.lpmconf', 'r') as conffile:
-        conf = json.load(conffile)
-        image_id = conf['docker-id']
-    
+    image_id = LockFile.get_docker_image()
+    if not image_id:
+        logger.warn("Please initialize a project first")
+        return
 
     # Run container and mount volume (containing project files and packages-folder)
     # vol_path = f"{os.path.join(os.getcwd(), 'packages')}:/root/lpm/packages"
@@ -26,7 +31,7 @@ def build(args: list):
         environment={'TEXINPUTS': '.:/root/lpm/packages//'}, # Set TEXINPUTS to include volume path
         working_dir='/root/lpm'
         # user='root'
-        # remove=True # Delete container when build is over
+        # remove=True # Delete container when build is over # TODO: Re-enable
     )
     
     # TODO: Show build process without detaching container

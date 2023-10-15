@@ -1,3 +1,4 @@
+from src.API import CTAN
 from src.models.Dependency import Dependency, DownloadedDependency
 
 from src.helpers.DownloadHelpers import download_and_extract_zip
@@ -10,14 +11,28 @@ _base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.
 logger = logging.getLogger("default")
 
 
-def download_pkg(dep: Dependency, pkgInfo=None, closest=False) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo:dict = None, closest=False, url:str=None) -> DownloadedDependency:
+    """Download package from VPTAN, return DownloadedDependency containg details about download
+
+    Args:
+        dep (Dependency): Package to download
+        pkgInfo (dict, optional): CTAN response from /packages for package
+        closest (bool, optional): If True and version not available on CTAN, download the closest later version of the package
+        url (str, optional): If present, use this url to download package from
+
+    Returns:
+        DownloadedDependency: Input dep with additional information
+    """
     logger.info(f"Downloading {dep.id} from VPTAN")
 
-    url = _get_url_for_version(dep, closest=closest)
+    if not url:
+        url = _get_url_for_version(dep, closest=closest)
 
     logger.info(f"VPTAN: Installing {dep} from {url}")
     folder_path = download_and_extract_zip(url, dep)
 
+    if not pkgInfo:
+        pkgInfo = CTAN.get_package_info(dep.id)
     try:
         ctan_path = pkgInfo['ctan']['path']
     except KeyError:

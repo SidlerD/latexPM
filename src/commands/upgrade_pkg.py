@@ -59,6 +59,11 @@ def _handle_dep(dep: Dependency):
     pass
 
 def upgrade_pkg(pkg_id: str):
+    """Upgrade the specified package to its newest version(i.e. the version on CTAN)
+
+    Args:
+        pkg_id (str): Id of package to upgrade
+    """
     try:
         try:
             name = CTAN.get_name_from_id(pkg_id)
@@ -91,4 +96,3 @@ def upgrade_pkg(pkg_id: str):
     except Exception as e:
         
         logger.error(f"Couldn't upgrade package {pkg_id}: {str(e)}")
-        logging.exception(e)

@@ -12,7 +12,7 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 logger = logging.getLogger("default")
 
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool, src:str):
     pkgInfo = CTAN.get_package_info(dep.id)
     ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
 
@@ -25,16 +25,16 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         # satisfy every requirepackage{}[installed_version], according to syntax of date in \requirepackage
         # Therefore, remove installed version and install the newer requested version.
         # TODO: Test this clause
-        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}. \
-                    Requested install in version {dep.version}. \
-                    Installing  in {dep.version} because it is newer")
+        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}." \
+                    f" Requested install in version {dep.version}." \
+                    f" Installing  in {dep.version} because it is newer")
         remove(pkg_id=dep.id, by_user=False)
     elif existing_node:
         existing_par = existing_node.parent
 
         if hasattr(existing_node, 'dependents'):
-            # URGENT: If parent is root-node, this fails because it doesnt have dep-attribute. Maybe switch to node-id?
-            existing_node.add_dependent(parent.id)
+            if existing_node.parent.id != parent.id:
+                existing_node.add_dependent(parent.id)
 
         if existing_node.id != dep.id:
             installed_by = f"because {existing_node.id} has the same path on CTAN: {existing_node.dep.ctan_path}"
@@ -45,29 +45,42 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         
         msg = f"""{'root' if parent.id == 'root' else parent} depends on {dep}, which is already installed {installed_by}"""
 
-        if existing_node.dep.version != dep.version:
+        if existing_node.dep.version and dep.version and existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."
 
         logger.info(msg)
         logger.info(f"Skipped install of {dep}")
         return
 
-    # Download package
-    downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts)
+    # Download package 
+    downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts, src=src)
 
     node = DependencyNode(downloaded_dep, parent=parent)
 
-    # Extract dependencies of package, download those recursively
+    # Extract dependencies of package
     unsatisfied_deps = extract_dependencies(downloaded_dep)
 
+    # Download those recursively
     for child_dep in unsatisfied_deps:
-        _handle_dep(child_dep, node, root, accept_prompts)
+        try:
+            _handle_dep(child_dep, node, root, accept_prompts, src=src)
+        except CtanPackageNotFoundError as e:
+            logger.error(f"{str(e)}: Skipping install of {child_dep.id}. If problems arise, install manually")
 
 
-def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
-    """Installs one specific package and all its dependencies\n"""
+def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False, src: str = None):
+    """Installs one specific package and all its dependencies\n
+
+    Args:
+        pkg_id (str): Id of package to install
+        version (str, optional): String containing version of package to install
+        accept_prompts (bool, optional): If True, user will not be prompted\
+             about decisions during install of package and dependencies
+        src (str, optional): Use to specify which repository to download from: possible values: ['VPTAN', 'CTAN', None]
+    """
 
     rootNode = None  # Available in except clause
+
     try:
         # Build dependency-model with needed information
         try:
@@ -81,9 +94,9 @@ def install_pkg(pkg_id: str, version: str = "", accept_prompts: bool = False):
             dep = Dependency(pkg_id, name, version=version, alias={'id': alias_id, 'name': alias_name})
 
 
-        # Download the package files
+        # Download the package files and all its dependencies
         rootNode = LockFile.read_file_as_tree()
-        _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts)
+        _handle_dep(dep, rootNode, rootNode, accept_prompts=accept_prompts, src=src)
 
         LockFile.write_tree_to_file()
         logger.info(f"Installed {pkg_id} and its dependencies")

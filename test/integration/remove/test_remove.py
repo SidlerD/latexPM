@@ -14,8 +14,9 @@ class RemoveTest(unittest.TestCase):
     def test_remove_calls_delete_pkg(self, LF_find, LF_write, delete_pkg_files_mock):
         depA, depB = Dependency('A', 'A'), Dependency('B', 'B')
         filesA, filesB = ['filea.sty', 'filea2.sty'], ['fileb.sty', 'fileb2.sty']
+        root=Node('root')
         downDepA, downDepB = DownloadedDependency(depA, '', '', filesA), DownloadedDependency(depB, '', '', filesB)
-        depNodeA = DependencyNode(dep=downDepA)
+        depNodeA = DependencyNode(dep=downDepA, parent=root)
         depNodeB = DependencyNode(dep=downDepB, parent=depNodeA)
 
         delete_pkg_files_mock.return_value= None

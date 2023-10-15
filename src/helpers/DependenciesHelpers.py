@@ -13,23 +13,33 @@ from src.models.Dependency import Dependency, DownloadedDependency
 """
 
 # FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} (I don't know which file types are supported for importing with \input)
-req_pkg_pattern = r'^\s*\\(?:RequirePackage|usepackage)\s*?(?:\[(?:.*?)\])?\s*?\{(.*?)\}\s*?(?:\[(.*?)\])?.*?$'
+req_pkg_pattern = r'^\s*\\(?:RequirePackage|usepackage)\s*?(?:\[(?:[\s\S]*?)\])?\s*?\{(.*?)\}\s*?(?:\[(.*?)\])?.*?$'
 """Captures both RequiresPackage and usepackage. group1 = Pkg_name, group2 = version if available\n
-    https://regex101.com/r/gFxWPO/1
+    https://regex101.com/r/gFxWPO/3 (Regex may be out of date)
 """
 logger = logging.getLogger("default")
 
 
 def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
+    """Extract all dependencies from all files of provided package
+
+    Args:
+        dep (DownloadedDependency): Package to extract dependencies from
+
+    Raises:
+        RuntimeError: One of the files of package cannot be found
+
+    Returns:
+        list[Dependency]: List of all dependencies of package that were not included in the packages download
+    """
     logger.info("Extracting dependencies of " + dep.id)
 
 
-
-    # FIXME: DOnt only look at pkg_id.sty, but also .cls and others
-    # FIXME: Packages can not only depend on .sty files, but also .cls and others
-    
+    """ TODO: Check whether extracting from .def files is a good idea
+        Reason for including .def for extraction: when using tikz, epstopdf-base is required by graphics-def/pdftex.def 
+    """
     # Names of files to extract dependencies from
-    to_extract = [file_name for file_name in dep.files if file_name.endswith('.sty')]
+    to_extract = [elem for elem in os.listdir(dep.path) if elem.endswith(('.sty', '.def', '.cls'))]
     # File-names from to_extract, but without file extension
     included_file_names = [basename(sty_path).split('.')[0] for sty_path in to_extract]
 
@@ -54,10 +64,11 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
         with open(sty_path, "r", errors='ignore') as sty:
             content = sty.read()
-            matches: list[tuple] = re.findall(req_pkg_pattern, content, re.MULTILINE)
+            matches: list[tuple[str,str]] = re.findall(req_pkg_pattern, content, re.MULTILINE)
             for (package_names, package_version) in matches:
                 package_names = package_names.split(',')
                 for name in package_names:
+                    name = name.strip()
                     # Why not check for ProvidesPackage here?: Latex imports by file name, not by ProvidesPackage. Test with pkgA.sty which \ProvidesPackage{pkgB}. Can only import with \usepackage{pkgA}
                     if name in included_file_names:
                         # ASSUMPTION: If file is included in download, it's included in right version. Therefore don't need to check version here
@@ -90,7 +101,7 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 def extract_dependencies(pkg: DownloadedDependency) -> list[Dependency]:
     
     # Names of files to extract dependencies from
-    pkg_files = [file_name for file_name in pkg.files if file_name.endswith('.sty')]
+    to_extract = [elem for elem in os.listdir(dep.path) if elem.endswith(('.sty', '.def', '.cls'))]
     # File-names from pkg_files, but without file extension
     pkg_file_names = [basename(sty_path).split('.')[0] for sty_path in pkg_files]
 
