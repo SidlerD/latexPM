@@ -6,6 +6,7 @@ requirements.json
 t.py
 *Dockerfile
 *deps_of_files_output.json
+
 *.dat
 dep_comparison*.*
 *.aux
