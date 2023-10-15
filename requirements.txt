@@ -5,3 +5,4 @@ argparse
 docker
 parameterized
 pandas
+pytest
