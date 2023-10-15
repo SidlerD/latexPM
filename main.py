@@ -8,7 +8,7 @@ from src.core.lpm import lpm
 def add_install_parser(subparsers):
     # Create sub-parser for the install command
     install_parser = subparsers.add_parser('install', help='Install package(s)')
-    install_parser.add_argument('-v', '--version', type=str, help='Version to install: Either number (e.g. 1.2a) or date (YYYY/MM/DD)', metavar="")
+    install_parser.add_argument('-v', '--version', type=str, help='Version to install: Either number (e.g. 1.2a) or date (YYYY/MM/DD)', metavar="--version")
     install_parser.add_argument('-y', '--yes_to_prompts', action='store_true', help='If provided, answer all prompts with yes')
 
     mutual_excl_args = install_parser.add_mutually_exclusive_group(required=True)
@@ -18,15 +18,15 @@ def add_install_parser(subparsers):
 def add_upgrade_parser(subparsers):
     # Create sub-parser for the upgrade command
     upgrade_parser = subparsers.add_parser('upgrade', help='upgrade package(s) to newest version')
-    mutual_excl_args = upgrade_parser.add_mutually_exclusive_group(required=True)
 
-    mutual_excl_args.add_argument('-p', '--package', type=str, help='upgrade specific package', metavar="")
-    mutual_excl_args.add_argument('-a', '--all',action='store_true', help='upgrade all packages')
+    mutual_excl_args = upgrade_parser.add_mutually_exclusive_group(required=True)
+    mutual_excl_args.add_argument('package', default=None, nargs='?', type=str, help='Package id to upgrade')
+    mutual_excl_args.add_argument('--all',action='store_true', help='Upgrade all packages')
     
 
 def add_init_parser(subparsers):
     init_parser = subparsers.add_parser('init', help='Initialize a new project')
-    init_parser.add_argument('-i', '--dockerimage', type=str, help='Name/ID of Docker Image to use. Will be used to compile your TeX files', metavar="")
+    init_parser.add_argument('-i', '--dockerimage', type=str, help='Name/ID of Docker Image to use. Will be used to compile your TeX files', metavar="--dockerimage")
     
 def add_list_parser(subparsers):
     # Create sub-parser for the install command
@@ -36,7 +36,7 @@ def add_list_parser(subparsers):
     
 def add_remove_parser(subparsers):
     remove_parser = subparsers.add_parser('remove', help='Uninstall a package from project')
-    remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="")
+    remove_parser.add_argument('package', type=str, help='Id of package to remove', metavar="package")
 
 def add_build_parser(subparsers):
     build_parser = subparsers.add_parser('build', help='Build your project')
@@ -59,6 +59,9 @@ def handle_input(args):
                 print("WARN: Version will be ignored since --lockfile was given")
             lpm_inst.install()
     elif args.command == 'upgrade':
+        if args.package and args.all:
+            print("Please provide either a package or --all, not both")
+            return
         if args.package:
             lpm_inst.upgrade_pkg(args.package)
         elif args.all:
