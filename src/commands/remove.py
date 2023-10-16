@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 from anytree import Node, RenderTree, AsciiStyle, LevelOrderGroupIter
+import anytree
 
 from src.core import LockFile
 from src.models.Dependency import Dependency, DependencyNode
@@ -9,6 +10,19 @@ from src.models.Dependency import Dependency, DependencyNode
 logger = logging.getLogger("default")
 
 def _handle_dep(pkg: DependencyNode):
+    # If other package depends on this one, move in tree instead of removing
+    if len(pkg.dependents) > 0:
+        while len(pkg.dependents) > 0:
+            dest_dep_id = pkg.dependents.pop(0)
+            try:
+                dest = LockFile.find_by_id(dest_dep_id)
+                move_in_tree(dest=dest, node=pkg)
+                return
+            except ValueError as e:
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} not in tree anymore")
+            except anytree.node.exceptions.LoopError:
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} is a child of {pkg.id}")
+                pass 
     # Remove its children
     while pkg.children: # While instead of for because during handling children of pkg, pkg.children may change (if pkg depends on pkgB which is installed by its child pkgC, when removing pkgC pkgB becomes child of pkg)
         _handle_dep(pkg.children[0])
@@ -22,14 +36,6 @@ def _handle_dep(pkg: DependencyNode):
         delete_pkg_files(pkg)
         remove_from_tree(pkg)
     # Move pkg in tree from dep_to_remove to first package which depends on it
-    elif len(pkg.dependents) > 0:
-        while len(pkg.dependents) > 0:
-            dest_dep_id = pkg.dependents.pop(0)
-            try:
-                dest = LockFile.find_by_id(dest_dep_id)
-                move_in_tree(dest=dest, node=pkg)
-            except ValueError as e:
-                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} not in tree anymore")
 
 
 def remove(pkg_id: str, by_user: bool = True):
