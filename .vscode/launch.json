@@ -13,9 +13,17 @@
             "name": "Dependency extraction accuracy",
             "type": "python",
             "request": "launch",
-            "module": "thesis.dep_extraction_accuracy.main",
+            "module": "thesis.dep_extraction.main",
+            "args": "${input:fileArguments}",
             "justMyCode": true,
-            "args": "${input:fileArguments}"
+        },
+        {
+            "name": "Dependency extraction accuracy build",
+            "type": "python",
+            "request": "launch",
+            "module": "thesis.dep_extraction.build",
+            "args": "${input:fileArguments}",
+            "justMyCode": true,
         },
         {
             "name": "Python: Debug Tests",
@@ -24,7 +32,7 @@
             "program": "${file}",
             "purpose": ["debug-test"],
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Measure execution times",

@@ -4,8 +4,9 @@ import sys
 def make_logger(name: str = "default", logging_level = logging.INFO):
     logger = logging.getLogger(name)
     if logger.handlers: # Logger already existed
-        return logger # FIXME: Remove handler or change their log-levels instead of return. Otherwise log-level might be wrong
-
+        logger.handlers = []
+        # return logger # FIXME: Remove handler or change their log-levels instead of return. Otherwise log-level might be wrong
+    logger.handlers
     logger.setLevel(logging_level)  # Set the desired log level
     logger.propagate = 0
 
