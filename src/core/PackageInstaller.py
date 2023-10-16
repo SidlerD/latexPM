@@ -62,8 +62,7 @@ class PackageInstaller:
                     # Ask permission to install closest later version
                     decision = 'y' if accept_prompts else ''
                     while decision not in ['y', 'n']:
-                        decision = input(f"{pkg.id} is not available on VPTAN in version {pkg.version}.\
-                                          Do you want to install the closest later version? [y/n]: ").lower()
+                        decision = input(f"{pkg.id} is not available on VPTAN in version {pkg.version}. Do you want to install the closest later version? [y/n]: ").lower()  # noqa: E501
                     if decision == 'n':
                         raise
 
@@ -74,8 +73,7 @@ class PackageInstaller:
                     except DownloadError:
                         # Version extraction always failed on CTAN git archive
                         # => Download from CTAN
-                        logger.info(f"VPTAN has no information about {pkg.id}. \
-                                    Downloading from CTAN in newest version")
+                        logger.info(f"VPTAN has no information about {pkg.id}. Downloading from CTAN in newest version")  # noqa: E501
                         pkg.version = CTAN.get_version(pkg.id)
                         downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 

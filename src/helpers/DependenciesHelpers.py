@@ -98,9 +98,10 @@ def extract_dependencies(dep: DownloadedDependency) -> list[Dependency]:
 
                         # Package is not on CTAN and has no alias
                         except ValueError:
-                            logger.warning(f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, \
-                                but CTAN has no information about {name}. {name} will not be installed. \
-                                If problems arise, please install {name} manually.")
+                            msg = (f"{os.path.basename(sty_name)} from package {dep.id} depends on {name}, "
+                                   f"but CTAN has no information about {name}. {name} will not be installed. "
+                                   f"If problems arise, please install {name} manually.")
+                            logger.warning(msg)
 
     logger.info(f"{dep} has {len(final_deps)} dependencies: {', '.join([dep.id for dep in final_deps])}")
     return final_deps

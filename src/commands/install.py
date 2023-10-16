@@ -33,8 +33,7 @@ def install():
     if os.path.exists('packages') and len(os.listdir('packages')) != 0:
         decision = ""
         while decision not in ['y', 'n']:
-            decision = input("Installing from Lockfile means all packages that are currently installed\
-                              will be removed. Do you want to proceed? [y / n]: ").lower()
+            decision = input("Installing from Lockfile means all packages that are currently installed will be removed. Do you want to proceed? [y / n]: ").lower()  # noqa: E501
 
         if decision == 'n':
             logger.info("Install aborted due to user decision")

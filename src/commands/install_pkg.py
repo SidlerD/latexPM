@@ -42,13 +42,13 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         # Build message to show to user
         if existing_node.id != dep.id:
             installed_by = f"because {existing_node.id} has the same path on CTAN: {existing_node.dep.ctan_path}"
-        elif existing_node.id == 'root':
+        elif existing_par.id == 'root':
             installed_by = "as requested by the user"
         else:
             installed_by = "by " + existing_par.ppath
 
-        msg = f"""{'root' if parent.id == 'root' else parent} depends on {dep}, \
-            which is already installed {installed_by}"""
+        msg = (f"{'root' if parent.id == 'root' else parent} depends on {dep}, "
+               f"which is already installed {installed_by}")
 
         if existing_node.dep.version and dep.version and existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."

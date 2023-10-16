@@ -21,11 +21,9 @@ def _handle_dep(pkg: DependencyNode):
                 move_in_tree(dest=dest, node=pkg)
                 return
             except ValueError:
-                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed:\
-                     {dest_dep_id} not in tree anymore")
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} not in tree anymore")  # noqa: E501
             except anytree.node.exceptions.LoopError:
-                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed:\
-                     {dest_dep_id} is a child of {pkg.id}")
+                logger.info(f"Attempted to move {pkg.id} to {dest_dep_id} in tree, but failed: {dest_dep_id} is a child of {pkg.id}")  # noqa: E501
 
     # Remove its children
     # While instead of for because during handling children of pkg, pkg.children may change \
@@ -54,13 +52,12 @@ def remove(pkg_id: str, by_user: bool = True):
             logger.warn(f"Attempted to remove {pkg_id} which is not installed")
         return
 
-    # If package was not installed by user directly, warn and ask if he really wants to \
+    # If package was not installed by user directly, warn and ask if he really wants to
     # since it will probably break package that installed it
     if by_user and dep_node.depth > 1:
         decision = ""
         while decision not in ['y', 'n']:
-            decision = input(f"{dep_node.ppath} depends on {pkg_id}. Removing {pkg_id} could lead to \
-                {dep_node.parent} not working correctly anymore. Do you want to continue? [y / n]:").lower()
+            decision = input(f"{dep_node.ppath} depends on {pkg_id}. Removing {pkg_id} could lead to {dep_node.parent} not working correctly anymore. Do you want to continue? [y / n]:").lower()  # noqa: E501
         if decision == 'n':
             logger.info(f"Removing {pkg_id} aborted due to user decision")
             return

@@ -1,12 +1,14 @@
 import os
 import shutil
+import tempfile
 import unittest
-from unittest.mock import patch, call
-from src.models.Dependency import Dependency, DownloadedDependency
+from unittest.mock import call, patch
+
+from anytree import Node
+
 from src.core import LockFile
 from src.core.lpm import lpm
-from anytree import Node
-import tempfile
+from src.models.Dependency import Dependency, DownloadedDependency
 
 
 class InstallPkgTest(unittest.TestCase):
@@ -17,8 +19,8 @@ class InstallPkgTest(unittest.TestCase):
 
         # Create a temporary directory
         self.test_dir = tempfile.mkdtemp()
+        os.chdir(self.test_dir)
         # self.test_dir = os.path.abspath('testdir')
-        # os.mkdir(self.test_dir)
         # os.chmod(self.test_dir, 0o755)
 
     def tearDown(self):
@@ -41,7 +43,7 @@ class InstallPkgTest(unittest.TestCase):
 
         extract_dependencies_mock.side_effect = lambda dep: [depB] if dep.id == 'A' else [depA]
         
-        def PackageInstaller_sideeffect(dep, accept_prompts: bool = False):
+        def PackageInstaller_sideeffect(dep, accept_prompts: bool = False, src=''):
             return DownloadedDependency(dep, "path", "https://download", 'path/on/ctan')
         install_spec_pkg_mock.side_effect = PackageInstaller_sideeffect
         CTAN_id_to_name_mock.return_value = ""

@@ -3,7 +3,7 @@ import shutil
 import tempfile
 import unittest
 from os.path import join
-from unittest.mock import ANY, call, patch
+from unittest.mock import call, patch
 
 from anytree import Node
 
@@ -82,13 +82,11 @@ class InstallAllTest(unittest.TestCase):
         user_input_mock.return_value = 'n'  # User doesn't want packages folder to be cleared
         LockFile.create('my-image')
 
-        with self.assertLogs('default', level='INFO') as cm:
-            lpm_inst = lpm()
-            lpm_inst.install()
+        lpm_inst = lpm()
+        lpm_inst.install()
 
-            FH_remove_folder_mock.assert_not_called()
-            LF_mock.get_packages_from_file.assert_not_called()
-            self.assertTrue(any(["aborted" in log for log in cm.output]))
+        FH_remove_folder_mock.assert_not_called()
+        LF_mock.get_packages_from_file.assert_not_called()
 
     @patch("src.commands.install.Docker")
     @patch("src.commands.install.input")

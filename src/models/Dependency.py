@@ -148,8 +148,7 @@ def serialize_dependency(elem: any):
             'version': {'date': elem.version.date, 'number': elem.version.number},
             'alias': elem.alias
         }
-    logger.warning(f"Object of type '{elem.__class__.__name__}' is not JSON serializable: {str(elem)}.\
-                    Attempting to return str({elem.__class__.__name__})")
+    logger.warning(f"Object of type '{elem.__class__.__name__}' is not JSON serializable: {str(elem)}. Attempting to return str({elem.__class__.__name__})")  # noqa: E501
     try:
         return str(elem)
     except Exception:

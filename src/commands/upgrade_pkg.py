@@ -19,8 +19,7 @@ def _handle_dep(dep: DependencyNode):
     if dep.dependents:
         decision = ''
         while decision not in ['y', 'n']:
-            decision = input(f"{len(dep.dependents)} packages depend on {dep.id}. Upgrading it might break them. \
-                             Do you want to continue? [y / n]: ").lower()
+            decision = input(f"{len(dep.dependents)} packages depend on {dep.id}. Upgrading it might break them. Do you want to continue? [y / n]: ").lower()  # noqa: E501
         if decision == 'n':
             logger.info("Upgrade aborted due to user decision")
             return
