@@ -28,7 +28,7 @@ class ReproducibilityTest(unittest.TestCase):
     
     @parameterized.expand([
         ['amsmath', ['amsmath'], '\\begin{equation*}\n  a=b\n\\end{equation*}'],
-        ['tikz', ['tikz'], '\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}'],
+        ['tikz', ['tikz'], '\\begin{tikzpicture}\n    \\filldraw[color=red!60, fill=red!5, very thick](-1,0) circle (1.5);\n\\end{tikzpicture}'], # Tikz doesn't fail here. I think because epstopdf-base is only needed when compiling to pdf
         ['3 packages', ['amsmath', 'listings', 'longtable'], '\\begin{equation*}\n  a=b\n\\end{equation*}\n\\begin{lstlisting}\n    import numpy as np\n\\end{lstlisting}'], 
         ['4 packages', ['hyperref', 'siunitx', 'multirow', 'url'], '\\url{https://www.example.com}\n\\SI{42}{\\meter}\n\\href{https://www.example.com}{Example Website}']
     ])
@@ -42,7 +42,7 @@ class ReproducibilityTest(unittest.TestCase):
         ## Create new project
         self._create_file_using_packages(file_name, packages, text)
         lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
+        lpm_inst.init()
 
         ## Install packages
         for package in packages:

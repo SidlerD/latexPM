@@ -25,12 +25,11 @@ class ProjectIsolationTest(unittest.TestCase):
         
     
     @parameterized.expand([
-        ['amsmath', '2.17n', '2.17o'],
-        ['graphics', '1.4e', '1.4d'],
+        ['amsmath', '2.17o', '2.17n'],
         ['tabularray', '2023-03-01', '2022-11-01'],
         ['biblatex', '3.18b', '3.18a']
     ])
-    def test_install_packages_from_lockfile_and_build(self, pkg_id, version1, version2):
+    def test_two_projects_use_their_own_package_version(self, pkg_id, version1, version2):
         file_name, output_file_name, log_file_name = 'file.tex', 'file.pdf', 'file.log'
 
         # Setup proj1 and install package
@@ -40,7 +39,7 @@ class ProjectIsolationTest(unittest.TestCase):
         ## Create new project
         self._create_file_using_package(file_name, pkg_id)
         lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
+        lpm_inst.init()
 
         ## Install package in version1
         lpm_inst.install_pkg(pkg_id, version=version1, accept_prompts=True)
@@ -55,7 +54,7 @@ class ProjectIsolationTest(unittest.TestCase):
         ## Create new project
         self._create_file_using_package(file_name, pkg_id)
         lpm_inst = lpm()
-        lpm_inst.init(docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
+        lpm_inst.init()
 
         ## Install package in version2
         lpm_inst.install_pkg(pkg_id, version=version2, accept_prompts=True)

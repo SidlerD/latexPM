@@ -3,7 +3,6 @@ import os
 import shutil
 import docker
 
-# docker_image = 'registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small'
 docker_image = 'camilstaps/texlive:minimal'
 
 tex_file_format = '\n'.join([

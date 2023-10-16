@@ -12,7 +12,6 @@ tmp_dir = tempfile.mkdtemp()
 old_cwd = os.getcwd()
 
 filename = 'build.dat'
-docker_image = 'registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small'
 
 def _setup():
     if not os.path.exists(tmp_dir):
@@ -20,7 +19,7 @@ def _setup():
     os.chdir(tmp_dir)
 
     # Initialize a project (pulls docker image to build in + required packages)
-    init(image_name=docker_image)
+    init()
 
     # Install needed package (+ dependencies)
     install_pkg(pkg_id='amsmath')

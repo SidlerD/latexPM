@@ -71,7 +71,7 @@ class InstallPkgTest(unittest.TestCase):
         
         # Initialize a project with lpm
         lpm_inst = lpm()
-        lpm_inst.init()#docker_image='registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small')
+        lpm_inst.init()
 
         # Install the needed package
         lpm_inst.install_pkg(pkg_name, accept_prompts=True)
