@@ -14,7 +14,6 @@ _root = None
 
 
 # TODO: Add functions for adding/removing/moving a DependencyNode, so that functionality is all in this file
-# URGENT: Create a class for the normal requirements.json file, since that needs to be updated too.
 def get_name() -> str:
     """Get name of lock file
 
@@ -23,6 +22,7 @@ def get_name() -> str:
     """
     return lock_file_name
 
+
 def exists() -> bool:
     """Check if lock file already exists
 
@@ -30,6 +30,7 @@ def exists() -> bool:
         bool: True if file with name of lockfile exists in cwd
     """
     return os.path.exists(lock_file_name)
+
 
 def create(docker_image: str|None) -> None:
     """Create empty lockfile, do nothing if it already exists
@@ -46,6 +47,7 @@ def create(docker_image: str|None) -> None:
         _root = Node('root', id='root', dependents=[], docker_image=docker_image)
         write_tree_to_file()
 
+
 def get_docker_image() -> str|None:
     """Get name of Docker image specified in lock file
 
@@ -54,6 +56,7 @@ def get_docker_image() -> str|None:
     """
     root = read_file_as_tree()
     return root.docker_image if hasattr(root, 'docker_image') else None
+
 
 def update_image(image_name: str) -> None:
     """Update docker image in Lockfile to image_name
@@ -66,6 +69,8 @@ def update_image(image_name: str) -> None:
         return
     
     read_file_as_tree()
+
+    # Ask for permission to overwrite docker image specifed in lockfile
     old_image = get_docker_image()
     if old_image:
         decision = '' 
@@ -74,9 +79,11 @@ def update_image(image_name: str) -> None:
         if decision == 'n':
             return
     
+    # Change docker_image, persist changes
     _root.docker_image = image_name
     logger.debug(f"Changed docker-image from {old_image} to {image_name}")
     write_tree_to_file()
+
 
 def get_packages_from_file() -> list[DependencyNode]:
     """List installed packages
@@ -99,7 +106,6 @@ def write_tree_to_file() -> None:
     """Persist the tree described by LockFile._root to the file"""
     logger.info(f"Writing dependency tree to lock-file at {os.getcwd()}")
 
-    # exporter = JsonExporter(indent=2)
     exporter = JsonExporter(indent=2, default=serialize_dependency)
     data = exporter.export(_root)
     with open(lock_file_name, "w") as f:
@@ -195,6 +201,7 @@ def find_by_id(pkg_id: str) -> DependencyNode:
 
     return occurences[0] if occurences else None
 
+
 def remove_from_dependents(pkg_id: str) -> None:
     """Remove pkg_id from node.dependents for all nodes in tree
 
@@ -208,6 +215,7 @@ def remove_from_dependents(pkg_id: str) -> None:
             if pkg_id in node.dependents:
                 node.dependents.remove(pkg_id)
                 logger.debug(f"Removed {pkg_id} from {node.id}.dependents")
+
 
 # TODO: Find out how to do this using anytree-functionality and ending up with a tree of DependencyNodes that have .dep as DownloadedDependency, not dict
 def _construct_tree(data, parent=None):

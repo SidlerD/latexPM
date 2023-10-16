@@ -6,7 +6,6 @@ import zipfile
 import requests
 import logging
 from src.API import CTAN
-from src.core import config
 from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency
 
@@ -27,15 +26,16 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
         str: Path to folder that now contains the package files
     """
     # Extract the filename from the URL
-    pkg_folder = abspath(config.get_package_dir())
+    pkg_folder = abspath('packages')
 
     
-    # Use pkg.name for normal pkgs, name of collection for packages that are in collection
+    # Figure out name to use for package
     try:
         pkgInfo = CTAN.get_package_info(dep.id)
+        # Use pkg.name for normal pkgs, name of collection for packages that are in collection
         if 'topics' in pkgInfo and 'collections' in pkgInfo['topics']:
             ctan_path = pkgInfo['ctan']['path']
-            # problem: Last elem of ctan path is sometimes not pkg-name. E.g. tikz, where ctan path is /graphics/pgf/base
+            # Problem: Last elem of ctan path is sometimes not pkg-name. E.g. tikz, where ctan path is /graphics/pgf/base
             name = ctan_path.split('/')[-1]
         else:
             name = dep.name
@@ -44,7 +44,6 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
         name = dep.name
 
     download_folder = join(pkg_folder, name)
-
     zip_file_name = join(download_folder, basename(download_folder) + '.zip')
 
     # Download the ZIP file
@@ -58,15 +57,16 @@ def download_and_extract_zip(url: str, dep: Dependency) -> str:
     with open(zip_file_name, 'wb') as file:
         file.write(response.content)
 
-    # Extract the files into a folder
-    # This sometimes fails, but in those cases opening .zip with Windows doesn't work either. Seems like some downloads return faulty zips
+    # Extract the ZIP file into a folder
+    # This sometimes fails, but in those cases opening .zip with Windows doesn't work either.
     with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
         zip_ref.extractall(download_folder)
 
-    # Return the path to the folder
+    # Organize and install the package's files
     os.remove(zip_file_name)
     organize_files(download_folder, tds=url.endswith('.tds.zip'))
 
+    # Return the path to the folder
     return download_folder
 
 
@@ -85,12 +85,13 @@ def organize_files(folder_path: str, tds: bool):
         raise OSError(f"Error while cleaning up download folder: {folder_path} is not a valid path")
 
     files_path = folder_path
+
+    # If a package follows TDS, we only need the files in subfolder 'tex' and don't need to try and build the source files
     if tds:
         # TDS-packaged packages (TEX Directory Standard) follow a certain folder structure:
-        #   the subfolder 'tex' contains the built files that latex uses, other folders contain the source code and documentation
-        # For more information, see https://ctan.org/TDS-guidelines
+        #   The subfolder 'tex' contains the built files that latex uses, other folders contain the source code and documentation
+        #   For more information, see https://ctan.org/TDS-guidelines
 
-        # If a package is tds-packaged, we only need the files in subfolder 'tex' and don't need to try and build the source files
         if exists(join(folder_path, 'tex')):
             # Inspect files in files_path, but move them to folder_path and delete subfolders of folder_path
             files_path = join(folder_path, 'tex')
@@ -99,11 +100,13 @@ def organize_files(folder_path: str, tds: bool):
     relevant_files = []
     for root, dirs, files in os.walk(files_path):
         relevant_files.extend([join(root, file) for file in files])
+    
     # Move files to top of folder
     for ins_file in relevant_files:
         destination = os.path.join(folder_path, os.path.basename(ins_file))
         shutil.move(ins_file, destination)
-    # Remove the folders
+    
+    # Remove the subfolders
     folders = []
     for f in os.listdir(folder_path):
         path = join(folder_path, f)
@@ -112,29 +115,30 @@ def organize_files(folder_path: str, tds: bool):
     for folder in folders:
         shutil.rmtree(folder)
 
+    # Only style-files left, nothing to install
     if tds:
         return
 
     # Convert .ins and .dtx to .sty and .cls
     old_cwd = os.getcwd()
     os.chdir(folder_path)
-
     ins_files = [abspath(file) for file in os.listdir() if isfile(abspath(file)) and file.endswith('.ins')]
     dtx_files = [abspath(file) for file in os.listdir() if isfile(abspath(file)) and file.endswith('.dtx')]
 
+    # Install .ins files
     if len(ins_files) > 0:
-        for ins_file in ins_files:  # Should normally only be 1 ins-file i think
+        for ins_file in ins_files: 
             name = (basename(ins_file)).split('.')[0]
             logger.debug(f"Creating sty-files from {basename(ins_file)}")
 
-            # May overwrite existing .sty files, but cant check for that since they could have different names than the .dtx they were built from
             try:
-                # DECIDE: Could parse sty-file names that are generated from ins-file and delete them, so that prompt does not occur
-                # In case of sty-file already existing, enter 'n' instead of waiting for timeout. Problem: There's also cases where prompt is for something else, where I do not want to say 'n'
+                # In case of sty-file already existing, enter 'n' instead of waiting for timeout. 
+                # Problem: There's also cases where prompt is for something else, where I do not want to say 'n'
                 subprocess.run(['latex', basename(ins_file)], stdout=subprocess.DEVNULL, timeout=3, input=b'n\n')
             except Exception as e:
-                # Possible reasons for timeout: File should not be executed, .sty file already exists and user gets prompted wheter or not to overwrite
+                # Possible reasons for timeout: File should not be executed, .sty file already exists etc.
                 logger.warning(f"Problem while installing {name}.ins: {e}")
+    # Install dtx files only if no ins-files found
     else:
         for dtx_file in dtx_files:
             name = (basename(dtx_file)).split('.')[0]
@@ -145,5 +149,4 @@ def organize_files(folder_path: str, tds: bool):
                 logger.warning(f"Problem while trying to generate sty-files from {name}.dtx: {e}")
 
     # TODO: Remove files I know are unnecessary (e.g. pdf, log, aux)
-
     os.chdir(old_cwd)

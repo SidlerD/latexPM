@@ -1,9 +1,7 @@
-import os
-from os.path import isdir, join, abspath
 import logging
-from anytree import RenderTree, AsciiStyle, LevelOrderIter
+from anytree import RenderTree, LevelOrderIter
 
-from src.core import LockFile, config
+from src.core import LockFile
 from src.models.Dependency import DependencyNode
 
 logger = logging.getLogger("default")

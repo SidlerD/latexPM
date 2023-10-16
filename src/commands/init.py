@@ -1,7 +1,5 @@
-import json
 import os
 import docker
-from src.API import CTAN
 
 from src.core import LockFile
 from src.core import Docker
@@ -38,7 +36,7 @@ def init(image_name: str):
         install()
         return 
     
-    # Lockfile does not exist    
+    # Lockfile does not exist: Figure out docker image to use and pull it
     try:
         image_name = Docker.get_image(image_name)
     except docker.errors.ImageNotFound as e:
@@ -56,4 +54,4 @@ def init(image_name: str):
     install_pkg('graphics-cfg', accept_prompts=True) 
     install_pkg('graphics-def', accept_prompts=True) 
 
-    # TODO: Add other packages from bundle "required"
+    # TODO: Possibly add other packages from bundle "required"

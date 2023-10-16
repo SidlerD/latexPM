@@ -25,10 +25,10 @@ def install():
     try:
         Docker.get_image(lockfile_image)
     except docker.errors.ImageNotFound as e:
-        logger.error("Invalid docker image in lock file")
+        logger.error("Invalid docker image in lock file: " + lockfile_image)
         return
 
-    # Clear packages folder
+    # Clear packages folder after asking permission to do so
     if os.path.exists('packages') and len(os.listdir('packages')) != 0:
         decision = ""
         while decision not in ['y', 'n']:
@@ -50,8 +50,10 @@ def install():
             # Change path attr of node in Lockfile since it is now installed in a different location
             pkg_node.dep.path = downloaded_dep.path
 
+        # Write dependency tree to lockfile to persist updated path attributes of nodes
         LockFile.write_tree_to_file()
+
     except Exception as e:
         logger.error("Error while installing packages from lock-file")
         logger.error(e)
-        # TODO: Do I remove all the installed packages here?
+        # DECIDE: Do I remove all the installed packages here?

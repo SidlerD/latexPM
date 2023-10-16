@@ -96,7 +96,6 @@ class DependencyNode(NodeMixin):
             children (DependencyNode|Node, optional): Children of package in tree (i.e. its dependencies)
             dependents (list[str], optional): Other packages that depend on this package
         """
-        # super(Dependency, self).__init__()
         self.id = dep.id
         self.dep = dep
         self.parent = parent

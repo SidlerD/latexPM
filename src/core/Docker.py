@@ -1,4 +1,3 @@
-import json
 import datetime as dt
 from src.helpers.Logger import make_logger
 import docker
@@ -19,13 +18,21 @@ def get_image(image_name: str = None) -> str:
     """
     client = docker.from_env()
     
-    if not image_name:
+
+    if image_name:
+        # Pull the provided image from Docker
+        logger.info(f"Pulling {image_name}. This can take a long time the first time it is done")
+        client.images.pull(image_name)
+        logger.debug("Docker image pulled successfully")
+
+    elif not image_name:
+        # Figure out which image to pull
         logger.info(f"Searching for and pulling Docker image. This can take a long time")
 
         image_url_format = 'registry.gitlab.com/islandoftex/images/texlive:TL%d-%d-%02d-%02d-small'
         
+        # Iterate over a week worth of dates, build image name based on date
         curr_date = dt.date.today()
-
         possible_image_names = []
         last_date = curr_date - dt.timedelta(days=8)
         while curr_date > last_date:
@@ -34,7 +41,7 @@ def get_image(image_name: str = None) -> str:
 
             curr_date -= dt.timedelta(days=1)
 
-        # Find name that exists
+        # Try to pull generated image names until one exists and is successfully pulled
         found = False
         for image_name in possible_image_names:
             try:
@@ -48,11 +55,6 @@ def get_image(image_name: str = None) -> str:
             raise docker.errors.ImageNotFound("Couldn't find a suitable Docker image to use.")
         
         logger.info(f"Using {image_name} as Docker Image")
-
-    elif image_name:
-        logger.info(f"Pulling {image_name}. This can take a long time the first time it is done")
-        client.images.pull(image_name)
-        logger.debug("Docker image pulled successfully")
 
     logger.debug(f"Finished pulling {image_name}. Using as Docker image for project")
     return image_name

@@ -1,5 +1,3 @@
-import json
-from os.path import isfile, abspath
 import requests
 import logging
 from functools import cache
@@ -10,7 +8,7 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 from src.models.Version import Version
 
 _ctan_url = "https://www.ctan.org/"
-logger = logging.getLogger("default") # DECIDE: Is this good??
+logger = logging.getLogger("default")
 
 @cache
 def get_id_from_name(name: str) -> str:
@@ -118,7 +116,7 @@ def _get_download_url(dep, pkgInfo):
     # Extract download path
     if "install" in pkgInfo:
         path = pkgInfo['install']
-        url = "https://mirrors.ctan.org/install" + path # Should end in .zip or similar
+        url = "https://mirrors.ctan.org/install" + path # Ends in .zip or similar
     
     elif "ctan" in pkgInfo:
         path = pkgInfo['ctan']['path']

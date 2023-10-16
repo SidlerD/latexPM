@@ -61,6 +61,7 @@ def _get_url_for_version(dep: Dependency, closest: bool) -> str:
 def get_alias_of_package(id='', name='') -> dict:
     """Some packages are not available on CTAN directly, but are under another package, where they are listed as 'aliases'
     Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. Therefore, we should download pgf to get tikz"""
+    
     logger.debug(f'Searching for {id if id else name} in aliases')
     if not id and not name:
         raise ValueError("Please provide valid argument for at least one of id and name")
@@ -70,6 +71,6 @@ def get_alias_of_package(id='', name='') -> dict:
 
     response = requests.get(url)
     if not response.ok:
-        raise ValueError(f"{id if id else name} has no alias")  # TODO: Raise something more specific here
+        raise ValueError(f"{id if id else name} has no alias")
 
     return response.json()
