@@ -24,7 +24,7 @@ def install():
         return
     try:
         Docker.get_image(lockfile_image)
-    except docker.errors.ImageNotFound as e:
+    except docker.errors.ImageNotFound:
         logger.error("Invalid docker image in lock file: " + lockfile_image)
         return
 
@@ -32,7 +32,8 @@ def install():
     if os.path.exists('packages') and len(os.listdir('packages')) != 0:
         decision = ""
         while decision not in ['y', 'n']:
-            decision = input("Installing from Lockfile means all packages that are currently installed will be removed. Do you want to proceed? [y / n]: ").lower()
+            decision = input("Installing from Lockfile means all packages that are currently installed\
+                              will be removed. Do you want to proceed? [y / n]: ").lower()
 
         if decision == 'n':
             logger.info("Install aborted due to user decision")
@@ -44,7 +45,7 @@ def install():
         # Get list of all installed packages from Lockfile
         to_install_nodes = LockFile.get_packages_from_file()
 
-        # Install those packages 
+        # Install those packages
         for pkg_node in to_install_nodes:
             downloaded_dep = PackageInstaller.install_specific_package(pkg_node, accept_prompts=True)
             # Change path attr of node in Lockfile since it is now installed in a different location

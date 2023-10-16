@@ -5,6 +5,7 @@ from src.models.Version import Version
 
 logger = logging.getLogger("default")
 
+
 class Dependency:
     """A class for modeling a package or dependency
 
@@ -29,7 +30,7 @@ class Dependency:
         self.alias = alias if alias else {}
 
     def __eq__(self, other):
-        if type(other) != Dependency:
+        if not isinstance(other, Dependency):
             return False
         return self.id == other.id and self.version == other.version
 
@@ -40,7 +41,7 @@ class Dependency:
         repr = [self.name]
         if self.alias:
             repr.append(f"({self.alias['id'] if self.alias['id'] else self.alias['name']})")
-        if self.version != None:
+        if self.version != None:  # noqa: E711
             repr.append(': ' + str(self.version))
         return ''.join(repr)
 
@@ -77,9 +78,10 @@ class DownloadedDependency(Dependency):
     def __repr__(self) -> str:
         return f"_{self.name}{self.version}"
 
+
 class DependencyNode(NodeMixin):
     """ Class for a node representing a package in the dependency tree
-    
+
     Attributes:
         id (str): Id of node, which is equal to dep.id
         dep (DownloadedDependency): Package that node represents
@@ -87,6 +89,8 @@ class DependencyNode(NodeMixin):
         children (DependencyNode|Node, optional): Children of package in tree (i.e. its dependencies)
         dependents (list[str], optional): Other packages that depend on this package
     """
+    # Can't do [] as default param for dependents because is mutable:
+    # https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
     def __init__(self, dep: DownloadedDependency, parent, children=None, dependents: list[str] = None):
         """ Adds a node to the tree representign the passed package
 
@@ -101,7 +105,7 @@ class DependencyNode(NodeMixin):
         self.parent = parent
         if children:
             self.children = children
-        self.dependents = dependents if dependents else []  # Can't do as default param because is mutable: https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments
+        self.dependents = dependents if dependents else []
 
     def __repr__(self):
         if self.dependents:
@@ -113,7 +117,7 @@ class DependencyNode(NodeMixin):
         """Pretty path, use for printing path to node\n
         Example: acro:  --> translations:  --> (pdftexcmds: )"""
         return ' > '.join([str(node) if hasattr(node, 'id') else node.name for node in self.path][1:])
-    
+
     def add_dependent(self, node_id: str):
         "Adds node_id to self.dependents if not already in self.dependents"
         if node_id not in self.dependents:
@@ -125,7 +129,7 @@ def serialize_dependency(elem: any):
         return str(elem)
     if isinstance(elem, datetime):
         return str(elem.date())
-    if type(elem) == DownloadedDependency:
+    if isinstance(elem, DownloadedDependency):
         return {
             'id': elem.id,
             'name': elem.name,
@@ -135,14 +139,15 @@ def serialize_dependency(elem: any):
             'url': elem.url,
             'ctan_path': elem.ctan_path
         }
-    if type(elem) == Dependency:
+    if isinstance(elem, Dependency):
         return {
             'id': elem.id,
             'name': elem.name,
             'version': {'date': elem.version.date, 'number': elem.version.number},
             'alias': elem.alias
         }
-    logger.warning(f"Object of type '{elem.__class__.__name__}' is not JSON serializable: {str(elem)}. Attempting to return str({elem.__class__.__name__})")
+    logger.warning(f"Object of type '{elem.__class__.__name__}' is not JSON serializable: {str(elem)}.\
+                    Attempting to return str({elem.__class__.__name__})")
     try:
         return str(elem)
     except Exception:

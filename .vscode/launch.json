@@ -141,7 +141,7 @@
             "type": "python",
             "console": "integratedTerminal",
             "request": "launch",
-            "program": "C:\\Users\\Domin\\Documents\\UZH_Docs\\BA\\code\\Prototype\\main.py",
+            "program": "C:\\Users\\Domin\\Desktop\\Projects\\latexPM\\main.py",
             "args": "${input:fileArguments}",
             "justMyCode": true
         },

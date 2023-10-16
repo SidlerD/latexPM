@@ -12,21 +12,21 @@ from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
 logger = logging.getLogger("default")
 
 
-def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts:bool, src:str):
+def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, accept_prompts: bool, src: str):
     pkgInfo = CTAN.get_package_info(dep.id)
     ctan_path = pkgInfo['ctan']['path'] if 'ctan' in pkgInfo else None
 
     # If dependency is already installed, warn and return
     existing_node = LockFile.is_in_tree(dep, check_ctan_path=ctan_path)
-    newer_than = lambda dateA, dateB: dateA and dateB and dateA > dateB
-   
+    newer_than = lambda dateA, dateB: dateA and dateB and dateA > dateB  # noqa: E731
+
     # If version to install newer than installed version, remove installed version
     if existing_node and newer_than(dep.version.date, existing_node.dep.version.date):
-        # If version to install > installed version, version to install will 
+        # If version to install > installed version, version to install will
         # satisfy every requirepackage{}[installed_version], according to syntax of date in \requirepackage
         # Therefore, remove installed version and install the newer requested version.
-        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}." \
-                    f" Requested install in version {dep.version}." \
+        logger.info(f"{dep.id} is installed in version {existing_node.dep.version}."
+                    f" Requested install in version {dep.version}."
                     f" Installing  in {dep.version} because it is newer")
         remove(pkg_id=dep.id, by_user=False)
     # If already installed in equal-or-newer version: Don't install
@@ -36,16 +36,17 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         if hasattr(existing_node, 'dependents'):
             if existing_node.parent.id != parent.id:
                 existing_node.add_dependent(parent.id)
-        
+
         # Build message to show to user
         if existing_node.id != dep.id:
             installed_by = f"because {existing_node.id} has the same path on CTAN: {existing_node.dep.ctan_path}"
-        elif type(existing_par) == Node:
+        elif existing_node.id == 'root':
             installed_by = "as requested by the user"
         else:
             installed_by = "by " + existing_par.ppath
-        
-        msg = f"""{'root' if parent.id == 'root' else parent} depends on {dep}, which is already installed {installed_by}"""
+
+        msg = f"""{'root' if parent.id == 'root' else parent} depends on {dep}, \
+            which is already installed {installed_by}"""
 
         if existing_node.dep.version and dep.version and existing_node.dep.version != dep.version:
             msg += f", but in version {existing_node.dep.version}. Cannot install two different versions of a package."
@@ -54,7 +55,7 @@ def _handle_dep(dep: Dependency, parent: DependencyNode | Node, root: Node, acce
         logger.info(f"Skipped install of {dep}")
         return
 
-    # Download package 
+    # Download package
     downloaded_dep = PackageInstaller.install_specific_package(dep, accept_prompts=accept_prompts, src=src)
 
     # Add package to tree

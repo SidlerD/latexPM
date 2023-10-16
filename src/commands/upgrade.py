@@ -4,6 +4,7 @@ from src.commands.upgrade_pkg import upgrade_pkg
 
 logger = logging.getLogger("default")
 
+
 def upgrade():
     """Upgrade all installed packages to newest version
     """
@@ -16,6 +17,6 @@ def upgrade():
         except Exception as e:
             failed_deps.append(dep)
             logger.warning(f"Couldn't upgrade {dep.id}. Will skip to next one ({e})")
-    
-    if(len(failed_deps) > 0):
+
+    if len(failed_deps) > 0:
         logger.info(f"Upgraded {len(all_deps) - len(failed_deps)} of {len(all_deps)} packages")

@@ -11,18 +11,19 @@ logger = logging.getLogger("default")
 
 
 def _handle_dep(dep: DependencyNode):
-          
-    # TODO: Could / should check if dependents are okay with new version, if so we don't need to warn user and ask for input
+
+    # TODO: Could/should check if dependents are okay with new version, if so don't need to warn user and ask for input
     # If other packages depend on this package, ask user if he wants to proceed
     if dep.dependents:
         decision = ''
         while decision not in ['y', 'n']:
-            decision = input(f"{len(dep.dependents)} packages depend on {dep.id}. Upgrading it might break them. Do you want to continue? [y / n]: ").lower()
-        if(decision == 'n'): 
-            logger.info(f"Upgrade aborted due to user decision")
+            decision = input(f"{len(dep.dependents)} packages depend on {dep.id}. Upgrading it might break them. \
+                             Do you want to continue? [y / n]: ").lower()
+        if decision == 'n':
+            logger.info("Upgrade aborted due to user decision")
             return
-    
-    # TODO: Optimize this by comparing dependencies of old and new version, 
+
+    # TODO: Optimize this by comparing dependencies of old and new version,
     #       move identical deps from old version to new version
 
     # Remove old version
@@ -42,30 +43,30 @@ def upgrade_pkg(pkg_id: str):
         try:
             name = CTAN.get_name_from_id(pkg_id)
             dep = Dependency(pkg_id, name)
-        except CtanPackageNotFoundError as e:
+        except CtanPackageNotFoundError:
             logger.info(f"Cannot find {pkg_id}. Searching in aliases...")
             alias = VPTAN.get_alias_of_package(id=pkg_id)
             alias_id, alias_name = alias['id'], alias['name']
             pkg_id, name = alias['aliased_by']['id'], alias['aliased_by']['name']
-            dep = Dependency(pkg_id, name, alias = {'id': alias_id, 'name': alias_name})
+            dep = Dependency(pkg_id, name, alias={'id': alias_id, 'name': alias_name})
 
         # Check if package is installed
         node_exists = LockFile.is_in_tree(dep)
         if not node_exists:
             logger.warning(f"Upgrading {pkg_id} not possible: {pkg_id} not found in {LockFile.get_name()}")
             return
-        
-        old_version = node_exists.dep.version if hasattr(node_exists, 'dep') else Version() 
+
+        old_version = node_exists.dep.version if hasattr(node_exists, 'dep') else Version()
         new_version = CTAN.get_version(pkg_id)
 
         # If package already in newest version: Abort
-        if(old_version == new_version):
+        if old_version == new_version:
             logger.warning(f"{dep} is already in newest version, upgrading not possible")
             return
-        
+
         # Update package
         logger.info(f"Upgrading {pkg_id} from {old_version} to {new_version}")
-        _handle_dep(node_exists) 
+        _handle_dep(node_exists)
 
         # Persist dependency tree
         LockFile.write_tree_to_file()

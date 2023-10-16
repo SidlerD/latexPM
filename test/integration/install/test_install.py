@@ -78,7 +78,7 @@ class InstallAllTest(unittest.TestCase):
         os.mkdir('packages')
         open(join('packages', 'file.txt'), 'x').close()
         user_input_mock.return_value = 'n'  # User doesn't want packages folder to be cleared
-
+        LockFile.create('my-image')
 
         with self.assertLogs('default', level='INFO') as cm:
             lpm_inst = lpm()

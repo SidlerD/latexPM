@@ -11,13 +11,14 @@ _base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.
 logger = logging.getLogger("default")
 
 
-def download_pkg(dep: Dependency, pkgInfo:dict = None, closest=False, url:str=None) -> DownloadedDependency:
+def download_pkg(dep: Dependency, pkgInfo: dict = None, closest=False, url: str = None) -> DownloadedDependency:
     """Download package from VPTAN, return DownloadedDependency containg details about download
 
     Args:
         dep (Dependency): Package to download
         pkgInfo (dict, optional): CTAN response from /packages for package
-        closest (bool, optional): If True and version not available on CTAN, download the closest later version of the package
+        closest (bool, optional): If True and version not available on CTAN, \
+            download the closest later version of the package
         url (str, optional): If present, use this url to download package from
 
     Returns:
@@ -59,9 +60,11 @@ def _get_url_for_version(dep: Dependency, closest: bool) -> str:
 
 
 def get_alias_of_package(id='', name='') -> dict:
-    """Some packages are not available on CTAN directly, but are under another package, where they are listed as 'aliases'
-    Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. Therefore, we should download pgf to get tikz"""
-    
+    """Some packages are not available on CTAN directly, but are under another package, \
+        where they are listed as 'aliases'
+    Example: tikz is not available on CTAN as package, but is listed in alias field of pgf. \
+        Therefore, we should download pgf to get tikz"""
+
     logger.debug(f'Searching for {id if id else name} in aliases')
     if not id and not name:
         raise ValueError("Please provide valid argument for at least one of id and name")

@@ -32,7 +32,7 @@ def exists() -> bool:
     return os.path.exists(lock_file_name)
 
 
-def create(docker_image: str|None) -> None:
+def create(docker_image: str | None) -> None:
     """Create empty lockfile, do nothing if it already exists
 
     Args:
@@ -48,7 +48,7 @@ def create(docker_image: str|None) -> None:
         write_tree_to_file()
 
 
-def get_docker_image() -> str|None:
+def get_docker_image() -> str | None:
     """Get name of Docker image specified in lock file
 
     Returns:
@@ -67,18 +67,18 @@ def update_image(image_name: str) -> None:
     if not image_name:
         logger.debug("Cannot update LockFile.docker_image with empty image_name")
         return
-    
+
     read_file_as_tree()
 
     # Ask for permission to overwrite docker image specifed in lockfile
     old_image = get_docker_image()
     if old_image:
-        decision = '' 
+        decision = ''
         while decision not in ['y', 'n']:
             decision = input(f"Lockfile specifies {old_image} as docker image. Do you want to overwrite?: ").lower()
         if decision == 'n':
             return
-    
+
     # Change docker_image, persist changes
     _root.docker_image = image_name
     logger.debug(f"Changed docker-image from {old_image} to {image_name}")
@@ -124,7 +124,7 @@ def read_file_as_tree() -> Node:
     if not os.path.exists(lock_file_name) or _file_is_empty(lock_file_name):
         create(docker_image=None)
         return _root
-    
+
     # Read the JSON file
     with open(lock_file_name, "r") as file:
         json_data = json.load(file)
@@ -141,7 +141,7 @@ def read_file_as_tree() -> Node:
     return _root
 
 
-def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode|None:
+def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode | None:
     """Find package by its id in tree, return its node or None if not found
 
     Args:
@@ -156,7 +156,7 @@ def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode|N
     _root = read_file_as_tree()
 
     # ASSUMPTION: Don't need to check version equality here since I can't install two versions of one package
-    filter = lambda node: (
+    filter = lambda node: (  # noqa: E731
         (
             hasattr(node, 'dep')
         )
@@ -166,7 +166,8 @@ def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode|N
             )
             or
             (
-                check_ctan_path and node.dep.ctan_path == check_ctan_path  # Has same download-path on ctan if downloadpath provided
+                # Has same download-path on ctan if downloadpath provided
+                check_ctan_path and node.dep.ctan_path == check_ctan_path
             )
         )
 
@@ -176,6 +177,7 @@ def is_in_tree(dep: Dependency, check_ctan_path: str = None) -> DependencyNode|N
         logger.warning(f"{dep} is in tree {len(prev_occurences)} times")
 
     return prev_occurences[0] if prev_occurences else None
+
 
 # TODO: Merge this with is_in_tree
 def find_by_id(pkg_id: str) -> DependencyNode:
@@ -192,7 +194,8 @@ def find_by_id(pkg_id: str) -> DependencyNode:
     """
     global _root
     _root = read_file_as_tree()
-    occurences = findall(_root, filter_=lambda node: hasattr(node, 'id') and node.id == pkg_id or hasattr(node, 'dep') and 'id' in node.dep.alias and node.dep.alias['id'] == pkg_id)
+    occurences = findall(_root, filter_=lambda node: hasattr(node, 'id') and node.id == pkg_id or
+                         hasattr(node, 'dep') and 'id' in node.dep.alias and node.dep.alias['id'] == pkg_id)
 
     if len(occurences) > 1:
         logger.warning(f"{pkg_id} is in tree {len(occurences)} times")
@@ -217,11 +220,13 @@ def remove_from_dependents(pkg_id: str) -> None:
                 logger.debug(f"Removed {pkg_id} from {node.id}.dependents")
 
 
-# TODO: Find out how to do this using anytree-functionality and ending up with a tree of DependencyNodes that have .dep as DownloadedDependency, not dict
+# TODO: Find out how to do this using anytree-functionality and ending up with
+# a tree of DependencyNodes that have .dep as DownloadedDependency, not dict
 def _construct_tree(data, parent=None):
     dep_info = data['dep']
     dep = Dependency(dep_info["id"], dep_info["name"], version=Version(dep_info["version"]), alias=dep_info['alias'])
-    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'], download_url=dep_info['url'], ctan_path=dep_info['ctan_path'])
+    downloaded_dep = DownloadedDependency(dep=dep, folder_path=dep_info['path'],
+                                          download_url=dep_info['url'], ctan_path=dep_info['ctan_path'])
     node = DependencyNode(downloaded_dep, parent=parent, dependents=data['dependents'])
     if "children" in data:
         for child_data in data["children"]:

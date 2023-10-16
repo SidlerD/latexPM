@@ -12,13 +12,16 @@ logger = logging.getLogger("default")
 
 class PackageInstaller:
     @staticmethod
-    def install_specific_package(pkg: Dependency|DependencyNode, accept_prompts: bool = False, src: str = None) -> DownloadedDependency:
+    def install_specific_package(pkg: Dependency | DependencyNode,
+                                 accept_prompts: bool = False, src: str = None) -> DownloadedDependency:
         """Download pkg from CTAN or VPTAN to packages folder, install and organize its files
 
         Args:
-            pkg (Dependency | DependencyNode): Package to install. If type is DependencyNode, use its .dep.url as download-url
+            pkg (Dependency | DependencyNode): Package to install. If type is DependencyNode, \
+                use its .dep.url as download-url
             accept_prompts (bool, optional): If True, user will not be prompted for decisions
-            src (str, optional): Use to specify which repository to download from: possible values: ['VPTAN', 'CTAN', None]
+            src (str, optional): Use to specify which repository to download from: \
+                possible values: ['VPTAN', 'CTAN', None]
 
         Raises:
             DownloadError: Downloaded zip-file cannot be opened
@@ -27,32 +30,32 @@ class PackageInstaller:
             DownloadedDependency
         """
         pkgInfo = CTAN.get_package_info(pkg.id)
-        version_matches = lambda p: "version" in pkgInfo and Version(pkgInfo['version']) == p.version
+        version_matches = lambda p: "version" in pkgInfo and Version(pkgInfo['version']) == p.version  # noqa: E731
 
         try:
             # If package is from Lockfile, use lockfile from url to install it
-            if hasattr(pkg, 'dep') and hasattr(pkg.dep, 'url'): 
+            if hasattr(pkg, 'dep') and hasattr(pkg.dep, 'url'):
                 url = pkg.dep.url
-                if 'ctan' in url and '.zip' in url: # TODO: Implement better check for CTAN vs VPTAN
+                if 'ctan' in url and '.zip' in url:  # TODO: Implement better check for CTAN vs VPTAN
                     downloaded_dep = CTAN.download_pkg(pkg.dep, url=url, pkgInfo=pkgInfo)
                 else:
                     downloaded_dep = VPTAN.download_pkg(pkg.dep, url=url, pkgInfo=pkgInfo, closest=False)
 
-            # Download from CTAN if specifically requested 
+            # Download from CTAN if specifically requested
             # or no version or version from CTAN requested
-            elif src == 'CTAN' or pkg.version == None or version_matches(pkg):
+            elif src == 'CTAN' or pkg.version == None or version_matches(pkg):  # noqa: E711
                 downloaded_dep = CTAN.download_pkg(pkg, pkgInfo=pkgInfo)
 
             # Download from VPTAN specifically requested specific version requested
-            else: 
+            else:
                 try:
                     # Install exact version requested
                     downloaded_dep = VPTAN.download_pkg(pkg, pkgInfo=pkgInfo)
                 except DownloadError:
                     # Version not available: Try to install closest version available
-                    
+
                     # Can only install closest version with dates
-                    if not pkg.version.date: 
+                    if not pkg.version.date:
                         raise
 
                     # Ask permission to install closest later version

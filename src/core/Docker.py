@@ -4,6 +4,7 @@ import docker
 
 logger = make_logger()
 
+
 def get_image(image_name: str = None) -> str:
     """Decide on image to use, pull image and returns its name
 
@@ -17,7 +18,6 @@ def get_image(image_name: str = None) -> str:
         str: Name of pulled docker Image. Equal to image_name if provided
     """
     client = docker.from_env()
-    
 
     if image_name:
         # Pull the provided image from Docker
@@ -27,17 +27,19 @@ def get_image(image_name: str = None) -> str:
 
     elif not image_name:
         # Figure out which image to pull
-        logger.info(f"Searching for and pulling Docker image. This can take a long time")
+        logger.info("Searching for and pulling Docker image. This can take a long time")
 
         image_url_format = 'registry.gitlab.com/islandoftex/images/texlive:TL%d-%d-%02d-%02d-small'
-        
+
         # Iterate over a week worth of dates, build image name based on date
         curr_date = dt.date.today()
         possible_image_names = []
         last_date = curr_date - dt.timedelta(days=8)
         while curr_date > last_date:
-            possible_image_names.append(image_url_format % (curr_date.year, curr_date.year, curr_date.month, curr_date.day))
-            possible_image_names.append(image_url_format % (curr_date.year - 1, curr_date.year, curr_date.month, curr_date.day))
+            possible_image_names.extend([
+                image_url_format % (curr_date.year, curr_date.year, curr_date.month, curr_date.day),
+                image_url_format % (curr_date.year - 1, curr_date.year, curr_date.month, curr_date.day)
+            ])
 
             curr_date -= dt.timedelta(days=1)
 
@@ -53,7 +55,7 @@ def get_image(image_name: str = None) -> str:
 
         if not found:
             raise docker.errors.ImageNotFound("Couldn't find a suitable Docker image to use.")
-        
+
         logger.info(f"Using {image_name} as Docker Image")
 
     logger.debug(f"Finished pulling {image_name}. Using as Docker image for project")
