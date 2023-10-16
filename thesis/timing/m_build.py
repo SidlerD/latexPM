@@ -4,7 +4,6 @@ import shutil
 import sys
 import time
 import tempfile
-from src.core import LockFile
 from src.commands.install_pkg import install_pkg
 from src.commands.init import init
 from src.commands.build import build
@@ -12,7 +11,7 @@ from src.commands.build import build
 tmp_dir = tempfile.mkdtemp()
 old_cwd = os.getcwd()
 
-filename = 'install_with_deps.dat'
+filename = 'build.dat'
 docker_image = 'registry.gitlab.com/islandoftex/images/texlive:TL2023-2023-08-20-small'
 
 def _setup():
@@ -24,19 +23,16 @@ def _setup():
     init(image_name=docker_image)
 
     # Install needed package (+ dependencies)
-    install_pkg(pkg_id='listings')
+    install_pkg(pkg_id='amsmath')
 
     # Create file that lpm will need to build
     with open('file.tex', 'w') as texfile:
         file_content = '\n'.join(
             [
                 r'\documentclass{article}',
-                r'\usepackage{listings}',
+                r'\usepackage{amsmath}',
                 r'\begin{document}',
-                r'\begin{lstlisting}[language=python]',
-                    r'def my_func(decision:bool, i: int):',
-                    r'    return i if decision else 0',
-                r'\end{lstlisting}',
+                r'$2^2$a'
                 r'\end{document}'
             ])
         texfile.write(file_content)

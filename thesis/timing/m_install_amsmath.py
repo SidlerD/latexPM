@@ -2,11 +2,9 @@ import cProfile
 import os
 import shutil
 import sys
-import time
 import tempfile
 from src.core import LockFile
 from src.commands.install_pkg import install_pkg
-import docker
 
 tmp_dir = tempfile.mkdtemp()
 old_cwd = os.getcwd()
@@ -24,7 +22,7 @@ def _cleanup():
     LockFile._root = None
 
 def _main():
-    install_pkg(pkg_id='amsmath')
+    install_pkg(pkg_id='amsmath', accept_prompts=True)
 
 def _exec_install_n_times(n):
     for i in range(n):
@@ -37,7 +35,6 @@ def _exec_install_n_times(n):
         _cleanup()
 
 def measure(n):
-    # exec_init(2)
     cProfile.runctx(f'_exec_install_n_times({n})', globals=globals(), locals=locals(), filename=filename)
 
 if __name__ == '__main__':

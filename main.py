@@ -26,7 +26,7 @@ def add_upgrade_parser(subparsers):
 
 def add_init_parser(subparsers):
     init_parser = subparsers.add_parser('init', help='Initialize a new project')
-    init_parser.add_argument('-i', '--dockerimage', type=str, help='Name/ID of Docker Image to use. Will be used to compile your TeX files', metavar="--dockerimage")
+    init_parser.add_argument('-i', '--dockerimage', type=str, help='Name/ID of Docker Image to use. Will be used to compile your TeX files', metavar="")
     
 def add_list_parser(subparsers):
     # Create sub-parser for the install command
