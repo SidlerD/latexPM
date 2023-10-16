@@ -1,13 +1,15 @@
 import logging
+
 from anytree import Node
 
-from src.core.PackageInstaller import PackageInstaller
-from src.core import LockFile
-from src.models.Dependency import Dependency, DependencyNode
 from src.API import CTAN, VPTAN
-from src.helpers.DependenciesHelpers import extract_dependencies
 from src.commands.remove import remove
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.core import LockFile
+from src.core.PackageInstaller import PackageInstaller
+from src.exceptions.download.CTANPackageNotFound import \
+    CtanPackageNotFoundError
+from src.helpers.DependenciesHelpers import extract_dependencies
+from src.models.Dependency import Dependency, DependencyNode
 
 logger = logging.getLogger("default")
 

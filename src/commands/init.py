@@ -1,10 +1,10 @@
 import os
+
 import docker
 
-from src.core import LockFile
-from src.core import Docker
-from src.commands.install_pkg import install_pkg
 from src.commands.install import install
+from src.commands.install_pkg import install_pkg
+from src.core import Docker, LockFile
 from src.helpers.Logger import make_logger
 
 logger = make_logger()

@@ -1,6 +1,8 @@
-import os
-import docker
 import logging
+import os
+
+import docker
+
 from src.core import LockFile
 
 logger = logging.getLogger('default')

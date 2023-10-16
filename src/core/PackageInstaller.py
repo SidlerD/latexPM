@@ -1,11 +1,12 @@
+import logging
 import os
 import zipfile
-from src.models.Dependency import Dependency, DependencyNode, DownloadedDependency
 
 from src.API import CTAN, VPTAN
-from src.models.Version import Version
 from src.exceptions.download.DownloadError import DownloadError
-import logging
+from src.models.Dependency import (Dependency, DependencyNode,
+                                   DownloadedDependency)
+from src.models.Version import Version
 
 logger = logging.getLogger("default")
 

@@ -1,5 +1,6 @@
 import logging
-from anytree import RenderTree, LevelOrderIter
+
+from anytree import LevelOrderIter, RenderTree
 
 from src.core import LockFile
 from src.models.Dependency import DependencyNode

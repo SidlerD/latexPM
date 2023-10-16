@@ -1,8 +1,9 @@
 import logging
 import os
 import shutil
-from anytree import Node
+
 import anytree
+from anytree import Node
 
 from src.core import LockFile
 from src.models.Dependency import DependencyNode

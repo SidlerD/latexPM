@@ -1,6 +1,8 @@
 import datetime as dt
-from src.helpers.Logger import make_logger
+
 import docker
+
+from src.helpers.Logger import make_logger
 
 logger = make_logger()
 

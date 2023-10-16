@@ -1,10 +1,12 @@
+import logging
 import os
-from os.path import join, isdir, isfile, abspath, basename, exists
 import shutil
 import subprocess
 import zipfile
+from os.path import abspath, basename, exists, isdir, isfile, join
+
 import requests
-import logging
+
 from src.API import CTAN
 from src.exceptions.download.DownloadError import DownloadError
 from src.models.Dependency import Dependency

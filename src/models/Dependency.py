@@ -1,6 +1,8 @@
-from datetime import date, datetime
-from anytree import NodeMixin
 import logging
+from datetime import date, datetime
+
+from anytree import NodeMixin
+
 from src.models.Version import Version
 
 logger = logging.getLogger("default")

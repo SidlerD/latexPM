@@ -1,12 +1,13 @@
 import json
-import os
 import logging
+import os
 
-from src.models.Dependency import Dependency, DependencyNode, DownloadedDependency, serialize_dependency
-from src.models.Version import Version
-
+from anytree import LevelOrderIter, Node, findall
 from anytree.exporter import JsonExporter
-from anytree import Node, findall, LevelOrderIter
+
+from src.models.Dependency import (Dependency, DependencyNode,
+                                   DownloadedDependency, serialize_dependency)
+from src.models.Version import Version
 
 logger = logging.getLogger("default")
 lock_file_name = 'requirements-lock.json'

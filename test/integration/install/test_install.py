@@ -1,14 +1,16 @@
 import os
-from os.path import join
 import shutil
-import unittest
-from unittest.mock import patch, call, ANY
-from anytree import Node
 import tempfile
-from src.core import LockFile
+import unittest
+from os.path import join
+from unittest.mock import ANY, call, patch
 
-from src.models.Dependency import Dependency, DependencyNode, DownloadedDependency
+from anytree import Node
+
+from src.core import LockFile
 from src.core.lpm import lpm
+from src.models.Dependency import (Dependency, DependencyNode,
+                                   DownloadedDependency)
 
 
 class InstallAllTest(unittest.TestCase):

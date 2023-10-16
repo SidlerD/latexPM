@@ -1,11 +1,12 @@
-from src.API import CTAN
-from src.models.Dependency import Dependency, DownloadedDependency
-
-from src.helpers.DownloadHelpers import download_and_extract_zip
 import logging
-import urllib.parse
-import requests
 import os
+import urllib.parse
+
+import requests
+
+from src.API import CTAN
+from src.helpers.DownloadHelpers import download_and_extract_zip
+from src.models.Dependency import Dependency, DownloadedDependency
 
 _base_url = os.environ.get('VPTAN_HOST', "http://127.0.0.1") + ":" + os.environ.get('VPTAN_PORT', '8000')
 logger = logging.getLogger("default")

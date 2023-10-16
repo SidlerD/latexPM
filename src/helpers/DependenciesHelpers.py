@@ -1,12 +1,12 @@
+import logging
 import os
+import re
 from os.path import basename, join
 
-import re
-import logging
 from src.API import CTAN, VPTAN
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.exceptions.download.CTANPackageNotFound import \
+    CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DownloadedDependency
-
 
 # FIXME: cls-files (I think also sty-files) can import package by using \input{file.sty} \
 # (I don't know which file types are supported for importing with \input)

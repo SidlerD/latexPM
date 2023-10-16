@@ -1,10 +1,12 @@
-import requests
 import logging
 from functools import cache
 
-from src.models.Dependency import Dependency, DownloadedDependency
+import requests
+
+from src.exceptions.download.CTANPackageNotFound import \
+    CtanPackageNotFoundError
 from src.helpers.DownloadHelpers import download_and_extract_zip
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.models.Dependency import Dependency, DownloadedDependency
 from src.models.Version import Version
 
 _ctan_url = "https://www.ctan.org/"

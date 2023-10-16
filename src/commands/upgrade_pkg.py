@@ -1,9 +1,11 @@
 import logging
+
 from src.API import CTAN, VPTAN
-from src.commands.install_pkg import install_pkg
 from src.commands import remove
+from src.commands.install_pkg import install_pkg
 from src.core import LockFile
-from src.exceptions.download.CTANPackageNotFound import CtanPackageNotFoundError
+from src.exceptions.download.CTANPackageNotFound import \
+    CtanPackageNotFoundError
 from src.models.Dependency import Dependency, DependencyNode
 from src.models.Version import Version
 
