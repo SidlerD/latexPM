@@ -9,15 +9,15 @@ def get_required_pkgs():
     # Note: Name of bundle added to list because packages in tlmgr can depend on e.g. tools
 
     # Packages in "required" bundle
-    latex_tools = ['tools'] + ["afterpage", "array", "bm", "calc", "dcolumn", "delarray", "enumerate", "fileerr", "fontsmpl", "ftnright", "hhline", "indentfirst", "layout", "longtable", "multicol", "rawfonts", "shellesc", "showkeys", "somedefs", "tabularx", "theorem", "trace", "varioref", "verbatim", "xr", "xspace"]
+    latex_tools = ['tools'] + ["afterpage", "array", "bm", "calc", "dcolumn", "delarray", "enumerate", "fileerr", "fontsmpl", "ftnright", "hhline", "indentfirst", "layout", "longtable", "multicol", "rawfonts", "shellesc", "showkeys", "somedefs", "tabularx", "theorem", "trace", "varioref", "verbatim", "xr", "xspace"]  # noqa: E501
     latex_graphics = ['graphics'] + ["color", "graphics", "graphicx", "trig", "epsfig", "keyval", "lscape"]
     amslatex = ['amsmath', 'amscls']
 
     # .sty/.cls files in latex-base package at https://mirror.init7.net/ctan/systems/texlive/tlnet/archive/latex.tar.xz
-    latex_base = ['latex'] + ['alltt', 'article', 'article', 'atbegshi-ltx', 'atveryend-ltx', 'bezier', 'book', 'book', 'doc-2016-02-15', 'doc-2021-06-01', 'doc', 'exscale', 'fix-cm', 'fixltx2e', 'flafter', 'fleqn', 'fltrace', 'fontenc', 'graphpap', 'ifthen', 'inputenc', 'latexrelease', 'latexsym', 'leqno', 'letter', 'letter', 'ltnews', 'ltxdoc', 'ltxguide', 'makeidx', 'minimal', 'newlfont', 'oldlfont', 'openbib', 'proc', 'proc', 'report', 'report', 'shortvrb', 'showidx', 'slides', 'slides', 'source2edoc', 'structuredlog', 'syntonly', 't1enc', 'textcomp-2018-08-11', 'textcomp', 'tracefnt']
+    latex_base = ['latex'] + ['alltt', 'article', 'article', 'atbegshi-ltx', 'atveryend-ltx', 'bezier', 'book', 'book', 'doc-2016-02-15', 'doc-2021-06-01', 'doc', 'exscale', 'fix-cm', 'fixltx2e', 'flafter', 'fleqn', 'fltrace', 'fontenc', 'graphpap', 'ifthen', 'inputenc', 'latexrelease', 'latexsym', 'leqno', 'letter', 'letter', 'ltnews', 'ltxdoc', 'ltxguide', 'makeidx', 'minimal', 'newlfont', 'oldlfont', 'openbib', 'proc', 'proc', 'report', 'report', 'shortvrb', 'showidx', 'slides', 'slides', 'source2edoc', 'structuredlog', 'syntonly', 't1enc', 'textcomp-2018-08-11', 'textcomp', 'tracefnt']  # noqa: E501
 
     # Packages mentioned at https://www.ctan.org/tex-archive/macros/latex/base
-    latex_base_add = ['l3kernel','expl3',  'l3backend', 'unicode-data', 'unicode-data', 'latex-firstaid']
+    latex_base_add = ['l3kernel', 'expl3',  'l3backend', 'unicode-data', 'unicode-data', 'latex-firstaid']
 
     return latex_tools + latex_graphics + amslatex + latex_base + latex_base_add
 
@@ -25,7 +25,7 @@ def get_required_pkgs():
 def get_diff(df: pd.DataFrame, name: str, pkg_deps_lpm: list[str], pkg_deps_tlmgr: list[str]) -> None:
     required_pkgs = set(get_required_pkgs())
 
-    lpm = set(pkg_deps_lpm) 
+    lpm = set(pkg_deps_lpm)
     tlmgr = set(pkg_deps_tlmgr)
 
     # Build sets for statistics
@@ -40,9 +40,9 @@ def get_diff(df: pd.DataFrame, name: str, pkg_deps_lpm: list[str], pkg_deps_tlmg
         'tlmgr_deps': '; '.join(sorted(tlmgr)),
         'identical': len(identical),
         'lpm_over': len(lpm_over),
-        'lpm_over_names': len(lpm_over),
-        'lpm_under': len(lpm_under), 
-        'lpm_under_names': len(lpm_under), 
+        'lpm_over_names': ';'.join(sorted(lpm_over)),
+        'lpm_under': len(lpm_under),
+        'lpm_under_names': ';'.join(sorted(lpm_under)),
     }
 
 
@@ -56,7 +56,7 @@ def compare_deps(tlmgr_pkgs, lpm_pkgs):
             'lpm_over': [],
             'lpm_over_names': [],
             'lpm_under': [],
-            'lpm_under_names': [], 
+            'lpm_under_names': [],
         }
     )
 
@@ -69,9 +69,9 @@ def compare_deps(tlmgr_pkgs, lpm_pkgs):
 
         # Get packages that tlmgr specified as deps, if available
         pkg_tlmgr = next((item for item in tlmgr_pkgs if item["name"] == pkg_name), None)
+        pkg_deps_tlmgr = pkg_tlmgr['depends']
         if not pkg_deps_tlmgr:
             continue
-        pkg_deps_tlmgr = pkg_tlmgr['depends']
 
         # Calculate statistics and add to dataframe
         get_diff(df, pkg_name, pkg_deps_lpm, pkg_deps_tlmgr)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         exit
 
     res = measure_accuracy(pkgs)
-    
+
     # Not sure if the context manager is actually needed
     with pd.option_context("max_colwidth", 1000):
         res_short = res.drop(['lpm_deps', 'tlmgr_deps', 'lpm_over_names', 'lpm_under_names'], axis=1)

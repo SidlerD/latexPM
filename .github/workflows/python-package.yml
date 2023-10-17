@@ -1,14 +1,10 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Python package
+name: Test lpm
 
 on:
   push:
-    # branches: [ "master", "github_actions", "make_actions_work" ]
-    branches: [ ]
-  # pull_request:
-    # branches: [ "master" ]
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -19,16 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10"]
-    services:
-      vptan:
-        image: sidlerd/vptan:0.1.1
-        ports:
-           - 8000:8000
     steps:
-    # - uses: xu-cheng/texlive-action/small@v1
-    #   with:
-    #     run: |
-    #       apk add make
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
@@ -47,7 +34,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
-      env:
-        VPTAN_HOST: vptan
-        VPTAN_PORT: ${{ job.services.vptan.ports[8000] }}
+        pytest test/integration test/unit
