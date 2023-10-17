@@ -30,7 +30,7 @@ class ProjectIsolationTest(unittest.TestCase):
         ['tabularray', '2023-03-01', '2022-11-01'],
         ['playcards', '2023/06/11', '2023/05/02'],
         ['colorist', '2023/07/14', '2023/03/07'],
-        ['biblatex', '3.18b', '3.18a']
+        ['biblatex', '3.18b', '3.18a']  # Fails because VPTAN's response does not include a sty-file. mentioned in thesis
     ])
     def test_two_projects_use_their_own_package_version(self, pkg_id, version1, version2):
         file_name, log_file_name = 'file.tex',  'file.log'
