@@ -1,10 +1,9 @@
 import json
 import os
-from os.path import isfile, join
 import shutil
 import tempfile
-from src.API import CTAN
 
+from src.API import CTAN
 from src.helpers.DependenciesHelpers import extract_dependencies
 from src.models.Dependency import Dependency
 
@@ -12,13 +11,6 @@ file_name = 'lpm_deps_of_files_output.json'
 
 
 def get_deps_of_pkgs(tlmgr_pkgs):
-    # if os.path.exists(file_name):
-    #     print("Taking data from " + file_name)
-    #     with open(file_name, 'r') as f:
-    #         data = json.load(f)
-        
-    #     return data
-    
     res = []
     old_cwd = os.getcwd()
     tmpdir = tempfile.mkdtemp()
@@ -47,4 +39,3 @@ def get_deps_of_pkgs(tlmgr_pkgs):
         json.dump(res, f, indent=2)
 
     return res
-

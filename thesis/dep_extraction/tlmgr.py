@@ -26,7 +26,7 @@ def get_pkgs_with_deps():
     output_lines = output.split('\n')
     total_cnt = len(output_lines)
     no_depends_cnt = 0
-    # Make dict with pkg:dependencies[] pairs
+
     res = []
     for output_line in output_lines:
         if output_line.endswith(','): # Has no depends attr
@@ -49,9 +49,10 @@ def get_pkgs_with_deps():
         except Exception as e:
             print(f"{str(e)}, output_line = {output_line}")
     
-    print(f"Total amount of packages: {total_cnt}\nPackages with empty' depends' attr.: {no_depends_cnt}")
+    print(f"Total amount of packages: {total_cnt}\nPackages with empty 'depends' attr.: {no_depends_cnt}")
             
     return res
+
 
 if __name__ == '__main__':
     res = get_pkgs_with_deps()
@@ -61,4 +62,3 @@ if __name__ == '__main__':
             json.dump(res, f, indent=2)
     else:
         print(json.dumps(res, indent=2))
-

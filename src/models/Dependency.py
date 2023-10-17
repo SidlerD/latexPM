@@ -87,9 +87,9 @@ class DependencyNode(NodeMixin):
     Attributes:
         id (str): Id of node, which is equal to dep.id
         dep (DownloadedDependency): Package that node represents
-        parent (DependencyNode|Node, optional): Parent of package in tree
-        children (DependencyNode|Node, optional): Children of package in tree (i.e. its dependencies)
-        dependents (list[str], optional): Other packages that depend on this package
+        parent (DependencyNode|Node): Parent of package in tree
+        children (DependencyNode|Node): Children of package in tree (i.e. its dependencies)
+        dependents (list[str]): Other packages that depend on this package
     """
     # Can't do [] as default param for dependents because is mutable:
     # https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments

@@ -1,9 +1,8 @@
 import sys
-from thesis.dep_extraction import lpm
-from thesis.dep_extraction import tlmgr
+
 import pandas as pd
 
-from thesis.dep_extraction.build import validate_dependencies
+from thesis.dep_extraction import lpm, tlmgr
 
 
 def get_required_pkgs():
@@ -22,31 +21,32 @@ def get_required_pkgs():
 
     return latex_tools + latex_graphics + amslatex + latex_base + latex_base_add
 
+
 def get_diff(df: pd.DataFrame, name: str, pkg_deps_lpm: list[str], pkg_deps_tlmgr: list[str]) -> None:
     required_pkgs = set(get_required_pkgs())
 
-    # Remove packages that are in bundle "required" since they can be assumed to be present
     lpm = set(pkg_deps_lpm) 
     tlmgr = set(pkg_deps_tlmgr)
 
+    # Build sets for statistics
     identical = lpm.intersection(tlmgr)
     lpm_over = (lpm - tlmgr) - required_pkgs
     lpm_under = tlmgr - lpm
 
-    # tl_builds, lpm_builds = validate_dependencies(pkg_deps_lpm, pkg_deps_tlmgr)
+    # Add stats to dataframe
     df.loc[len(df)] = {
         'name': name,
         'lpm_deps': '; '.join(sorted(lpm)),
         'tlmgr_deps': '; '.join(sorted(tlmgr)),
         'identical': len(identical),
         'lpm_over': len(lpm_over),
+        'lpm_over_names': len(lpm_over),
         'lpm_under': len(lpm_under), 
-        # 'tlmgr_builds': tl_builds,
-        # 'lpm_build': lpm_builds
+        'lpm_under_names': len(lpm_under), 
     }
 
-def compare_deps(tlmgr_pkgs, lpm_pkgs):
 
+def compare_deps(tlmgr_pkgs, lpm_pkgs):
     df = pd.DataFrame(
         {
             'name': [],
@@ -54,14 +54,13 @@ def compare_deps(tlmgr_pkgs, lpm_pkgs):
             'tlmgr_deps': [],
             'identical': [],
             'lpm_over': [],
-            'lpm_under': []
+            'lpm_over_names': [],
+            'lpm_under': [],
+            'lpm_under_names': [], 
         }
     )
-    # df.set_index('name', inplace=True)
-   
-    df.head()
 
-    # Iterate over lpm_deps because it is a subset of tlmgr_deps
+    # Iterate over lpm_pkgs because it is a subset of tlmgr_deps
     for pkg in lpm_pkgs:
         pkg_name = pkg['name']
 
@@ -70,14 +69,15 @@ def compare_deps(tlmgr_pkgs, lpm_pkgs):
 
         # Get packages that tlmgr specified as deps, if available
         pkg_tlmgr = next((item for item in tlmgr_pkgs if item["name"] == pkg_name), None)
-        pkg_deps_tlmgr = pkg_tlmgr['depends'] if pkg_tlmgr else None
-        
         if not pkg_deps_tlmgr:
             continue
+        pkg_deps_tlmgr = pkg_tlmgr['depends']
 
+        # Calculate statistics and add to dataframe
         get_diff(df, pkg_name, pkg_deps_lpm, pkg_deps_tlmgr)
 
     return df
+
 
 def measure_accuracy(pkgs: list[str] = None):
     tlmgr_pkgs = tlmgr.get_pkgs_with_deps()
@@ -92,22 +92,20 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         pkgs = sys.argv[1:]
     else:
-        # Build for packages that are included in texlive-latex-recommended: https://tex.stackexchange.com/a/504566/293514
-        pkgs = ["anysize", "beamer", "booktabs", "breqn", "caption", "cite", "cmap", "crop", "ctable", "eso-pic", "euenc", "euler", "etoolbox", "extsizes", "fancybox", "fancyref", "fancyvrb", "filehook", "float", "fontspec", "fp", "index", "jknapltx", "koma-script", "latexbug", "l3experimental", "l3kernel", "l3packages", "lineno", "listings", "lwarp", "mathspec", "mathtools", "mdwtools", "memoir", "metalogo", "microtype", "ms", "ntgclass", "parskip", "pdfpages", "polyglossia", "powerdot", "psfrag", "rcs", "sansmath", "section", "seminar", "sepnum", "setspace", "subfig", "textcase", "thumbpdf", "translator", "typehtml", "ucharcat", "underscore", "unicode-math", "xcolor", "xkeyval", "xltxtra", "xunicode"]
-    
-    res = measure_accuracy(pkgs)
+        print("Please provide at least one package to measure")
+        exit
 
+    res = measure_accuracy(pkgs)
     
     # Not sure if the context manager is actually needed
     with pd.option_context("max_colwidth", 1000):
-        res_short = res.drop(['lpm_deps', 'tlmgr_deps'], axis=1)
+        res_short = res.drop(['lpm_deps', 'tlmgr_deps', 'lpm_over_names', 'lpm_under_names'], axis=1)
         print(res_short)
 
-        # res.to_csv('dep_comparison.csv', index=False)
         options = {
-            # 'column_format': 'X',
             'hrules': True,
-
         }
+
+        # Export short and full dataframe as LaTeX table
         res.style.format(escape='latex').to_latex('dep_comparison.tex', **options)
         res_short.style.format(escape='latex').to_latex('dep_comparison.short.tex', **options)
