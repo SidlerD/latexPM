@@ -4,7 +4,7 @@
 
 2. Go into the cloned directory: `cd latexPM` 
 
-3. [Create and start a virtual environment](https://python.land/virtual-environments/virtualenv) with the name `venv` (Note: Use python 3.10 when creating venv)
+3. [Create and start a virtual environment](https://python.land/virtual-environments/virtualenv) with the name `venv` (Note: Use python 3.10.2 when creating venv)
 
 4. Install lpm's dependencies: `pip install -r requirements.txt`
 
