@@ -1,10 +1,13 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from src.models.Dependency import DependencyNode, Dependency, DownloadedDependency
-from src.core.lpm import lpm
+
 from anytree import Node
 
+from src.core.lpm import lpm
+from src.models.Dependency import (Dependency, DependencyNode,
+                                   DownloadedDependency)
 from src.models.Version import Version
+
 
 class UpgradePkgTest(unittest.TestCase):
 
@@ -18,7 +21,6 @@ class UpgradePkgTest(unittest.TestCase):
         dep = Dependency('A', '', dep_version)
         down_dep = DownloadedDependency(dep, "path", "https://download/A", 'contrib/A')
         dep_node = DependencyNode(down_dep, parent=root)
-
 
         get_name_mock.return_value = ""
         get_version_mock.return_value = dep_version
